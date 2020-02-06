@@ -8,8 +8,11 @@ pytest-cov = "*"
 pytest-mypy = "*"
 pytest-flake8 = "*"
 flake8-black = "*"
-flake8-import-order = "*"
+flake8-isort = "*"
 sphinx-rtd-theme = "*"
 
 [packages]
 epicscorelibs = "*"
+
+[pipenv]
+allow_prereleases = true
