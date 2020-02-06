@@ -4,6 +4,12 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-pytest = "*"
+pytest-cov = "*"
+pytest-mypy = "*"
+pytest-flake8 = "*"
+flake8-black = "*"
+flake8-import-order = "*"
+sphinx-rtd-theme = "*"
 
 [packages]
+epicscorelibs = "*"
