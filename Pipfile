@@ -10,6 +10,12 @@ pytest-flake8 = "*"
 flake8-black = "*"
 flake8-import-order = "*"
 sphinx-rtd-theme = "*"
+black = "==19.3b0"
 
 [packages]
 epicscorelibs = "*"
+numpy = "*"
+black = "==19.3b0"
+
+[pipenv]
+allow_prereleases = true
