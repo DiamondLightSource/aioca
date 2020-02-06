@@ -1,0 +1,7 @@
+rhel7_job:
+  tags:
+    - rhel7
+  before_script:
+    - pipenv install --dev
+  script:
+    - pipenv run python -m pytest test
