@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "e7b83dcc510e9a0f4717a114f28b5163e0b833c42e6fcbd5bcc6771df92d5cd2"
+            "sha256": "2325851ebdbd566d7a7949786f92c70964c21299e10a5dd2ea6f4b7fa0a4cb38"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -14,12 +14,50 @@
         ]
     },
     "default": {
+        "appdirs": {
+            "hashes": [
+                "sha256:d8b24664561d0d34ddfaec54636d502d7cea6e29c3eaf68f3df6180863e2166e"
+            ],
+            "version": "==1.4.3"
+        },
+        "attrs": {
+            "hashes": [
+                "sha256:69c0dbf2ed392de1cb5ec704444b08a5ef81680a61cb899dc08127123af36a79"
+            ],
+            "version": "==19.1.0"
+        },
+        "black": {
+            "hashes": [
+                "sha256:09a9dcb7c46ed496a9850b76e4e825d6049ecd38b611f1224857a79bd985a8cf"
+            ],
+            "index": "pypi",
+            "version": "==19.3b0"
+        },
+        "click": {
+            "hashes": [
+                "sha256:2335065e6395b9e67ca716de5f7526736bfa6ceead690adf616d925bdc622b13"
+            ],
+            "version": "==7.0"
+        },
         "epicscorelibs": {
             "hashes": [
                 "sha256:88a6479c473ee595386f7c234c2c2f358ba318784e1d0714bc7eb0ebcaf723e0"
             ],
             "index": "pypi",
             "version": "==7.0.3.99.1.0"
+        },
+        "numpy": {
+            "hashes": [
+                "sha256:3d52298d0be333583739f1aec9026f3b09fdfe3ddf7c7028cb16d9d2af1cca7e"
+            ],
+            "index": "pypi",
+            "version": "==1.17.4"
+        },
+        "toml": {
+            "hashes": [
+                "sha256:235682dd292d5899d361a811df37e04a8828a5b1da3115886b73cf81ebc9100e"
+            ],
+            "version": "==0.10.0"
         }
     },
     "develop": {
@@ -57,6 +95,7 @@
             "hashes": [
                 "sha256:09a9dcb7c46ed496a9850b76e4e825d6049ecd38b611f1224857a79bd985a8cf"
             ],
+            "index": "pypi",
             "version": "==19.3b0"
         },
         "certifi": {
