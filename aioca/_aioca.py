@@ -32,17 +32,6 @@ from . import _dbr as dbr
 from ._dbr import *
 from ._cadef import *
 
-__all__ = [
-    # The core functions.
-    'caput',            # Write PVs to channel access
-    'caget',            # Read PVs from channel access
-    'camonitor',        # Monitor PVs over channel access
-    'connect',          # Establish PV connection
-    'cainfo',           # Returns ca_info describing PV connection
-    'run',              # Run one aioca coroutine and clean up
-    'run_forever'       # Run one aioca coroutine indefinitely
-] + dbr.__all__ + cadef.__all__
-
 
 class ValueEvent:
     def __init__(self):

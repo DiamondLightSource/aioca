@@ -36,15 +36,6 @@ This module is a thin wrapper over the cadef.h file to be found in
     $EPICS_BASE/include/cadef.h
 '''
 
-__all__ = [
-    # Event type notification codes for camonitor
-    'DBE_VALUE',        # Notify normal value changes
-    'DBE_LOG',          # Notify archival value changes
-    'DBE_ALARM',        # Notify alarm state changes
-    'DBE_PROPERTY',     # Notify property change events (3.14.11 and later)
-]
-
-
 import ctypes
 from ._load_ca import libca
 from . import _py23 as py23

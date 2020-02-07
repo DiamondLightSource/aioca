@@ -40,35 +40,6 @@ from . import _cadef as cadef
 from . import _py23 as py23
 
 
-__all__ = [
-    # Basic DBR request codes: any one of these can be used as part of a
-    # datatype request.
-    'DBR_STRING',       # 40 character strings
-    'DBR_SHORT',        # 16 bit signed
-    'DBR_FLOAT',        # 32 bit float
-    'DBR_ENUM',         # 16 bit unsigned
-    'DBR_CHAR',         # 8 bit unsigned
-    'DBR_LONG',         # 32 bit signed
-    'DBR_DOUBLE',       # 64 bit float
-
-    'DBR_CHAR_STR',     # Long strings as char arrays
-    'DBR_CHAR_UNICODE', # Long unicode strings as char arrays
-    'DBR_ENUM_STR',     # Enums as strings, default otherwise
-    'DBR_CHAR_BYTES',   # Long byte strings as char arrays
-
-    'DBR_PUT_ACKT',     # Configure global alarm acknowledgement
-    'DBR_PUT_ACKS',     # Acknowledge global alarm
-    'DBR_STSACK_STRING', # Returns status ack structure
-    'DBR_CLASS_NAME',   # Returns record type (same as .RTYP?)
-
-    # Data type format requests
-    'FORMAT_RAW',       # Request the underlying data only
-    'FORMAT_TIME',      # Request alarm status and timestamp
-    'FORMAT_CTRL',      # Request graphic and control fields
-
-    'ca_extra_fields',  # List of all possible augmented field names
-]
-
 # List of all the field names that can be added to an augmented field.
 ca_extra_fields = [
     # Fields common to all data types
