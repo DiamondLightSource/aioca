@@ -268,6 +268,12 @@ class _Subscription(object):
     __slots__ = [
         'name',             # Name of the PV subscribed to
         'callback',         # The user callback function
+        'datatype',
+        'format',
+        'datatype',
+        'count',
+        'events',
+        'connect_timeout',
         'dbr_to_value',     # Conversion from dbr
         'channel',          # The associated channel object
         '__state',          # Whether the subscription is active
@@ -277,8 +283,6 @@ class _Subscription(object):
         '__value',          # Most recent update if merging updates
         '__update_count',   # Number of updates seen since last notification
         '__event_loop',
-        'events',
-        'datatype'
     ]
 
     # _Subscription state values:
@@ -380,14 +384,18 @@ class _Subscription(object):
     async def __delete(self):
         await asyncio.sleep(0.1)
 
-    def __init__(self, name, callback, event_loop, events = None, format = FORMAT_RAW,
-            all_updates = False, notify_disconnect = False):
+    def __init__(self, name, callback, event_loop, events = None, datatype = None, format = FORMAT_RAW,
+            count = 0, all_updates = False, notify_disconnect = False, connect_timeout=None):
         '''Subscription initialisation.'''
 
         self.name = name
         self.callback = callback
+        self.datatype = datatype
+        self.format = format
+        self.count = count
         self.all_updates = all_updates
         self.notify_disconnect = notify_disconnect
+        self.connect_timeout = connect_timeout
         self.__update_count = 0
         self.__event_loop = event_loop
 
@@ -397,7 +405,7 @@ class _Subscription(object):
             events = self.__default_events[format]
         self.events = events
 
-    async def connect(self, format = FORMAT_RAW, datatype = None, count = 0, connect_timeout = None):
+    async def connect(self):
         # Trigger channel connection if channel not already known.
         self.channel = await _channel_cache.get(self.name)
 
@@ -406,7 +414,7 @@ class _Subscription(object):
         # connected.
         self.__state = self.__OPENING
         asyncio.create_task(self.__create_subscription(
-            self.events, datatype, format, count, connect_timeout))
+            self.events, self.datatype, self.format, self.count, self.connect_timeout))
 
     # Waiting for the channel is a bit more tangled than it might otherwise be
     # so that we can handle the subscription being closed before the connection
@@ -535,12 +543,13 @@ async def camonitor(pvs, callback, **kargs):
     '''
     if isinstance(pvs, str):
         s = _Subscription(pvs, callback, asyncio.get_running_loop(), **kargs)
-        return await s.connect(**kargs)
+        await s.connect()
+        return s
     else:
         subs = [
             _Subscription(pv, lambda v, n=n: callback(v, n), asyncio.get_running_loop(), **kargs)
             for n, pv in enumerate(pvs)]
-        [s.connect(**kargs) for s in subs]
+        [s.connect() for s in subs]
         return subs
 
 
