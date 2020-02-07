@@ -773,16 +773,16 @@ def _caput_event_handler(args):
 
     # This is called exactly once when a caput request completes.  Extract
     # our context information and discard the context immediately.
-    pv, done, callback = args.usr
+    pv, done, callback, event_loop = args.usr
     ctypes.pythonapi.Py_DecRef(args.usr)
 
     if done is not None:
         if args.status == cadef.ECA_NORMAL:
-            asyncio.get_running_loop().call_soon_threadsafe(done.set)
+            event_loop.call_soon_threadsafe(done.signal)
         else:
-            asyncio.get_running_loop().call_soon_threadsafe(done.SignalException, ca_nothing(pv, args.status))
+            event_loop.call_soon_threadsafe(done.SignalException, ca_nothing(pv, args.status))
     if callback is not None:
-        asyncio.get_running_loop().call_soon_threadsafe(callback, ca_nothing(pv, args.status))
+        event_loop.call_soon_threadsafe(callback, ca_nothing(pv, args.status))
 
 
 @maybe_throw
@@ -807,7 +807,7 @@ async def caput_one(pv, value, datatype=None, wait=False, timeout=5, callback=No
             done = ValueEvent()
         else:
             done = None
-        context = (pv, done, callback)
+        context = (pv, done, callback, asyncio.get_running_loop())
         ctypes.pythonapi.Py_IncRef(context)
 
         # caput with callback requested: need to wait for response from
@@ -817,7 +817,7 @@ async def caput_one(pv, value, datatype=None, wait=False, timeout=5, callback=No
             _caput_event_handler, ctypes.py_object(context))
         _flush_io()
         if wait:
-            ca_timeout(done, timeout, pv)
+            await ca_timeout(done, timeout, pv)
     else:
         # Asynchronous caput, just do it now.
         cadef.ca_array_put(dbrtype, count, channel, dbr_array)
