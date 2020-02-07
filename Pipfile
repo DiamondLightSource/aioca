@@ -10,6 +10,11 @@ pytest-flake8 = "*"
 flake8-black = "*"
 flake8-isort = "*"
 sphinx-rtd-theme = "*"
+pytest-asyncio = "*"
+# VSCode needs these
+rope = "*"
+black = "*"
+mypy = "*"
 
 [packages]
 epicscorelibs = "*"
