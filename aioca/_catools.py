@@ -19,14 +19,52 @@ them."""
 
 import asyncio
 import atexit
-import concurrent
 import ctypes
+import datetime
 import sys
 import threading
 import time
 import traceback
+from typing import Callable, Dict, List, Set, Sized, Tuple, TypeVar, overload
 
 from epicscorelibs.ca import cadef, dbr
+from typing_extensions import Protocol
+
+PVList = TypeVar("PVList", List[str], Tuple[str, ...])
+
+
+class AugmentedValue(Protocol, Sized):
+    """Attempt to type what we return"""
+
+    # Fields common to all data types
+    name: str  #: Name of the PV used to create this value
+    ok: bool  #: True for normal data, False for error code
+    datatype: int  #: Underlying DBR_ code
+    element_count: int  #: Underlying length of original data
+
+    # Fields common to time and ctrl types
+    severity: int  #: Alarm severity
+    status: int  #: CA status code: reason for severity
+
+    # Timestamp specific fields
+    raw_stamp: Tuple[int, int]  #: Unformatted timestamp in separate seconds and nsecs
+    timestamp: float  #: Timestamp in seconds
+    datetime: datetime.datetime  #: Timestamp converted to datetime
+
+    # Control specific fields
+    units: str  #: Units for display
+    upper_disp_limit: float  #: Upper limit for displaying value
+    lower_disp_limit: float  #: Lower limit for displaying value
+    upper_alarm_limit: float  #: Above this limit value in alarm
+    lower_alarm_limit: float  #: Below this limit value in alarm
+    upper_warning_limit: float  #: Above this limit is a warning
+    lower_warning_limit: float  #: Below this limit is a warning
+    upper_ctrl_limit: float  #: Upper limit for puts to this value
+    lower_ctrl_limit: float  #: Lower limit for puts to this value
+    precision: float  #: Display precision for floating point values
+
+    # Other
+    enums: List[str]  #: Enumeration strings for ENUM type
 
 
 class ValueEvent:
@@ -101,7 +139,7 @@ async def ca_timeout(event, timeout, name):
     ca_nothing timeout exception containing the PV name."""
     try:
         return await event.wait(timeout)
-    except concurrent.futures.TimeoutError as timeout:
+    except asyncio.TimeoutError as timeout:
         raise ca_nothing(name, cadef.ECA_TIMEOUT) from timeout
 
 
@@ -140,8 +178,9 @@ class Channel(object):
         "_as_parameter_",  # Associated channel access channel handle
     ]
 
+    @staticmethod
     @cadef.connection_handler
-    def on_ca_connect(args):
+    def on_ca_connect(args):  # pragma: no cover
         """This routine is called every time the connection status of the
         channel changes.  This is called directly from channel access, which
         means that user callbacks should not be called directly."""
@@ -166,7 +205,7 @@ class Channel(object):
     def __init__(self, name, loop):
         """Creates a channel access channel with the given name."""
         self.name = name
-        self.__subscriptions = set()
+        self.__subscriptions: Set[Subscription] = set()
         self.__connected = False
         self.__connect_event = ValueEvent()
         self.__event_loop = loop
@@ -179,13 +218,6 @@ class Channel(object):
         # when passed to ca_ functions.
         self._as_parameter_ = chid.value
         _flush_io()
-
-    def __del__(self):
-        """Ensures the associated channel access is closed."""
-        # Note that Channel objects are normally only deleted on process
-        # shutdown, so perhaps this call is redundant.
-        if hasattr(self, "_as_parameter_"):
-            cadef.ca_clear_channel(self)
 
     def _purge(self):
         """Forcible purge of channel.  As well as closing the channels,
@@ -228,16 +260,17 @@ class ChannelCache(object):
     cache it is automatically opened.  The cache needs to be purged to
     ensure a clean shutdown."""
 
-    def __init__(self):
-        self.__channels = {}
+    def __init__(self, loop: asyncio.AbstractEventLoop):
+        self.__channels: Dict[str, Channel] = {}
+        self.loop = loop
 
-    def __getitem__(self, name) -> Channel:
+    def get_channel(self, name: str) -> Channel:
         try:
             # When the channel already exists, just return that
             return self.__channels[name]
         except KeyError:
             # Have to create a new channel
-            channel = Channel(name, asyncio.get_running_loop())
+            channel = Channel(name, self.loop)
             self.__channels[name] = channel
             return channel
 
@@ -246,14 +279,14 @@ class ChannelCache(object):
         cause other channel access to fail, so only to be done on shutdown."""
         for channel in self.__channels.values():
             channel._purge()
-        self.__channels = {}
+        self.__channels.clear()
 
 
 # ----------------------------------------------------------------------------
 #   camonitor
 
 
-class _Subscription(object):
+class Subscription(object):
     """A _Subscription object wraps a single channel access subscription, and
     notifies all updates through an event queue."""
 
@@ -285,8 +318,9 @@ class _Subscription(object):
 
     __lock = threading.Lock()  # Used for update merging.
 
+    @staticmethod
     @cadef.event_handler
-    def __on_event(args):
+    def __on_event(args):  # pragma: no cover
         """This is called each time the subscribed value changes.  As this is
         called asynchronously, a signal must be queued for later dispatching
         to the monitoring user."""
@@ -404,7 +438,7 @@ class _Subscription(object):
             events = self.__default_events[format]
 
         # Trigger channel connection if channel not already known.
-        self.channel = _channel_cache[name]
+        self.channel = get_channel(name)
 
         # Spawn the actual task of creating the subscription into the
         # background, as we may have to wait for the channel to become
@@ -470,6 +504,20 @@ class _Subscription(object):
         )
         _flush_io()
         self._as_parameter_ = event_id.value
+
+
+@overload
+async def camonitor(
+    pv: str, callback: Callable[[AugmentedValue], None], **kwargs
+) -> Subscription:
+    ...  # pragma: no cover
+
+
+@overload
+async def camonitor(
+    pv: PVList, callback: Callable[[AugmentedValue, int], None], **kwargs
+) -> List[Subscription]:
+    ...  # pragma: no cover
 
 
 async def camonitor(pvs, callback, **kargs):
@@ -546,10 +594,10 @@ async def camonitor(pvs, callback, **kargs):
         it will update as normal.
     """
     if isinstance(pvs, str):
-        return _Subscription(pvs, callback, asyncio.get_running_loop(), **kargs)
+        return Subscription(pvs, callback, asyncio.get_running_loop(), **kargs)
     else:
         subs = [
-            _Subscription(
+            Subscription(
                 pv, lambda v, n=n: callback(v, n), asyncio.get_running_loop(), **kargs
             )
             for n, pv in enumerate(pvs)
@@ -562,7 +610,7 @@ async def camonitor(pvs, callback, **kargs):
 
 
 @cadef.event_handler
-def _caget_event_handler(args):
+def _caget_event_handler(args):  # pragma: no cover
     """This will be called when a caget request completes, either with a
     brand new data value or with failure.  The result is communicated back
     to the original caller."""
@@ -594,7 +642,7 @@ async def caget_one(pv, timeout=5, datatype=None, format=dbr.FORMAT_RAW, count=0
     # deadline.
     timeout = rel_timeout(timeout)
     # Retrieve the requested channel and ensure it's connected.
-    channel = _channel_cache[pv]
+    channel = get_channel(pv)
     await channel.Wait(timeout)
 
     # A count of zero will be treated by EPICS in a version dependent manner,
@@ -633,6 +681,16 @@ async def caget_array(pvs, **kargs):
     #    The raise_on_wait flag means that any exceptions raised by any of
     # the spawned caget_one() calls will appear as exceptions to WaitForAll().
     return await asyncio.gather(*[caget_one(pv, **kargs) for pv in pvs])
+
+
+@overload
+async def caget(pv: str, **kwargs) -> AugmentedValue:
+    ...  # pragma: no cover
+
+
+@overload
+async def caget(pv: PVList, **kwargs) -> List[AugmentedValue]:
+    ...  # pragma: no cover
 
 
 async def caget(pvs, **kargs):
@@ -743,7 +801,7 @@ async def caget(pvs, **kargs):
 
 
 @cadef.event_handler
-def _caput_event_handler(args):
+def _caput_event_handler(args):  # pragma: no cover
     """Event handler for caput with callback completion.  Returns status
     code to caller."""
 
@@ -768,7 +826,7 @@ async def caput_one(pv, value, datatype=None, wait=False, timeout=5, callback=No
 
     # Connect to the channel and wait for connection to complete.
     timeout = rel_timeout(timeout)
-    channel = _channel_cache[pv]
+    channel = get_channel(pv)
     await channel.Wait(timeout)
 
     # Note: the unused value returned below needs to be retained so that
@@ -934,7 +992,7 @@ class ca_info(object):
 
 @maybe_throw
 async def connect_one(pv, cainfo=False, wait=True, timeout=5):
-    channel = _channel_cache[pv]
+    channel = get_channel(pv)
     if wait:
         await channel.Wait(timeout)
     if cainfo:
@@ -945,6 +1003,16 @@ async def connect_one(pv, cainfo=False, wait=True, timeout=5):
 
 async def connect_array(pvs, **kargs):
     return await asyncio.gather(*[connect_one(pv, **kargs) for pv in pvs])
+
+
+@overload
+async def connect(pvs: str, **args) -> ca_nothing:
+    ...  # pragma: no cover
+
+
+@overload
+async def connect(pvs: PVList, **args) -> List[ca_nothing]:
+    ...  # pragma: no cover
 
 
 async def connect(pvs, **kargs):
@@ -996,16 +1064,42 @@ async def connect(pvs, **kargs):
         return await connect_array(pvs, **kargs)
 
 
-async def cainfo(pvs, **args):
+@overload
+async def cainfo(pvs: str, **args) -> ca_info:
+    ...  # pragma: no cover
+
+
+@overload
+async def cainfo(pvs: PVList, **args) -> List[ca_info]:
+    ...  # pragma: no cover
+
+
+async def cainfo(pvs, wait=True, **args):
     """Returns a ca_info structure for the given PVs.  See the documentation
     for connect() for more detail."""
-    return await connect(pvs, cainfo=True, wait=True, **args)
+    return await connect(pvs, cainfo=True, wait=wait, **args)
 
 
 # ----------------------------------------------------------------------------
 #   Final module initialisation
 
-_channel_cache = ChannelCache()
+_channel_caches: Dict[asyncio.AbstractEventLoop, ChannelCache] = {}
+
+
+def get_channel(pv: str) -> Channel:
+    loop = asyncio.get_event_loop()
+    try:
+        channel_cache = _channel_caches[loop]
+    except KeyError:
+        # Channel from new event loop. Don't support multiple event loops, so
+        # clear out all the old channels
+        for old_cache in _channel_caches.values():
+            old_cache.purge()
+        _channel_caches.clear()
+        channel_cache = ChannelCache(loop)
+        _channel_caches[loop] = channel_cache
+    channel = channel_cache.get_channel(pv)
+    return channel
 
 
 @atexit.register
@@ -1016,7 +1110,8 @@ def _catools_atexit():
     # application exit.
     #    One reason that it's rather important to do this properly is that we
     # can't safely do *any* ca_ calls once ca_context_destroy() is called!
-    _channel_cache.purge()
+    for channel_cache in _channel_caches.values():
+        channel_cache.purge()
     cadef.ca_flush_io()
     cadef.ca_context_destroy()
 
@@ -1041,8 +1136,16 @@ class _FlushIo:
 
     def __call__(self):
         if not self.__pending:
-            self.__pending = True
-            asyncio.get_running_loop().call_soon(self.do_flush_io)
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                # If we don't have a loop then do it now
+                # This will happen at exit
+                self.do_flush_io()
+            else:
+                # Queue it up until the next yield
+                self.__pending = True
+                loop.call_soon(self.do_flush_io)
 
     def do_flush_io(self):
         cadef.ca_flush_io()
@@ -1060,12 +1163,9 @@ def run(coro):
     loop = asyncio.get_event_loop()
     try:
         return loop.run_until_complete(coro)
-    except KeyboardInterrupt:
-        print("interrupted")
     finally:
         loop.stop()
         loop.close()
-        print("done")
 
 
 def run_forever(coro):
@@ -1073,9 +1173,6 @@ def run_forever(coro):
     loop.create_task(coro)
     try:
         loop.run_forever()
-    except KeyboardInterrupt:
-        print("interrupted")
     finally:
         loop.stop()
         loop.close()
-        print("done")

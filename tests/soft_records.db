@@ -12,9 +12,27 @@ record(longout, "$(P)longout") {
 }
 
 record(stringin, "$(P)si") {
+  field(VAL, "me")
+}
+
+record(waveform, "$(P)waveform") {
+  field(NELM, "5")
+  field(FTVL, "SHORT")
 }
 
 record(calc, "$(P)calc") {
   field(INPA, "$(P)longout CP")
   field(CALC, "A")
+}
+
+record(calc, "$(P)ticking") {
+  field(INPA, "$(P)ticking")
+  field(CALC, "A+1")
+  field(SCAN, ".5 second")
+}
+
+
+record(longout, "$(P)bad_egus") {
+  field(VAL, "32")
+  field(EGU, "�")
 }

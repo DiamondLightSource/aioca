@@ -4,4 +4,7 @@ rhel7_job:
   before_script:
     - pipenv install --dev
   script:
-    - pipenv run python -m pytest test
+    - pipenv run tests
+    - pipenv run docs
+    - dls-python3 setup.py bdist_wheel
+    - dls-py3 check --no-tag-check
