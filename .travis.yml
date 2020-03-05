@@ -8,14 +8,16 @@ python:
 install:
   - env
   - pip install coveralls
-  - pipenv install --dev
+  # Skip lock as we have multiple versions of python
+  - pipenv install --skip-lock --dev
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages
   - ls -al ${VIRTUAL_ENV}/bin
   - python setup.py bdist_wheel
 
 script:
   - pipenv run tests
-  #- pipenv run docs
+#  - pipenv run docs
 
 after_script:
   - coveralls
+
