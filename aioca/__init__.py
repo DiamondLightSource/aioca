@@ -32,7 +32,6 @@ from ._catools import (
     caput,
     connect,
     run,
-    run_forever,
 )
 from ._version_git import __version__
 
@@ -48,7 +47,6 @@ __all__ = [
     "ca_info",  # Ca info object
     "ca_nothing",  # No value
     "run",  # Run one aioca coroutine and clean up
-    "run_forever",  # Run one aioca coroutine indefinitely
     # The version of aioca
     "__version__",
     # Event type notification codes for camonitor

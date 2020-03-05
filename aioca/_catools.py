@@ -19,18 +19,33 @@ them."""
 
 import asyncio
 import atexit
+import collections
 import ctypes
 import datetime
 import sys
-import threading
 import time
 import traceback
-from typing import Callable, Dict, List, Set, Sized, Tuple, TypeVar, overload
+from typing import (
+    Awaitable,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Set,
+    Sized,
+    Tuple,
+    TypeVar,
+    Union,
+    overload,
+)
 
 from epicscorelibs.ca import cadef, dbr
 from typing_extensions import Protocol
 
 PVList = TypeVar("PVList", List[str], Tuple[str, ...])
+T = TypeVar("T")
+AbsTimeout = Optional[Tuple[float]]
+Timeout = Union[AbsTimeout, float]
 
 
 class AugmentedValue(Protocol, Sized):
@@ -66,6 +81,9 @@ class AugmentedValue(Protocol, Sized):
     # Other
     enums: List[str]  #: Enumeration strings for ENUM type
 
+    # If it's an error
+    errorcode: int
+
 
 class ValueEvent:
     def __init__(self):
@@ -76,8 +94,16 @@ class ValueEvent:
         self._event.set()
         self.value = value
 
-    async def wait(self, timeout=None):
-        await asyncio.wait_for(self._event.wait(), timeout)
+    def clear(self):
+        self._event.clear()
+        self.value = None
+
+    async def wait(self, timeout: Timeout = None):
+        if not self._event.is_set():
+            # Convert (abstimeout,) to relative timeout for asyncio
+            if isinstance(timeout, tuple):
+                timeout = timeout[0] - time.time()
+            await asyncio.wait_for(self._event.wait(), timeout)
         if isinstance(self.value, Exception):
             raise self.value
         else:
@@ -134,32 +160,26 @@ def maybe_throw(async_function):
     return throw_wrapper
 
 
-async def ca_timeout(event, timeout, name):
+async def ca_timeout(awaitable: Awaitable[T], name: str) -> T:
     """Converts an ordinary cothread timeout into a more informative
     ca_nothing timeout exception containing the PV name."""
     try:
-        return await event.wait(timeout)
-    except asyncio.TimeoutError as timeout:
-        raise ca_nothing(name, cadef.ECA_TIMEOUT) from timeout
+        return await awaitable
+    except asyncio.TimeoutError as e:
+        raise ca_nothing(name, cadef.ECA_TIMEOUT) from e
 
 
-def rel_timeout(timeout):
-    """Convert cothread timeout into relative timeout as used by asyncio.
-
-    A timeout is represented in one of three forms:
-
+def abs_timeout(timeout: Timeout) -> AbsTimeout:
+    """A timeout is represented in one of three forms:
     None            A timeout that never expires
     interval        A relative timeout interval
     (deadline,)     An absolute deadline
-
     This routine checks that the given input is in one of these three forms
-    and returns a timeout in relative format."""
-    if timeout is None:
-        return None
-    elif isinstance(timeout, tuple):
-        return timeout[0] - time.time()
-    else:
+    and returns a timeout in absolute deadline format."""
+    if timeout is None or isinstance(timeout, tuple):
         return timeout
+    else:
+        return (timeout + time.time(),)
 
 
 # ----------------------------------------------------------------------------
@@ -172,7 +192,6 @@ class Channel(object):
     __slots__ = [
         "name",
         "__subscriptions",  # Set of listening subscriptions
-        "__connected",  # Status of channel connection
         "__connect_event",  # Connection event used to notify changes
         "__event_loop",
         "_as_parameter_",  # Associated channel access channel handle
@@ -193,10 +212,11 @@ class Channel(object):
         assert op in [cadef.CA_OP_CONN_UP, cadef.CA_OP_CONN_DOWN]
         connected = op == cadef.CA_OP_CONN_UP
 
-        self.__connected = connected
         if connected:
             # Trigger wakeup of all listeners
             self.__connect_event.set()
+        else:
+            self.__connect_event.clear()
 
         # Inform all the connected subscriptions
         for subscription in self.__subscriptions:
@@ -206,7 +226,6 @@ class Channel(object):
         """Creates a channel access channel with the given name."""
         self.name = name
         self.__subscriptions: Set[Subscription] = set()
-        self.__connected = False
         self.__connect_event = ValueEvent()
         self.__event_loop = loop
 
@@ -237,22 +256,10 @@ class Channel(object):
         """Removes the given subscription from the list of receivers."""
         self.__subscriptions.remove(subscription)
 
-    async def Wait(self, timeout=None):
+    async def wait(self, timeout: Timeout = None):
         """Waits for the channel to become connected if not already connected.
         Raises a Timeout exception if the timeout expires first."""
-        timeout = rel_timeout(timeout)
-        while not self.__connected:
-            await ca_timeout(self.__connect_event, timeout, self.name)
-
-    async def WakeableWait(self, timeout):
-        """Waits for channel to connect or any event.  Returns True if channel
-        is connected, raises Timedout exception on timeout."""
-        if not self.__connected:
-            await self.__connect_event.wait(timeout)
-        return self.__connected
-
-    def Wakeup(self):
-        self.__connect_event.set()
+        await ca_timeout(self.__connect_event.wait(timeout), self.name)
 
 
 class ChannelCache(object):
@@ -295,19 +302,21 @@ class Subscription(object):
         "callback",  # The user callback function
         "dbr_to_value",  # Conversion from dbr
         "channel",  # The associated channel object
-        "__state",  # Whether the subscription is active
+        "state",  # Whether the subscription is active
+        "dropped_callbacks",  # How many values have been dropped without callback
         "_as_parameter_",  # Associated channel access subscription handle
         "all_updates",  # True iff all updates delivered without merging
         "notify_disconnect",  # Whether to report disconnect events
-        "__value",  # Most recent update if merging updates
-        "__update_count",  # Number of updates seen since last notification
-        "__event_loop",
+        "__values",  # Most recent updates from event handler
+        "__lock",  # Taken while a callback is running
+        "__event_loop",  # The event loop the caller created this from
+        "__tasks",  # Tasks that have been spawned from within asyncio
     ]
 
-    # _Subscription state values:
-    __OPENING = 0  # Subscription not complete yet
-    __OPEN = 1  # Normally active
-    __CLOSED = 2  # Closed but not yet deleted
+    # Subscription state values:
+    OPENING = 0  # Subscription not complete yet
+    OPEN = 1  # Normally active
+    CLOSED = 2  # Closed but not yet deleted
 
     # Mapping from format to event mask for default events
     __default_events = {
@@ -315,8 +324,6 @@ class Subscription(object):
         dbr.FORMAT_TIME: cadef.DBE_VALUE | cadef.DBE_ALARM,
         dbr.FORMAT_CTRL: cadef.DBE_VALUE | cadef.DBE_ALARM | cadef.DBE_PROPERTY,
     }
-
-    __lock = threading.Lock()  # Used for update merging.
 
     @staticmethod
     @cadef.event_handler
@@ -326,54 +333,47 @@ class Subscription(object):
         to the monitoring user."""
         self = args.usr
 
-        if args.status == cadef.ECA_NORMAL:
-            # Good data: extract value from the dbr.  Note that this can fail,
-            # for example if there is malformed UTF-8 in the result.
-            try:
-                value = self.dbr_to_value(args.raw_dbr, args.type, args.count)
-            except Exception:
-                # If there is an error, bypass update merging and force this
-                # exception tuple into the processing chain.
-                self.__event_loop.call_soon_threadsafe(self.__signal, sys.exc_info())
-                return
-        elif self.notify_disconnect:
-            # Something is wrong: let the subscriber know, if they've requested
-            # disconnect nofication.
-            value = ca_nothing(self.name, args.status)
-        else:
-            return
-        self.__maybe_signal(value)
+        try:
+            assert (
+                args.status == cadef.ECA_NORMAL
+            ), f"Subscription {self.name} got bad status {args.status}"
+            # Good data: extract value from the dbr. Note that this can fail
+            self.__values.append(self.dbr_to_value(args.raw_dbr, args.type, args.count))
+            # This signals update merging should occur
+            value = None
+        except Exception:
+            # Something went wrong, insert it into the processing chain
+            value = sys.exc_info()
+        self.__event_loop.call_soon_threadsafe(self.__create_signal_task, value)
 
-    def __maybe_signal(self, value):
-        """Performs update merging and callback notification if appropriate."""
-        if self.all_updates:
-            value.update_count = 1
-            self.__event_loop.call_soon_threadsafe(self.__signal, value)
-        else:
-            with self.__lock:
-                self.__value = value
-                if self.__update_count == 0:
-                    self.__event_loop.call_soon_threadsafe(self.__signal, None)
-                self.__update_count += 1
+    def __create_signal_task(self, value):
+        task = asyncio.create_task(self.__signal(value))
+        self.__tasks.append(task)
 
-    def __signal(self, value):
+    async def __signal(self, value):
         """Wrapper for performing callbacks safely: only performs the callback
         if the subscription is open and reports and handles any exceptions that
         might arise."""
-        if self.__state != self.__CLOSED:
+        if self.state == self.CLOSED:
+            # We have closed this subscription, don't callback on pending values
+            return
+        # Take the lock so two callbacks can't run at once
+        async with self.__lock:
             if value is None:
-                # This arises from a merged update.
-                with self.__lock:
-                    value = self.__value
-                    value.update_count = self.__update_count
-                    self.__value = None
-                    self.__update_count = 0
-
+                try:
+                    # Consume a single value from the queue
+                    value = self.__values.popleft()
+                except IndexError:
+                    # Deque has overflowed, count and return
+                    self.dropped_callbacks += 1
+                    return
             try:
                 if isinstance(value, tuple):
                     # This should only happen if the asynchronous callback
                     # caught an exception for us to re-raise here.
                     raise value[1].with_traceback(value[2])
+                elif asyncio.iscoroutinefunction(self.callback):
+                    await self.callback(value)
                 else:
                     self.callback(value)
             except Exception:
@@ -390,25 +390,25 @@ class Subscription(object):
 
     def _on_connect(self, connected):
         """This is called each time the connection state of the underlying
-        channel changes.  Note that this is also called asynchronously."""
+        channel changes.  It is called synchronously."""
         if not connected and self.notify_disconnect:
             # Channel has become disconnected: tell the subscriber.
-            self.__maybe_signal(ca_nothing(self.name, cadef.ECA_DISCONN))
+            self.__create_signal_task(ca_nothing(self.name, cadef.ECA_DISCONN))
 
     def close(self):
         """Closes the subscription and releases any associated resources.
         Note that no further callbacks will occur on a closed subscription,
         not even callbacks currently queued for execution."""
-        if self.__state == self.__OPENING:
-            self.channel.Wakeup()  # Wakes up __wait_for_channel() below
-        elif self.__state == self.__OPEN:
+        if self.state == self.OPEN:
             self.channel._remove_subscription(self)
             cadef.ca_clear_subscription(self)
-            _flush_io()
 
-        # Delete the callback to avoid possible circular references.
-        self.callback = None
-        self.__state = self.__CLOSED
+        if not self.__event_loop.is_closed():
+            _flush_io()
+            for task in self.__tasks:
+                task.cancel()
+
+        self.state = self.CLOSED
 
     def __init__(
         self,
@@ -427,10 +427,11 @@ class Subscription(object):
 
         self.name = name
         self.callback = callback
-        self.all_updates = all_updates
         self.notify_disconnect = notify_disconnect
-        self.__update_count = 0
+        self.dropped_callbacks = 0
         self.__event_loop = event_loop
+        self.__values = collections.deque(maxlen=0 if all_updates else 1)
+        self.__lock = asyncio.Lock()
 
         # If events not specified then compute appropriate default corresponding
         # to the requested format.
@@ -443,28 +444,25 @@ class Subscription(object):
         # Spawn the actual task of creating the subscription into the
         # background, as we may have to wait for the channel to become
         # connected.
-        self.__state = self.__OPENING
-        asyncio.create_task(
-            self.__create_subscription(events, datatype, format, count, connect_timeout)
-        )
+        self.state = self.OPENING
+        self.__tasks = [
+            asyncio.create_task(
+                self.__create_subscription(
+                    events, datatype, format, count, connect_timeout
+                )
+            )
+        ]
 
-    # Waiting for the channel is a bit more tangled than it might otherwise be
-    # so that we can handle the subscription being closed before the connection
-    # completes.  Alas, the implementation here is horribly entangled with the
-    # Channel implementation
     async def __wait_for_channel(self, timeout):
-        timeout = rel_timeout(timeout)
-        while self.__state == self.__OPENING:
-            try:
-                if await self.channel.WakeableWait(timeout):
-                    return self.__state == self.__OPENING
-            except asyncio.TimeoutError:
-                # Connection timeout.  Let the caller know and now just block
-                # until we connect (if ever).  Note that in this case the caller
-                # is notified even if notify_disconnect=False is set.
-                self.__maybe_signal(ca_nothing(self.name, cadef.ECA_DISCONN))
-                timeout = None
-        return False
+        try:
+            # Wait for channel to be connected
+            await self.channel.wait(timeout)
+        except ca_nothing as e:
+            # Connection timeout.  Let the caller know and now just block
+            # until we connect (if ever).  Note that in this case the caller
+            # is notified even if notify_disconnect=False is set.
+            self.__create_signal_task(e)
+            await self.channel.wait()
 
     async def __create_subscription(
         self, events, datatype, format, count, connect_timeout
@@ -474,11 +472,11 @@ class Subscription(object):
         to become connected."""
 
         # Need to first wait for the channel to connect before we can do
-        # anything else.  If this fails then there's nothing more to do.
-        if not await self.__wait_for_channel(connect_timeout):
-            return
+        # anything else. This will either succeed, or wait forever, raising
+        # if close() is called
+        await self.__wait_for_channel(connect_timeout)
 
-        self.__state = self.__OPEN
+        self.state = self.OPEN
 
         # Treat a negative count as a request for the complete data
         if count < 0:
@@ -507,20 +505,20 @@ class Subscription(object):
 
 
 @overload
-async def camonitor(
+def camonitor(
     pv: str, callback: Callable[[AugmentedValue], None], **kwargs
 ) -> Subscription:
     ...  # pragma: no cover
 
 
 @overload
-async def camonitor(
+def camonitor(
     pv: PVList, callback: Callable[[AugmentedValue, int], None], **kwargs
 ) -> List[Subscription]:
     ...  # pragma: no cover
 
 
-async def camonitor(pvs, callback, **kargs):
+def camonitor(pvs, callback, **kargs):
     """camonitor(pvs, callback,
         events = None,
         datatype = None, format = FORMAT_RAW, count = 0,
@@ -632,7 +630,9 @@ def _caget_event_handler(args):  # pragma: no cover
 
 
 @maybe_throw
-async def caget_one(pv, timeout=5, datatype=None, format=dbr.FORMAT_RAW, count=0):
+async def caget_one(
+    pv, timeout: Timeout = 5, datatype=None, format=dbr.FORMAT_RAW, count=0
+):
     """Retrieves a value from a single PV in the requested format.  Blocks
     until the request is complete, raises an exception if any problems
     occur."""
@@ -640,10 +640,10 @@ async def caget_one(pv, timeout=5, datatype=None, format=dbr.FORMAT_RAW, count=0
     # Start by converting the timeout into an absolute timeout.  This allows
     # us to do repeated timeouts without actually extending the timeout
     # deadline.
-    timeout = rel_timeout(timeout)
+    timeout = abs_timeout(timeout)
     # Retrieve the requested channel and ensure it's connected.
     channel = get_channel(pv)
-    await channel.Wait(timeout)
+    await channel.wait(timeout)
 
     # A count of zero will be treated by EPICS in a version dependent manner,
     # either returning the entire waveform (equivalent to count=-1) or a data
@@ -672,7 +672,7 @@ async def caget_one(pv, timeout=5, datatype=None, format=dbr.FORMAT_RAW, count=0
         dbrcode, count, channel, _caget_event_handler, ctypes.py_object(context)
     )
     _flush_io()
-    return await ca_timeout(done, timeout, pv)
+    return await ca_timeout(done.wait(timeout), pv)
 
 
 async def caget_array(pvs, **kargs):
@@ -680,7 +680,7 @@ async def caget_array(pvs, **kargs):
     # in parallel which can speed things up considerably.
     #    The raise_on_wait flag means that any exceptions raised by any of
     # the spawned caget_one() calls will appear as exceptions to WaitForAll().
-    return await asyncio.gather(*[caget_one(pv, **kargs) for pv in pvs])
+    return list(await asyncio.gather(*[caget_one(pv, **kargs) for pv in pvs]))
 
 
 @overload
@@ -807,40 +807,35 @@ def _caput_event_handler(args):  # pragma: no cover
 
     # This is called exactly once when a caput request completes.  Extract
     # our context information and discard the context immediately.
-    pv, done, callback, event_loop = args.usr
+    pv, done, event_loop = args.usr
     ctypes.pythonapi.Py_DecRef(args.usr)
 
-    if done is not None:
-        if args.status == cadef.ECA_NORMAL:
-            event_loop.call_soon_threadsafe(done.set)
-        else:
-            event_loop.call_soon_threadsafe(done.set, ca_nothing(pv, args.status))
-    if callback is not None:
-        event_loop.call_soon_threadsafe(callback, ca_nothing(pv, args.status))
+    if args.status == cadef.ECA_NORMAL:
+        value = None
+    else:
+        value = ca_nothing(pv, args.status)
+    event_loop.call_soon_threadsafe(done.set, value)
 
 
 @maybe_throw
-async def caput_one(pv, value, datatype=None, wait=False, timeout=5, callback=None):
+async def caput_one(pv, value, datatype=None, wait=False, timeout: Timeout = 5):
     """Writes a value to a single pv, waiting for callback on completion if
     requested."""
 
     # Connect to the channel and wait for connection to complete.
-    timeout = rel_timeout(timeout)
+    timeout = abs_timeout(timeout)
     channel = get_channel(pv)
-    await channel.Wait(timeout)
+    await channel.wait(timeout)
 
     # Note: the unused value returned below needs to be retained so that
     # dbr_array, a pointer to C memory, has the right lifetime: it has to
     # survive until ca_array_put[_callback] has been called.
     dbrtype, count, dbr_array, value = dbr.value_to_dbr(channel, datatype, value)
-    if wait or callback is not None:
+    if wait:
         # Assemble the callback context and give it an extra reference count
         # to keep it alive until the callback handler sees it.
-        if wait:
-            done = ValueEvent()
-        else:
-            done = None
-        context = (pv, done, callback, asyncio.get_running_loop())
+        done = ValueEvent()
+        context = (pv, done, asyncio.get_running_loop())
         ctypes.pythonapi.Py_IncRef(context)
 
         # caput with callback requested: need to wait for response from
@@ -854,8 +849,7 @@ async def caput_one(pv, value, datatype=None, wait=False, timeout=5, callback=No
             ctypes.py_object(context),
         )
         _flush_io()
-        if wait:
-            await ca_timeout(done, timeout, pv)
+        await ca_timeout(done.wait(timeout), pv)
     else:
         # Asynchronous caput, just do it now.
         cadef.ca_array_put(dbrtype, count, channel, dbr_array)
@@ -880,14 +874,15 @@ async def caput_array(pvs, values, repeat_value=False, **kargs):
             values = [values] * len(pvs)
     assert len(pvs) == len(values), "PV and value lists must match in length"
 
-    return await asyncio.gather(
+    result = await asyncio.gather(
         *[caput_one(pv, value, **kargs) for pv, value in zip(pvs, values)]
     )
+    return result
 
 
-def caput(pvs, values, **kargs):
+async def caput(pvs, values, **kargs):
     """caput(pvs, values,
-        repeat_value = False, datatype = None, wait = False, callback = None,
+        repeat_value = False, datatype = None, wait = False,
         timeout = 5, throw = True)
 
     Writes values to one or more PVs.  If multiple PVs are given together
@@ -910,12 +905,10 @@ def caput(pvs, values, **kargs):
         that a timeout of 0 will timeout immediately if any waiting is
         required.
 
-    wait, callback
-        If wait=True or a callback is specified then channel access put with
-        callback is invoked.  If wait is True then the caput operation will wait
-        until the server acknowledges successful completion before returning, if
-        callback is set then callback(status) is called, where status has fields
-        .ok and .name.  Both wait and callback can be set.
+    wait
+        If wait=True then channel access put with callback is invoked.  The
+        caput operation will wait until the server acknowledges successful
+        completion before returning
 
     datatype
         If a datatype is specified then the values being written will be
@@ -937,9 +930,9 @@ def caput(pvs, values, **kargs):
     corresponding PV name.  If throw=False was specified and a put failed
     then .errorcode is set to the appropriate ECA_ error code."""
     if isinstance(pvs, str):
-        return caput_one(pvs, values, **kargs)
+        return await caput_one(pvs, values, **kargs)
     else:
-        return caput_array(pvs, values, **kargs)
+        return await caput_array(pvs, values, **kargs)
 
 
 # ----------------------------------------------------------------------------
@@ -994,7 +987,7 @@ class ca_info(object):
 async def connect_one(pv, cainfo=False, wait=True, timeout=5):
     channel = get_channel(pv)
     if wait:
-        await channel.Wait(timeout)
+        await channel.wait(timeout)
     if cainfo:
         return ca_info(pv, channel)
     else:
@@ -1103,7 +1096,7 @@ def get_channel(pv: str) -> Channel:
 
 
 @atexit.register
-def _catools_atexit():
+def _catools_atexit():  # pragma: no cover
     # On exit we do our best to ensure that channel access shuts down cleanly.
     # We do this by shutting down all channels and clearing the channel access
     # context: this should reduce the risk of unexpected errors during
@@ -1131,48 +1124,21 @@ cadef.ca_context_create(1)
 # that ca_flush_io() is only called once in any scheduling cycle by requesting
 # IO flushing.
 class _FlushIo:
-    def __init__(self):
-        self.__pending = False
-
     def __call__(self):
-        if not self.__pending:
-            try:
-                loop = asyncio.get_running_loop()
-            except RuntimeError:
-                # If we don't have a loop then do it now
-                # This will happen at exit
-                self.do_flush_io()
-            else:
-                # Queue it up until the next yield
-                self.__pending = True
-                loop.call_soon(self.do_flush_io)
-
-    def do_flush_io(self):
         cadef.ca_flush_io()
-        self.__pending = False
 
 
 _flush_io = _FlushIo()
 
 
 # ----------------------------------------------------------------------------
-#   Helper functions for running async code.
+#   Helper function for running async code.
 
 
 def run(coro):
     loop = asyncio.get_event_loop()
     try:
         return loop.run_until_complete(coro)
-    finally:
-        loop.stop()
-        loop.close()
-
-
-def run_forever(coro):
-    loop = asyncio.get_event_loop()
-    loop.create_task(coro)
-    try:
-        loop.run_forever()
     finally:
         loop.stop()
         loop.close()

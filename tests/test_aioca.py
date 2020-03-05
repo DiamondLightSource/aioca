@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Callable, List, Tuple
 
 import pytest
-from epicscorelibs.ca import cadef
+from epicscorelibs.ca import cadef, dbr
 
 from aioca import (
     FORMAT_CTRL,
@@ -24,6 +24,7 @@ from aioca import (
     caput,
     connect,
     run,
+    _catools,
 )
 
 SOFT_RECORDS = Path(__file__).parent / "soft_records.db"
@@ -41,6 +42,13 @@ NE = PV_PREFIX + "ne"
 BAD_EGUS = PV_PREFIX + "bad_egus"
 # A Waveform PV
 WAVEFORM = PV_PREFIX + "waveform"
+# A read only PV
+RO = PV_PREFIX + "waveform.NELM"
+
+
+def boom(value, *args):
+    """Function for raising an error"""
+    raise ValueError("Boom")
 
 
 @pytest.fixture
@@ -85,7 +93,7 @@ async def test_cainfo_one_pv(ioc: subprocess.Popen) -> None:
     assert conn.ok is True
     assert conn.name == LONGOUT
     assert conn.state_strings[conn.state] == "connected"
-    assert conn.host.endswith(":5064")
+    assert isinstance(conn.host, str)
     assert conn.read is True
     assert conn.write is True
     assert conn.count == 1
@@ -119,6 +127,25 @@ async def test_get_pv(ioc: subprocess.Popen) -> None:
 
 
 @pytest.mark.asyncio
+async def test_get_ne_pvs_no_throw(ioc: subprocess.Popen) -> None:
+    values = await caget([WAVEFORM, NE], throw=False, timeout=0.1)
+    assert [True, False] == [v.ok for v in values]
+    assert pytest.approx([]) == values[0]
+    ioc.communicate("exit")
+    await asyncio.sleep(0.5)
+    # Fake the channel still being connected so we get a Disconnect
+    channel = _catools.get_channel(WAVEFORM)
+    channel.on_ca_connect_(op=cadef.CA_OP_CONN_UP)
+    values = await caget([WAVEFORM, NE], throw=False, timeout=0.1)
+    assert [False, False] == [v.ok for v in values]
+    assert [cadef.ECA_DISCONN, cadef.ECA_TIMEOUT] == [v.errorcode for v in values]
+    with pytest.raises(ca_nothing):
+        await caget(NE, timeout=0.1)
+    with pytest.raises(cadef.Disconnected):
+        await caget(WAVEFORM, timeout=0.1)
+
+
+@pytest.mark.asyncio
 async def test_get_two_pvs(ioc: subprocess.Popen) -> None:
     value = await caget([LONGOUT, SI])
     assert [42, "me"] == value
@@ -135,6 +162,7 @@ async def test_get_pv_with_bad_egus(ioc: subprocess.Popen) -> None:
 async def test_get_waveform_pv(ioc: subprocess.Popen) -> None:
     value = await caget(WAVEFORM)
     assert len(value) == 0
+    assert isinstance(value, dbr.ca_array)
     await caput(WAVEFORM, [1, 2, 3, 4])
     assert pytest.approx([1, 2, 3, 4]) == await caget(WAVEFORM)
     assert pytest.approx([1, 2, 3, 4, 0]) == await caget(WAVEFORM, count=6)
@@ -144,9 +172,18 @@ async def test_get_waveform_pv(ioc: subprocess.Popen) -> None:
 
 @pytest.mark.asyncio
 async def test_caput(ioc: subprocess.Popen) -> None:
-    await caput(LONGOUT, 43)
+    value = await caput(LONGOUT, 43, timeout=None)
+    assert isinstance(value, ca_nothing)
     value = await caget(LONGOUT)
     assert 43 == value
+
+
+@pytest.mark.asyncio
+async def test_caput_on_ro_pv_fails(ioc: subprocess.Popen) -> None:
+    with pytest.raises(cadef.CAException):
+        await caput(RO, 43)
+    result = await caput(RO, 43, throw=False)
+    assert str(result).endswith("Write access denied")
 
 
 @pytest.mark.asyncio
@@ -174,14 +211,6 @@ async def test_caput_wait(ioc: subprocess.Popen) -> None:
 
 
 @pytest.mark.asyncio
-async def test_caput_callback(ioc: subprocess.Popen) -> None:
-    e = asyncio.Event()
-    await caput(LONGOUT, 45, callback=lambda _: e.set())
-    await asyncio.wait_for(e.wait(), timeout=1.0)
-    assert e.is_set()
-
-
-@pytest.mark.asyncio
 async def test_caget_non_existent(ioc: subprocess.Popen) -> None:
     with pytest.raises(ca_nothing) as cm:
         await caget(NE, timeout=0.1)
@@ -195,9 +224,25 @@ async def test_caget_non_existent(ioc: subprocess.Popen) -> None:
 
 
 @pytest.mark.asyncio
+async def test_caget_non_existent_and_good(ioc: subprocess.Popen) -> None:
+    await caput(WAVEFORM, [1, 2, 3, 4])
+    try:
+        await caget([NE, WAVEFORM], timeout=1.0)
+    except ca_nothing:
+        # That's what we expected
+        pass
+    await asyncio.sleep(0.5)
+    import gc
+
+    gc.collect()
+    x = [x for x in gc.get_objects() if isinstance(x, dbr.ca_array)]
+    assert len(x) == 0
+
+
+@pytest.mark.asyncio
 async def test_monitor(ioc: subprocess.Popen) -> None:
     values: List[AugmentedValue] = []
-    m = await camonitor(LONGOUT, values.append, notify_disconnect=True)
+    m = camonitor(LONGOUT, values.append, notify_disconnect=True, connect_timeout=1.0)
 
     # Wait for connection
     while not values:
@@ -209,18 +254,46 @@ async def test_monitor(ioc: subprocess.Popen) -> None:
     await asyncio.sleep(0.1)
     m.close()
 
-    assert 4 == len(values)
-    assert [42, 43, 44] == values[:3]
     assert [True, True, True, False] == [v.ok for v in values]
+    assert [42, 43, 44] == values[:3]
+
+
+@pytest.mark.asyncio
+async def test_monitor_with_failing_dbr(ioc: subprocess.Popen, capsys) -> None:
+    values: List[AugmentedValue] = []
+    m = camonitor(LONGOUT, values.append, notify_disconnect=True, connect_timeout=1.0)
+
+    # Wait for connection
+    while not values:
+        await asyncio.sleep(0.1)
+
+    assert values == [42]
+    values.clear()
+
+    m.dbr_to_value = boom
+    assert m.state == m.OPEN
+    await caput(LONGOUT, 43, wait=True)
+
+    await asyncio.sleep(0.1)
+    assert m.state == m.CLOSED
+    assert values == []
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "ValueError: Boom" in captured.err
+
+    ioc.communicate("exit")
+    await asyncio.sleep(0.1)
+    m.close()
+    await asyncio.sleep(0.1)
+
+    assert values == []
 
 
 @pytest.mark.asyncio
 async def test_monitor_two_pvs(ioc: subprocess.Popen) -> None:
     values: List[Tuple[AugmentedValue, int]] = []
     await caput(WAVEFORM, [1, 2])
-    ms = await camonitor(
-        [WAVEFORM, TICKING], lambda v, n: values.append((v, n)), count=-1
-    )
+    ms = camonitor([WAVEFORM, TICKING], lambda v, n: values.append((v, n)), count=-1)
 
     # Wait for connection
     while not values:
@@ -242,17 +315,90 @@ async def test_monitor_two_pvs(ioc: subprocess.Popen) -> None:
 
 @pytest.mark.asyncio
 async def test_long_monitor_callback(ioc: subprocess.Popen) -> None:
-    raise ValueError()
+    values = []
+
+    async def cb(value):
+        values.append(value)
+        await asyncio.sleep(0.2)
+
+    m = camonitor(LONGOUT, cb, connect_timeout=(time.time() + 0.1,))
+    # Wait for connection, callling first cb
+    while not values:
+        await asyncio.sleep(0.01)
+    # These two caputs happen during the sleep of the first cb, and are
+    # squashed together for the second cb
+    await caput(LONGOUT, 43)
+    await caput(LONGOUT, 44)
+    # Wait until everything has cleared and put in two more that will
+    # be squashed together for the third
+    await asyncio.sleep(0.5)
+    await caput(LONGOUT, 45)
+    await caput(LONGOUT, 46)
+    # Block the event loop to make sure the caputs have triggered updates
+    # without the callback running
+    time.sleep(0.05)
+    # Then a single one for the fourth
+    await asyncio.sleep(0.1)
+    await caput(LONGOUT, 47)
+    # Only first three should have completed
+    assert [42, 44, 46] == values
+    values.clear()
+    # Wait for the last to have started
+    await asyncio.sleep(0.2)
+    assert [47] == values
+    values.clear()
+    assert m.dropped_callbacks == 1
+    # And then for it to be finished
+    await asyncio.sleep(0.4)
+    assert [] == values
+    assert m.dropped_callbacks == 2
+    # Then add another three and close before the cb can fire
+    await caput(LONGOUT, 48)
+    await caput(LONGOUT, 49)
+    # Manually flush to make sure it goes
+    cadef.ca_flush_io()
+    # Block the event loop to make sure the caputs have triggered updates
+    # without the callback running
+    time.sleep(0.05)
+    # Now close so that the callback finds the connection closed and doesn't fire
+    m.close()
+    await asyncio.sleep(0.2)
+    assert [] == values
+    assert m.dropped_callbacks == 2
 
 
 @pytest.mark.asyncio
-async def test_exception_raising_monitor_callback(ioc: subprocess.Popen) -> None:
-    raise ValueError()
+async def test_exception_raising_monitor_callback(
+    ioc: subprocess.Popen, capsys
+) -> None:
+    m = camonitor(LONGOUT, boom)
+    assert m.state == m.OPENING
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+
+    # Wait for first update to come in and close the subscription
+    await asyncio.sleep(0.1)
+    assert m.state == m.CLOSED
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "ValueError: Boom" in captured.err
+
+    # Check no more updates
+    values: List[str] = []
+    m.callback = values.append
+    await caput(LONGOUT, 32)
+    assert m.state == m.CLOSED
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+    assert len(values) == 0
+
 
 @pytest.mark.asyncio
 async def test_camonitor_non_existent(ioc: subprocess.Popen) -> None:
     values: List[AugmentedValue] = []
-    m = await camonitor(NE, values.append, connect_timeout=0.1)
+    m = camonitor(NE, values.append, connect_timeout=0.1)
     try:
         assert len(values) == 0
         await asyncio.sleep(0.2)
@@ -265,11 +411,12 @@ async def test_camonitor_non_existent(ioc: subprocess.Popen) -> None:
 @pytest.mark.asyncio
 async def test_monitor_gc(ioc: subprocess.Popen) -> None:
     values: List[AugmentedValue] = []
-    await camonitor(LONGOUT, values.append, notify_disconnect=True)
+    camonitor(LONGOUT, values.append, notify_disconnect=True)
 
     # Wait for connection
     while not values:
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.01)
+    assert len(values) == 1
     await caput(LONGOUT, 43, wait=True)
     gc.collect()
     await caput(LONGOUT, 44, wait=True)
@@ -283,7 +430,7 @@ async def test_monitor_gc(ioc: subprocess.Popen) -> None:
 
 
 async def monitor_for_a_bit(callback: Callable) -> Subscription:
-    m = await camonitor(TICKING, callback, notify_disconnect=True)
+    m = camonitor(TICKING, callback, notify_disconnect=True)
     await asyncio.sleep(0.5)
     return m
 
@@ -300,7 +447,7 @@ def test_closing_event_loop(ioc: subprocess.Popen, capsys) -> None:
     assert captured.out == ""
     assert captured.err == ""
 
-    time.sleep(1.0)
+    time.sleep(1.1)
     # We should have 2 more updates that didn't make it to the queue
     # because loop closed
     assert q.qsize() == 2
@@ -322,6 +469,14 @@ def test_closing_event_loop(ioc: subprocess.Popen, capsys) -> None:
     captured = capsys.readouterr()
     assert captured.out == ""
     assert len(closed_messages(captured.err)) == 1, captured.err
+
+
+@pytest.mark.asyncio
+async def test_value_event_raises():
+    e = _catools.ValueEvent()
+    e.set(ca_nothing("blah"))
+    with pytest.raises(ca_nothing):
+        await e.wait()
 
 
 def test_ca_nothing_dunder_methods():

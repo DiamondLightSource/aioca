@@ -1,6 +1,8 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+/.pytest_cache/
+/.mypy_cache/
 
 # C extensions
 *.so
@@ -42,6 +44,7 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *,cover
+cov.xml
 
 # Translations
 *.mo
@@ -62,6 +65,7 @@ target/
 /.cproject
 /.settings/
 /.pydevproject
+/.vscode
 
 # DLS build dir and virtual environment
 /prefix/
