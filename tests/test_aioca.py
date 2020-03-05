@@ -16,6 +16,7 @@ from aioca import (
     FORMAT_CTRL,
     AugmentedValue,
     Subscription,
+    _catools,
     ca_info,
     ca_nothing,
     caget,
@@ -24,7 +25,6 @@ from aioca import (
     caput,
     connect,
     run,
-    _catools,
 )
 
 SOFT_RECORDS = Path(__file__).parent / "soft_records.db"
