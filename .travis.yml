@@ -4,30 +4,33 @@ jobs:
     - name: "Python 3.7 on Linux"
       python: 3.7
       language: python
-      env: PYTHON=python
+      env: PYTHON=python BDIST=bdist_wheel
 
     - name: "Python 3.8 on Linux"
       python: 3.8
       language: python
-      env: PYTHON=python
+      env: PYTHON=python BDIST=bdist_wheel
 
-    - name: "Python 3.7.4 on macOS"
+    - name: "Python 3.7 on macOS"
       os: osx
       osx_image: xcode11.2
-      env: PYTHON=python3
+      language: shell
+      env: PYTHON=python3 BDIST=bdist_wheel
 
-    - name: "Python 3.8.2 on Windows"
+    - name: "Python 3.8 on Windows"
       os: windows
       before_install:
         - choco install python --version 3.8.2
-      env: PYTHON=python PATH=/c/Python38:/c/Python38/Scripts:$PATH
+      language: shell
+      env: PYTHON=python PATH=/c/Python38:/c/Python38/Scripts:$PATH BDIST=bdist_wininst
 
 install:
   - env
+  - $PYTHON --version
   - $PYTHON -m pip install --upgrade pip coveralls pipenv
   # Skip lock as we have multiple versions of python
   - pipenv install --skip-lock --dev
-  - $PYTHON setup.py bdist_wheel
+  - $PYTHON setup.py $BDIST
 
 script:
   - pipenv run tests
