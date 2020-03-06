@@ -1,16 +1,33 @@
-language: python
-python:
-  - "3.7"
-  - "3.8"
+jobs:
+  include:
+
+    - name: "Python 3.7 on Linux"
+      python: 3.7
+      language: python
+      env: PYTHON=python
+
+    - name: "Python 3.8 on Linux"
+      python: 3.8
+      language: python
+      env: PYTHON=python
+
+    - name: "Python 3.7.4 on macOS"
+      os: osx
+      osx_image: xcode11.2
+      env: PYTHON=python3
+
+    - name: "Python 3.8.2 on Windows"
+      os: windows
+      before_install:
+        - choco install python --version 3.8.2
+      env: PYTHON=python PATH=/c/Python38:/c/Python38/Scripts:$PATH
 
 install:
   - env
-  - pip install coveralls
+  - $PYTHON -m pip install --upgrade pip coveralls pipenv
   # Skip lock as we have multiple versions of python
   - pipenv install --skip-lock --dev
-  - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages
-  - ls -al ${VIRTUAL_ENV}/bin
-  - python setup.py bdist_wheel
+  - $PYTHON setup.py bdist_wheel
 
 script:
   - pipenv run tests
