@@ -321,7 +321,7 @@ async def test_long_monitor_callback(ioc: subprocess.Popen) -> None:
         values.append(value)
         await asyncio.sleep(0.2)
 
-    m = camonitor(LONGOUT, cb, connect_timeout=(time.time() + 0.1,))
+    m = camonitor(LONGOUT, cb, connect_timeout=(time.time() + 0.5,))
     # Wait for connection, callling first cb
     while not values:
         await asyncio.sleep(0.01)
@@ -378,7 +378,7 @@ async def test_exception_raising_monitor_callback(
     assert captured.err == ""
 
     # Wait for first update to come in and close the subscription
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.5)
     assert m.state == m.CLOSED
     captured = capsys.readouterr()
     assert captured.out == ""
