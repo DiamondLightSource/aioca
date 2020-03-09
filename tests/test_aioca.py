@@ -128,7 +128,7 @@ async def test_get_pv(ioc: subprocess.Popen) -> None:
 
 @pytest.mark.asyncio
 async def test_get_ne_pvs_no_throw(ioc: subprocess.Popen) -> None:
-    values = await caget([WAVEFORM, NE], throw=False, timeout=0.1)
+    values = await caget([WAVEFORM, NE], throw=False, timeout=0.5)
     assert [True, False] == [v.ok for v in values]
     assert pytest.approx([]) == values[0]
     ioc.communicate("exit")
@@ -344,7 +344,7 @@ async def test_long_monitor_callback(ioc: subprocess.Popen) -> None:
     assert [42, 44, 46] == values
     values.clear()
     # Wait for the last to have started
-    await asyncio.sleep(0.2)
+    await asyncio.sleep(0.25)
     assert [47] == values
     values.clear()
     assert m.dropped_callbacks == 1
@@ -442,7 +442,9 @@ def test_closing_event_loop(ioc: subprocess.Popen, capsys) -> None:
     q: queue.Queue = queue.Queue()
     m = run(monitor_for_a_bit(q.put))
     # We should have a single update and no errors
-    assert q.qsize() == 2
+    assert q.get_nowait() == 0
+    assert q.get_nowait() == 1
+    assert q.qsize() == 0
     captured = capsys.readouterr()
     assert captured.out == ""
     assert captured.err == ""
@@ -450,7 +452,7 @@ def test_closing_event_loop(ioc: subprocess.Popen, capsys) -> None:
     time.sleep(1.1)
     # We should have 2 more updates that didn't make it to the queue
     # because loop closed
-    assert q.qsize() == 2
+    assert q.qsize() == 0
     captured = capsys.readouterr()
     assert captured.out == ""
     assert len(closed_messages(captured.err)) == 2, captured.err
@@ -465,7 +467,7 @@ def test_closing_event_loop(ioc: subprocess.Popen, capsys) -> None:
     ioc.communicate("exit")
     time.sleep(0.1)
     # We should have one more error from the disconnect
-    assert q.qsize() == 2
+    assert q.qsize() == 0
     captured = capsys.readouterr()
     assert captured.out == ""
     assert len(closed_messages(captured.err)) == 1, captured.err
