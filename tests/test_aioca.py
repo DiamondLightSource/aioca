@@ -292,17 +292,19 @@ async def test_monitor_with_failing_dbr(ioc: subprocess.Popen, capsys) -> None:
 @pytest.mark.asyncio
 async def test_monitor_two_pvs(ioc: subprocess.Popen) -> None:
     values: List[Tuple[AugmentedValue, int]] = []
-    await caput(WAVEFORM, [1, 2])
-    ms = camonitor([WAVEFORM, TICKING], lambda v, n: values.append((v, n)), count=-1)
+    await caput(WAVEFORM, [1, 2], wait=True)
+    ms = camonitor([WAVEFORM, LONGOUT], lambda v, n: values.append((v, n)), count=-1)
 
     # Wait for connection
     while not values:
         await asyncio.sleep(0.1)
 
-    assert values == [(pytest.approx([1, 2, 0, 0, 0]), 0), (0, 1)]
+    assert values == [(pytest.approx([1, 2, 0, 0, 0]), 0), (42, 1)]
     values.clear()
-    await asyncio.sleep(1.0)
-    assert values == [(1, 1), (2, 1)]
+    await caput(LONGOUT, 11, wait=True)
+    await caput(LONGOUT, 12, wait=True)
+    await asyncio.sleep(0.1)
+    assert values == [(11, 1), (12, 1)]
     values.clear()
 
     for m in ms:
@@ -431,7 +433,7 @@ async def test_monitor_gc(ioc: subprocess.Popen) -> None:
 
 async def monitor_for_a_bit(callback: Callable) -> Subscription:
     m = camonitor(TICKING, callback, notify_disconnect=True)
-    await asyncio.sleep(0.5)
+    await asyncio.sleep(0.6)
     return m
 
 
