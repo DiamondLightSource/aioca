@@ -27,7 +27,7 @@ from aioca import (
     run,
 )
 
-SOFT_RECORDS = Path(__file__).parent / "soft_records.db"
+SOFT_RECORDS = str(Path(__file__).parent / "soft_records.db")
 
 PV_PREFIX = "".join(random.choice(string.ascii_uppercase) for _ in range(12))
 # An int that starts as 42
