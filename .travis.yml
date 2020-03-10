@@ -17,6 +17,13 @@ jobs:
       language: shell
       env: PYTHON=python3 BDIST=bdist_wheel
 
+    - name: "Python 3.7 on Windows"
+      os: windows
+      before_install:
+        - choco install python --version 3.7.6
+      language: shell
+      env: PYTHON=python PATH=/c/Python37:/c/Python37/Scripts:$PATH BDIST=bdist_wininst
+
     - name: "Python 3.8 on Windows"
       os: windows
       before_install:
