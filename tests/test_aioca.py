@@ -248,6 +248,7 @@ async def test_monitor(ioc: subprocess.Popen) -> None:
     while not values:
         await asyncio.sleep(0.1)
     await caput(LONGOUT, 43, wait=True)
+    await asyncio.sleep(0.1)
     await caput(LONGOUT, 44, wait=True)
     ioc.communicate("exit")
 
@@ -302,6 +303,7 @@ async def test_monitor_two_pvs(ioc: subprocess.Popen) -> None:
     assert values == [(pytest.approx([1, 2, 0, 0, 0]), 0), (42, 1)]
     values.clear()
     await caput(LONGOUT, 11, wait=True)
+    await asyncio.sleep(0.1)
     await caput(LONGOUT, 12, wait=True)
     await asyncio.sleep(0.1)
     assert values == [(11, 1), (12, 1)]
@@ -346,7 +348,7 @@ async def test_long_monitor_callback(ioc: subprocess.Popen) -> None:
     assert [42, 44, 46] == values
     values.clear()
     # Wait for the last to have started
-    await asyncio.sleep(0.25)
+    await asyncio.sleep(0.3)
     assert [47] == values
     values.clear()
     assert m.dropped_callbacks == 1
@@ -400,10 +402,10 @@ async def test_exception_raising_monitor_callback(
 @pytest.mark.asyncio
 async def test_camonitor_non_existent(ioc: subprocess.Popen) -> None:
     values: List[AugmentedValue] = []
-    m = camonitor(NE, values.append, connect_timeout=0.1)
+    m = camonitor(NE, values.append, connect_timeout=0.2)
     try:
         assert len(values) == 0
-        await asyncio.sleep(0.2)
+        await asyncio.sleep(0.5)
         assert len(values) == 1
         assert not values[0].ok
     finally:
@@ -420,10 +422,12 @@ async def test_monitor_gc(ioc: subprocess.Popen) -> None:
         await asyncio.sleep(0.01)
     assert len(values) == 1
     await caput(LONGOUT, 43, wait=True)
+    # Check the monitor survives a garbage collect
     gc.collect()
     await caput(LONGOUT, 44, wait=True)
-    ioc.communicate("exit")
     await asyncio.sleep(0.1)
+    ioc.communicate("exit")
+    await asyncio.sleep(0.2)
 
     # Check everything is there
     assert 4 == len(values)
