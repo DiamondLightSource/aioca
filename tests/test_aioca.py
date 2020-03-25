@@ -425,14 +425,15 @@ async def test_monitor_gc(ioc: subprocess.Popen) -> None:
     assert len(values) == 1
     await caput(LONGOUT, 43, wait=True)
     # Check the monitor survives a garbage collect
+    await asyncio.sleep(0.1)
     gc.collect()
+    await asyncio.sleep(0.1)
     await caput(LONGOUT, 44, wait=True)
     await asyncio.sleep(0.1)
     ioc.communicate("exit")
     await asyncio.sleep(0.2)
 
     # Check everything is there
-    assert 4 == len(values)
     assert [42, 43, 44] == values[:3]
     assert [True, True, True, False] == [v.ok for v in values]
 
