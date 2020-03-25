@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "/scratch/tmc43/pipenv/aioca-Ci9C3xlA/bin/python",
+    "python.pythonPath": "/home/tom/.local/share/virtualenvs/aioca-4YYuDdK-/bin/python",
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
     "python.linting.enabled": true,

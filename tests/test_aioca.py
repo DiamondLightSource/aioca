@@ -348,7 +348,7 @@ async def test_long_monitor_callback(ioc: subprocess.Popen) -> None:
     assert [42, 44, 46] == values
     values.clear()
     # Wait for the last to have started
-    await asyncio.sleep(0.3)
+    await asyncio.sleep(0.25)
     assert [47] == values
     values.clear()
     assert m.dropped_callbacks == 1
