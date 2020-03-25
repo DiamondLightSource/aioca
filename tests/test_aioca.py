@@ -247,16 +247,18 @@ async def test_monitor(ioc: subprocess.Popen) -> None:
     # Wait for connection
     while not values:
         await asyncio.sleep(0.1)
+    await asyncio.sleep(0.1)
     await caput(LONGOUT, 43, wait=True)
     await asyncio.sleep(0.1)
     await caput(LONGOUT, 44, wait=True)
+    await asyncio.sleep(0.1)
     ioc.communicate("exit")
 
     await asyncio.sleep(0.1)
     m.close()
 
-    assert [True, True, True, False] == [v.ok for v in values]
     assert [42, 43, 44] == values[:3]
+    assert [True, True, True, False] == [v.ok for v in values]
 
 
 @pytest.mark.asyncio
@@ -297,7 +299,7 @@ async def test_monitor_two_pvs(ioc: subprocess.Popen) -> None:
     ms = camonitor([WAVEFORM, LONGOUT], lambda v, n: values.append((v, n)), count=-1)
 
     # Wait for connection
-    while not values:
+    while len(values) != 2:
         await asyncio.sleep(0.1)
 
     assert values == [(pytest.approx([1, 2, 0, 0, 0]), 0), (42, 1)]
