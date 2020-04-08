@@ -93,7 +93,7 @@ pygments_style = "sphinx"
 
 intersphinx_mapping = dict(
     python=("https://docs.python.org/3/", None),
-    numpy=('https://docs.scipy.org/doc/numpy/', None)
+    numpy=("https://docs.scipy.org/doc/numpy/", None),
 )
 
 # A dictionary of graphviz graph attributes for inheritance diagrams.

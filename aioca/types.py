@@ -126,6 +126,7 @@ class AugmentedValue(Protocol, Sized):
     - DBR_STRING does not support FORMAT_CTRL, so FORMAT_TIME data is returned
       instead
      """
+
     #: Name of the PV used to create this value
     name: str
     #: True for normal data, False for error code
