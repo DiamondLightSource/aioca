@@ -1,96 +1,39 @@
-"""Pure Python ctypes interface to EPICS libca Channel Access library
-
-Supports the following methods:
-
-    caget(pvs, ...)
-        Returns a single snapshot of the current value of each PV.
-
-    caput(pvs, values, ...)
-        Writes values to one or more PVs.
-
-    camonitor(pvs, callback, ...)
-        Receive notification each time any of the listed PVs changes.
-
-    connect(pvs, ...)
-        Can be used to establish PV connection before using the PV.
-
-See the documentation for the individual functions for more details on using
-them."""
-
 import asyncio
 import atexit
 import collections
 import ctypes
-import datetime
+import functools
+import inspect
 import sys
 import time
 import traceback
 from typing import (
+    Any,
     Awaitable,
     Callable,
+    Deque,
     Dict,
+    Generic,
     List,
-    Optional,
     Set,
-    Sized,
-    Tuple,
     TypeVar,
     Union,
     overload,
 )
 
 from epicscorelibs.ca import cadef, dbr
-from typing_extensions import Protocol
 
-PVList = TypeVar("PVList", List[str], Tuple[str, ...])
+from .types import AbsTimeout, AugmentedValue, Count, Datatype, Dbe, Format, Timeout
+
 T = TypeVar("T")
-AbsTimeout = Optional[Tuple[float]]
-Timeout = Union[AbsTimeout, float]
 
 
-class AugmentedValue(Protocol, Sized):
-    """Attempt to type what we return"""
-
-    # Fields common to all data types
-    name: str  #: Name of the PV used to create this value
-    ok: bool  #: True for normal data, False for error code
-    datatype: int  #: Underlying DBR_ code
-    element_count: int  #: Underlying length of original data
-
-    # Fields common to time and ctrl types
-    severity: int  #: Alarm severity
-    status: int  #: CA status code: reason for severity
-
-    # Timestamp specific fields
-    raw_stamp: Tuple[int, int]  #: Unformatted timestamp in separate seconds and nsecs
-    timestamp: float  #: Timestamp in seconds
-    datetime: datetime.datetime  #: Timestamp converted to datetime
-
-    # Control specific fields
-    units: str  #: Units for display
-    upper_disp_limit: float  #: Upper limit for displaying value
-    lower_disp_limit: float  #: Lower limit for displaying value
-    upper_alarm_limit: float  #: Above this limit value in alarm
-    lower_alarm_limit: float  #: Below this limit value in alarm
-    upper_warning_limit: float  #: Above this limit is a warning
-    lower_warning_limit: float  #: Below this limit is a warning
-    upper_ctrl_limit: float  #: Upper limit for puts to this value
-    lower_ctrl_limit: float  #: Lower limit for puts to this value
-    precision: float  #: Display precision for floating point values
-
-    # Other
-    enums: List[str]  #: Enumeration strings for ENUM type
-
-    # If it's an error
-    errorcode: int
-
-
-class ValueEvent:
+class ValueEvent(Generic[T]):
     def __init__(self):
         self.value = None
         self._event = asyncio.Event()
 
-    def set(self, value=None):
+    def set(self, value: Union[T, Exception] = None):
         self._event.set()
         self.value = value
 
@@ -98,7 +41,7 @@ class ValueEvent:
         self._event.clear()
         self.value = None
 
-    async def wait(self, timeout: Timeout = None):
+    async def wait(self, timeout: Timeout = None) -> T:
         if not self._event.is_set():
             # Convert (abstimeout,) to relative timeout for asyncio
             if isinstance(timeout, tuple):
@@ -110,19 +53,21 @@ class ValueEvent:
             return self.value
 
 
-class ca_nothing(Exception):
-    """This value is returned as a success or failure indicator from caput,
-    as a failure indicator from caget, and may be raised as an exception to
+class CANothing(Exception):
+    """This value is returned as a success or failure indicator from `caput`,
+    as a failure indicator from `caget`, and may be raised as an exception to
     report a data error on caget or caput with wait."""
 
     def __init__(self, name, errorcode=cadef.ECA_NORMAL):
-        """Initialise with PV name and associated errorcode."""
-        self.ok = errorcode == cadef.ECA_NORMAL
-        self.name = name
-        self.errorcode = errorcode
+        #: Name of the PV
+        self.name: str = name
+        #: True for successful completion, False for error code
+        self.ok: int = errorcode == cadef.ECA_NORMAL
+        #: ECA error code
+        self.errorcode: int = errorcode
 
     def __repr__(self):
-        return "ca_nothing(%r, %d)" % (self.name, self.errorcode)
+        return "CANothing(%r, %d)" % (self.name, self.errorcode)
 
     def __str__(self):
         return "%s: %s" % (self.name, cadef.ca_message(self.errorcode))
@@ -135,38 +80,36 @@ def maybe_throw(async_function):
     """Function decorator for optionally catching exceptions.  Exceptions
     raised by the wrapped function are normally propagated unchanged, but if
     throw=False is specified as a keyword argument then the exception is
-    transformed into an ordinary ca_nothing value!"""
+    transformed into an ordinary CANothing value!"""
 
-    async def throw_wrapper(pv, *args, **kargs):
-        if kargs.pop("throw", True):
-            return await async_function(pv, *args, **kargs)
+    @functools.singledispatch
+    @functools.wraps(async_function)
+    async def throw_wrapper(pv, *args, **kwargs):
+        if kwargs.pop("throw", True):
+            return await async_function(pv, *args, **kwargs)
         else:
             # We catch all the expected exceptions, converting them into
-            # ca_nothing() objects as appropriate.  Any unexpected exceptions
+            # CANothing() objects as appropriate.  Any unexpected exceptions
             # will be raised anyway, which seems fair enough!
             try:
-                return await async_function(pv, *args, **kargs)
-            except ca_nothing as error:
+                return await async_function(pv, *args, **kwargs)
+            except CANothing as error:
                 return error
             except cadef.CAException as error:
-                return ca_nothing(pv, error.status)
+                return CANothing(pv, error.status)
             except cadef.Disconnected:
-                return ca_nothing(pv, cadef.ECA_DISCONN)
-
-    # Make sure the wrapped function looks like its original self.
-    throw_wrapper.__name__ = async_function.__name__
-    throw_wrapper.__doc__ = async_function.__doc__
+                return CANothing(pv, cadef.ECA_DISCONN)
 
     return throw_wrapper
 
 
 async def ca_timeout(awaitable: Awaitable[T], name: str) -> T:
     """Converts an ordinary cothread timeout into a more informative
-    ca_nothing timeout exception containing the PV name."""
+    CANothing timeout exception containing the PV name."""
     try:
         return await awaitable
     except asyncio.TimeoutError as e:
-        raise ca_nothing(name, cadef.ECA_TIMEOUT) from e
+        raise CANothing(name, cadef.ECA_TIMEOUT) from e
 
 
 def abs_timeout(timeout: Timeout) -> AbsTimeout:
@@ -294,7 +237,7 @@ class ChannelCache(object):
 
 
 class Subscription(object):
-    """A _Subscription object wraps a single channel access subscription, and
+    """A Subscription object wraps a single channel access subscription, and
     notifies all updates through an event queue."""
 
     __slots__ = [
@@ -372,10 +315,10 @@ class Subscription(object):
                     # This should only happen if the asynchronous callback
                     # caught an exception for us to re-raise here.
                     raise value[1].with_traceback(value[2])
-                elif asyncio.iscoroutinefunction(self.callback):
-                    await self.callback(value)
                 else:
-                    self.callback(value)
+                    ret = self.callback(value)
+                    if inspect.isawaitable(ret):
+                        await ret
             except Exception:
                 # We try and be robust about exceptions in handlers, but to
                 # prevent a perpetual storm of exceptions, we close the
@@ -393,7 +336,7 @@ class Subscription(object):
         channel changes.  It is called synchronously."""
         if not connected and self.notify_disconnect:
             # Channel has become disconnected: tell the subscriber.
-            self.__create_signal_task(ca_nothing(self.name, cadef.ECA_DISCONN))
+            self.__create_signal_task(CANothing(self.name, cadef.ECA_DISCONN))
 
     def close(self):
         """Closes the subscription and releases any associated resources.
@@ -412,25 +355,26 @@ class Subscription(object):
 
     def __init__(
         self,
-        name,
-        callback,
-        event_loop,
-        events=None,
-        datatype=None,
-        format=dbr.FORMAT_RAW,
-        count=0,
-        all_updates=False,
-        notify_disconnect=False,
-        connect_timeout=None,
+        name: str,
+        callback: Callable[[Any], Union[None, Awaitable]],
+        events: Dbe,
+        datatype: Datatype,
+        format: Format,
+        count: Count,
+        all_updates: bool,
+        notify_disconnect: bool,
+        connect_timeout: Timeout,
     ):
-        """Subscription initialisation."""
-
         self.name = name
         self.callback = callback
         self.notify_disconnect = notify_disconnect
-        self.dropped_callbacks = 0
-        self.__event_loop = event_loop
-        self.__values = collections.deque(maxlen=0 if all_updates else 1)
+        #: The number of updates that have been dropped as they happened
+        #: while another callback was in progress
+        self.dropped_callbacks: int = 0
+        self.__event_loop = asyncio.get_running_loop()
+        self.__values: Deque[AugmentedValue] = collections.deque(
+            maxlen=0 if all_updates else 1
+        )
         self.__lock = asyncio.Lock()
 
         # If events not specified then compute appropriate default corresponding
@@ -457,7 +401,7 @@ class Subscription(object):
         try:
             # Wait for channel to be connected
             await self.channel.wait(timeout)
-        except ca_nothing as e:
+        except CANothing as e:
             # Connection timeout.  Let the caller know and now just block
             # until we connect (if ever).  Note that in this case the caller
             # is notified even if notify_disconnect=False is set.
@@ -506,100 +450,79 @@ class Subscription(object):
 
 @overload
 def camonitor(
-    pv: str, callback: Callable[[AugmentedValue], None], **kwargs
+    pv: str,
+    callback: Callable[[Any], Union[None, Awaitable]],
+    events: Dbe = ...,
+    datatype: Datatype = ...,
+    format: Format = ...,
+    count: Count = ...,
+    all_updates: bool = ...,
+    notify_disconnect: bool = ...,
+    connect_timeout: Timeout = ...,
 ) -> Subscription:
     ...  # pragma: no cover
 
 
 @overload
 def camonitor(
-    pv: PVList, callback: Callable[[AugmentedValue, int], None], **kwargs
+    pv: List[str],
+    callback: Callable[[Any, int], Union[None, Awaitable]],
+    events: Dbe = ...,
+    datatype: Datatype = ...,
+    format: Format = ...,
+    count: Count = ...,
+    all_updates: bool = ...,
+    notify_disconnect: bool = ...,
+    connect_timeout: Timeout = ...,
 ) -> List[Subscription]:
     ...  # pragma: no cover
 
 
-def camonitor(pvs, callback, **kargs):
-    """camonitor(pvs, callback,
-        events = None,
-        datatype = None, format = FORMAT_RAW, count = 0,
-        all_updates = False, notify_disconnect = False,
-        connect_timeout = None)
-
-    Creates a subscription to one or more PVs, returning a subscription
+def camonitor(
+    pv,
+    callback,
+    events=None,
+    datatype=None,
+    format=dbr.FORMAT_RAW,
+    count=0,
+    all_updates=False,
+    notify_disconnect=False,
+    connect_timeout=None,
+):
+    """Create a subscription to one or more PVs, returning a subscription
     object for each PV.  If a single PV is given then a single subscription
     object is returned, otherwise a list of subscriptions is returned.
 
-    Subscriptions will remain active until the close() method is called on
-    the returned subscription object.
+    Callback methods can be regular functions or async functions.
 
-    The precise way in which the callback routine is called on updates
-    depends on whether pvs is a single name or a list of names.  If it is
-    single name then it is called as
-
-        callback(value)
-
-    for each update.  If pvs is a list of names then each update is
-    reported as
-
-        callback(value, index)
-
-    where index is the position in the original array of pvs of the name
-    generating this update.
-
-    Every value has .name and .ok fields: if the channel has disconnected
-    then .ok will be False, otherwise the value is an augmented
-    representation of the updated value; for more detail on values see the
-    documentation for caget.
-
-    The parameters modify the behaviour as follows:
-
-    events
-        This identifies the type of update which will be notified.  A
-        bit-wise or of any the following are possible:
-
-        DBE_VALUE       Notify normal value changes
-        DBE_LOG         Notify archive value changes
-        DBE_ALARM       Notify alarm state changes
-        DBE_PROPERTY    Notify property changes
-
-        The default mask selected for events depends on the requested format.
-
-    datatype
-    format
-    count
-        These all specify the format in which data is returned.  See the
-        documentation for caget for details.
-
-    all_updates
-        If this is True then every update received from channel access will
-        be delivered to the callback, otherwise multiple updates received
-        between callback queue dispatches will be merged into the most recent
-        value.
-            If updates are being merged then the value returned will be
-        augmented with a field .update_count recording how many updates
-        occurred on this value.
-
-    notify_disconnect
-        If this is True then IOC disconnect events will be reported by
-        calling the callback with a ca_nothing error with .ok False,
-        otherwise only valid values will be passed to the callback routine.
-
-    connect_timeout
-        If a connection timeout is specified then the camonitor will report a
-        disconnection event after the specified interval if connection has not
-        completed by this time.  Note that this notification will be made even
-        if notify_disconnect is False, and that if the PV subsequently connects
-        it will update as normal.
+    Args:
+        events: Bit-wise or of `Dbe` types to notify about. If not given the
+            default mask depends on the requested format
+        datatype: Override `Datatype` to a non-native type
+        format: Request extra `Format` fields
+        count: Request a specific element `Count` in an array
+        all_updates: If True then every update received from channel
+            access will trigger a callback, otherwise any updates received
+            during the previous callback will be merged into the most recent
+            value, incrementing `Subscription.dropped_callbacks`
+        notify_disconnect: If True then IOC disconnect events will be reported
+            by calling the callback with a `CANothing` error with .ok False,
+            otherwise only valid values will be passed to the callback routine
+        connect_timeout: If specified then the camonitor will report a
+            disconnection event after the specified interval if connection
+            has not completed by this time. Note that this notification will be
+            made even if notify_disconnect is False, and that if the PV
+            subsequently connects it will update as normal.
     """
-    if isinstance(pvs, str):
-        return Subscription(pvs, callback, asyncio.get_running_loop(), **kargs)
+    kwargs = locals().copy()
+    if isinstance(kwargs.pop("pv"), str):
+        return Subscription(pv, **kwargs)
     else:
-        subs = [
-            Subscription(
-                pv, lambda v, n=n: callback(v, n), asyncio.get_running_loop(), **kargs
-            )
-            for n, pv in enumerate(pvs)
-        ]
+
+        def make_cb(index, cb=kwargs.pop("callback")):
+            return lambda v: cb(v, index)
+
+        subs = [Subscription(x, make_cb(i), **kwargs) for i, x in enumerate(pv)]
         return subs
 
 
@@ -625,18 +548,52 @@ def _caget_event_handler(args):  # pragma: no cover
         except Exception as e:
             value = e
     else:
-        value = ca_nothing(pv, args.status)
+        value = CANothing(pv, args.status)
     event_loop.call_soon_threadsafe(done.set, value)
 
 
-@maybe_throw
-async def caget_one(
-    pv, timeout: Timeout = 5, datatype=None, format=dbr.FORMAT_RAW, count=0
-):
-    """Retrieves a value from a single PV in the requested format.  Blocks
-    until the request is complete, raises an exception if any problems
-    occur."""
+@overload
+async def caget(
+    pv: str,
+    timeout: Timeout = ...,
+    datatype: Datatype = ...,
+    format: Format = ...,
+    count: Count = ...,
+    throw: bool = ...,
+) -> AugmentedValue:
+    ...  # pragma: no cover
 
+
+@overload
+async def caget(
+    pvs: List[str],
+    timeout: Timeout = ...,
+    datatype: Datatype = ...,
+    format: Format = ...,
+    count: Count = ...,
+    throw: bool = ...,
+) -> List[AugmentedValue]:
+    ...  # pragma: no cover
+
+
+@maybe_throw
+async def caget(
+    pv: str, timeout=5, datatype=None, format=dbr.FORMAT_RAW, count=0,
+) -> AugmentedValue:
+    """Retrieves an `AugmentedValue` from one or more PVs.
+
+    Args:
+        timeout: After how long should caget `Timeout`
+        datatype: Override `Datatype` to a non-native type
+        format: Request extra `Format` fields
+        count: Request a specific element `Count` in an array
+        throw: If False then return `CANothing` instead of raising an exception
+
+    Returns:
+        If a single PV is given then a single `AugmentedValue` is returned,
+        otherwise a list of `AugmentedValue` instances is returned.
+    """
+    # Note: docstring refers to both this function and caget_array below
     # Start by converting the timeout into an absolute timeout.  This allows
     # us to do repeated timeouts without actually extending the timeout
     # deadline.
@@ -661,7 +618,7 @@ async def caget_one(
     # increment the reference count so that the context survives until the
     # callback routine gets to see it.
     dbrcode, dbr_to_value = dbr.type_to_dbr(channel, datatype, format)
-    done = ValueEvent()
+    done = ValueEvent[AugmentedValue]()
     loop = asyncio.get_running_loop()
     context = (pv, dbr_to_value, done, loop)
     ctypes.pythonapi.Py_IncRef(context)
@@ -672,128 +629,16 @@ async def caget_one(
         dbrcode, count, channel, _caget_event_handler, ctypes.py_object(context)
     )
     _flush_io()
-    return await ca_timeout(done.wait(timeout), pv)
+    result = await ca_timeout(done.wait(timeout), pv)
+    return result
 
 
-async def caget_array(pvs, **kargs):
+@caget.register(list)  # type: ignore
+async def caget_array(pvs: List[str], **kwargs):
     # Spawn a separate caget task for each pv: this allows them to complete
     # in parallel which can speed things up considerably.
-    #    The raise_on_wait flag means that any exceptions raised by any of
-    # the spawned caget_one() calls will appear as exceptions to WaitForAll().
-    return list(await asyncio.gather(*[caget_one(pv, **kargs) for pv in pvs]))
-
-
-@overload
-async def caget(pv: str, **kwargs) -> AugmentedValue:
-    ...  # pragma: no cover
-
-
-@overload
-async def caget(pv: PVList, **kwargs) -> List[AugmentedValue]:
-    ...  # pragma: no cover
-
-
-async def caget(pvs, **kargs):
-    """caget(pvs,
-        timeout = 5, datatype = None,
-        format = FORMAT_RAW, count = 0, throw = True)
-
-    Retrieves the value from one or more PVs.  If a single PV is given then
-    a single value is returned, otherwise a list of values is returned.
-
-    Every value returned has the following fields:
-
-        .ok     Set to True if the data is good, False if there was an error
-                (and throw=False has been selected).
-
-        .name   Name of the pv.
-
-    If ok is False then the .errorcode field is set to the appropriate ECA_
-    error code and str(value) will return an appropriate error message.
-
-    The various arguments control the behaviour of caget as follows:
-
-    timeout
-        Timeout for the caget operation.  This can be a timeout interval
-        in seconds, an absolute deadline (in time() format) as a single
-        element tuple, or None to specify that no timeout will occur.  Note
-        that a timeout of 0 will timeout immediately if any waiting is
-        required.
-
-    datatype
-        This controls the format of the data that will be requested.  This
-        can be any of the following:
-
-        1.  None (the default).  In this case the "native" datatype provided
-            by the channel will be returned.
-
-        2.  A DBR_ value, one of DBR_STRING, DBR_SHORT, DBR_FLOAT, DBR_ENUM,
-            DBR_CHAR, DBR_LONG or DBR_DOUBLE.
-
-        3.  A python type compatible with any of the above values, such as
-            int, float or str.
-
-        4.  Any numpy dtype compatible with any of the above values.
-
-        5.  The special value DBR_CHAR_STR.  This is used to request a char
-            array which is then converted to a Python string on receipt.  It
-            is not sensible to specify count with this option.
-
-        6.  One of the special values DBR_STSACK_STRING or DBR_CLASS_NAME.
-
-    format
-        This controls how much auxilliary information will be returned with
-        the retrieved data, and can be one of the following:
-
-        FORMAT_RAW
-            The data is returned unaugmented except for the .name field.
-
-        FORMAT_TIME
-            The data is augmented by the data timestamp together with
-            .alarm .status and .severity fields.
-
-        FORMAT_CTRL
-            The data is augmented by channel access "control" fields.  This
-            set of fields depends on the underlying datatype:
-
-            DBR_SHORT, DBR_CHAR, DBR_LONG
-                The alarm .status and .severity fields together with .units
-                and limit fields:
-                .upper_disp_limit, .lower_disp_limit,
-                .upper_alarm_limit, .lower_alarm_limit,
-                .upper_warning_limit, .lower_warning_limit,
-                .upper_ctrl_limit, .lower_ctrl_limit.
-
-            DBR_FLOAT, DBR_DOUBLE
-                As above together with a .precision field.
-
-            DBR_ENUM
-                Alarm .status and .severity fields together with .enums, a
-                list of possible enumeration strings.
-
-            DBR_STRING
-                _CTRL format is not supported for this field type, and
-                FORMAT_TIME data is returned instead.
-
-    count
-        If specified this can be used to limit the number of waveform values
-        retrieved from the server.  The default value of 0 requests server and
-        data dependent waveform length, while a value of -1 requests the full
-        data length.
-
-    throw
-        Normally an exception will be raised if the channel cannot be
-        connected to or if there is a data error.  If this is set to False
-        then instead for each failing PV an empty value with .ok == False is
-        returned.
-
-    The format of values returned depends on the number of values requested
-    for each PV.  If only one value is requested then the value is returned
-    as a scalar, otherwise as a numpy array."""
-    if isinstance(pvs, str):
-        return await caget_one(pvs, **kargs)
-    else:
-        return await caget_array(pvs, **kargs)
+    futures = [caget(pv, **kwargs) for pv in pvs]
+    return list(await asyncio.gather(*futures))
 
 
 # ----------------------------------------------------------------------------
@@ -813,14 +658,51 @@ def _caput_event_handler(args):  # pragma: no cover
     if args.status == cadef.ECA_NORMAL:
         value = None
     else:
-        value = ca_nothing(pv, args.status)
+        value = CANothing(pv, args.status)
     event_loop.call_soon_threadsafe(done.set, value)
 
 
+@overload
+async def caput(
+    pv: str,
+    value,
+    datatype: Datatype = ...,
+    wait: bool = ...,
+    timeout: Timeout = ...,
+    throw: bool = ...,
+) -> CANothing:
+    ...  # pragma: no cover
+
+
+@overload
+async def caput(
+    pvs: List[str],
+    values,
+    repeat_value: bool = ...,
+    datatype: Datatype = ...,
+    wait: bool = ...,
+    timeout: Timeout = ...,
+    throw: bool = ...,
+) -> List[CANothing]:
+    ...  # pragma: no cover
+
+
 @maybe_throw
-async def caput_one(pv, value, datatype=None, wait=False, timeout: Timeout = 5):
-    """Writes a value to a single pv, waiting for callback on completion if
-    requested."""
+async def caput(pv: str, value, datatype=None, wait=False, timeout=5) -> CANothing:
+    """Writes values to one or more PVs.
+
+    If a list of PVs is given, then normally value will have the same length
+    and value[i] is written to pv[i]. If value is a scalar or
+    repeat_value=True then the same value is written to all PVs.
+
+    Args:
+        repeat_value: If True and a list of PVs is give, write the same
+            value to every PV.
+        datatype: Override `Datatype` to a non-native type
+        wait: Do a caput with callback, waiting for completion
+        timeout: After how long should a caput with wait=True `Timeout`
+        throw: If False then return `CANothing` instead of raising an exception
+    """
 
     # Connect to the channel and wait for connection to complete.
     timeout = abs_timeout(timeout)
@@ -834,7 +716,7 @@ async def caput_one(pv, value, datatype=None, wait=False, timeout: Timeout = 5):
     if wait:
         # Assemble the callback context and give it an extra reference count
         # to keep it alive until the callback handler sees it.
-        done = ValueEvent()
+        done = ValueEvent[None]()
         context = (pv, done, asyncio.get_running_loop())
         ctypes.pythonapi.Py_IncRef(context)
 
@@ -856,10 +738,13 @@ async def caput_one(pv, value, datatype=None, wait=False, timeout: Timeout = 5):
         _flush_io()
 
     # Return a success code for compatibility with throw=False code.
-    return ca_nothing(pv)
+    return CANothing(pv)
 
 
-async def caput_array(pvs, values, repeat_value=False, **kargs):
+@caput.register  # type: ignore
+async def caput_array(
+    pvs: list, values, repeat_value=False, **kwargs
+) -> List[CANothing]:
     # Bring the arrays of pvs and values into alignment.
     if repeat_value or isinstance(values, str):
         # If repeat_value is requested or the value is a string then we treat
@@ -875,72 +760,22 @@ async def caput_array(pvs, values, repeat_value=False, **kargs):
     assert len(pvs) == len(values), "PV and value lists must match in length"
 
     result = await asyncio.gather(
-        *[caput_one(pv, value, **kargs) for pv, value in zip(pvs, values)]
+        *[caput(pv, value, **kwargs) for pv, value in zip(pvs, values)]
     )
-    return result
-
-
-async def caput(pvs, values, **kargs):
-    """caput(pvs, values,
-        repeat_value = False, datatype = None, wait = False,
-        timeout = 5, throw = True)
-
-    Writes values to one or more PVs.  If multiple PVs are given together
-    with multiple values then both lists or arrays should match in length,
-    and values[i] is written to pvs[i].  Otherwise, if a single value is
-    given or if repeat_value=True is specified, the same value is written
-    to all PVs.
-
-    The arguments control the behavour of caput as follows:
-
-    repeat_value
-        When writing an array value to an array of PVs ensures that the
-        same array of values is written to each PV.  Otherwise this flag
-        can be ignored.
-
-    timeout
-        Timeout for the caput operation.  This can be a timeout interval
-        in seconds, an absolute deadline (in time() format) as a single
-        element tuple, or None to specify that no timeout will occur.  Note
-        that a timeout of 0 will timeout immediately if any waiting is
-        required.
-
-    wait
-        If wait=True then channel access put with callback is invoked.  The
-        caput operation will wait until the server acknowledges successful
-        completion before returning
-
-    datatype
-        If a datatype is specified then the values being written will be
-        coerced to the specified datatype before been transmitted.  As well
-        as standard datatypes (see caget), DBR_PUT_ACKT or DBR_PUT_ACKS can
-        be specified.
-
-    throw
-        Normally an exception will be raised if the channel cannot be
-        connected to or if an error is reported.  If this is set to False
-        then instead for each failing PV a sentinel value with .ok == False
-        is returned.
-
-    The return value for each PV is a structure with two fields: .ok and
-    .name, and possibly a third field .errorcode.  If multiple PVs are
-    specified then a list of values is returned.
-
-    If caput completed succesfully then .ok is True and .name is the
-    corresponding PV name.  If throw=False was specified and a put failed
-    then .errorcode is set to the appropriate ECA_ error code."""
-    if isinstance(pvs, str):
-        return await caput_one(pvs, values, **kargs)
-    else:
-        return await caput_array(pvs, values, **kargs)
+    return list(result)
 
 
 # ----------------------------------------------------------------------------
 #   connect
 
 
-class ca_info(object):
+class CAInfo:
+    """Object representing the information returned from `cainfo`"""
+
+    #: Converts `state` into a printable description of the connection state.
     state_strings = ["never connected", "previously connected", "connected", "closed"]
+    #: Textual descriptions of the possible channel data types, can be
+    #: used to convert `datatype` into a printable string
     datatype_strings = [
         "string",
         "short",
@@ -952,16 +787,26 @@ class ca_info(object):
         "no access",
     ]
 
-    def __init__(self, pv, channel):
-        self.ok = True
-        self.name = pv
-        self.state = cadef.ca_state(channel)
-        self.host = cadef.ca_host_name(channel)
-        self.read = cadef.ca_read_access(channel)
-        self.write = cadef.ca_write_access(channel)
+    def __init__(self, pv: str, channel: Channel):
+        #: True iff the channel was successfully connected
+        self.ok: bool = True
+        #: The name of the PV
+        self.name: str = pv
+        #: State of channel as an integer. Look up ``state_strings[state]``
+        #: for textual description.
+        self.state: int = cadef.ca_state(channel)
+        #: Host name and port of server providing this PV
+        self.host: str = cadef.ca_host_name(channel)
+        #: True iff read access to this PV
+        self.read: bool = cadef.ca_read_access(channel)
+        #: True iff write access to this PV
+        self.write: bool = cadef.ca_write_access(channel)
         if self.state == cadef.cs_conn:
-            self.count = cadef.ca_element_count(channel)
-            self.datatype = cadef.ca_field_type(channel)
+            #: Data count of this channel
+            self.count: int = cadef.ca_element_count(channel)
+            #: Underlying channel datatype as `Dbr` value. Look up
+            #: ``datatype_strings[datatype]`` for textual description.
+            self.datatype: int = cadef.ca_field_type(channel)
         else:
             self.count = 0
             self.datatype = 7  # DBF_NO_ACCESS
@@ -983,94 +828,79 @@ class ca_info(object):
         )
 
 
+@overload
+async def connect(
+    pv: str, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...,
+) -> CANothing:
+    ...  # pragma: no cover
+
+
+@overload
+async def connect(
+    pv: List[str], wait: bool = ..., timeout: Timeout = ..., throw: bool = ...,
+) -> List[CANothing]:
+    ...  # pragma: no cover
+
+
 @maybe_throw
-async def connect_one(pv, cainfo=False, wait=True, timeout=5):
+async def connect(pv: str, wait=True, timeout=5) -> CANothing:
+    """Establishes a connection to one or more PVs.
+
+    A single PV or a list of PVs can be given. This does not normally need to be
+    called, as the ca...() routines will establish their own connections as
+    required, but after a successful connection we can guarantee that
+    caput(..., wait=False) will complete immediately without suspension.
+
+    This routine can safely be called repeatedly without any extra side effects.
+
+    Args:
+        wait: If False then queue a connection without waiting for completion
+        timeout: After how long should the connect with wait=True `Timeout`
+        throw: If False then return `CANothing` instead of raising an exception
+    """
+
     channel = get_channel(pv)
     if wait:
         await channel.wait(timeout)
-    if cainfo:
-        return ca_info(pv, channel)
-    else:
-        return ca_nothing(pv)
+    return CANothing(pv)
 
 
-async def connect_array(pvs, **kargs):
-    return await asyncio.gather(*[connect_one(pv, **kargs) for pv in pvs])
+@connect.register(list)  # type: ignore
+async def connect_array(pvs: List[str], **kwargs) -> List[CANothing]:
+    results = await asyncio.gather(*[connect(pv, **kwargs) for pv in pvs])
+    return list(results)
 
 
 @overload
-async def connect(pvs: str, **args) -> ca_nothing:
+async def cainfo(
+    pv: str, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...,
+) -> CAInfo:
     ...  # pragma: no cover
 
 
 @overload
-async def connect(pvs: PVList, **args) -> List[ca_nothing]:
+async def cainfo(
+    pv: List[str], wait: bool = ..., timeout: Timeout = ..., throw: bool = ...,
+) -> List[CAInfo]:
     ...  # pragma: no cover
 
 
-async def connect(pvs, **kargs):
-    """connect(pvs, cainfo=False, wait=True, timeout=5, throw=True)
+@maybe_throw
+async def cainfo(pv: str, wait=True, timeout=5) -> CAInfo:
+    """Returns a `CAInfo` structure for the given PVs.
 
-    Establishes a connection to one or more PVs.  A single PV or a list of PVs
-    can be given.  This does not normally need to be called, as the ca...()
-    routines will establish their own connections as required, but after a
-    successful connection we can guarantee that caput(..., wait=False) will
-    complete immediately without suspension.
-
-    This routine can safely be called repeatedly without any extra side
-    effects.
-
-    The following arguments affect the behaviour of connect as follows:
-
-    cainfo
-        By default a simple ca_nothing value is returned, but if this flag is
-        set then a ca_info structure is returned recording the following
-        information about the connection:
-
-        .ok         True iff the channel was successfully connected
-        .name       Name of PV
-        .state      State of channel as an integer.  Look up
-                    .state_strings[.state] for textual description.
-        .host       Host name and port of server providing this PV
-        .read       True iff read access to this PV
-        .write      True iff write access to this PV
-        .count      Data count of this channel
-        .datatype   Underlying channel datatype as DBR_ value.  Look up
-                    .datatype_strings[.datatype] for description.
-
-    wait
-        Normally the connect routine will not return until the requested
-        connection is established.  If wait=False is set then a connection
-        request will be queued and connect will unconditionally succeed.
-
-    timeout
-        How long to wait for the connection to be established.
-
-    throw
-        Normally an exception will be raised if the channel cannot be
-        connected to.  If this is set to False then instead for each failing
-        PV a sentinel value with .ok == False is returned.
+    See the documentation for `connect()` for details of arguments.
     """
-    if isinstance(pvs, str):
-        return await connect_one(pvs, **kargs)
-    else:
-        return await connect_array(pvs, **kargs)
+    channel = get_channel(pv)
+    if wait:
+        await channel.wait(timeout)
+    return CAInfo(pv, channel)
 
 
-@overload
-async def cainfo(pvs: str, **args) -> ca_info:
-    ...  # pragma: no cover
-
-
-@overload
-async def cainfo(pvs: PVList, **args) -> List[ca_info]:
-    ...  # pragma: no cover
-
-
-async def cainfo(pvs, wait=True, **args):
-    """Returns a ca_info structure for the given PVs.  See the documentation
-    for connect() for more detail."""
-    return await connect(pvs, cainfo=True, wait=wait, **args)
+@cainfo.register(list)  # type: ignore
+async def cainfo_array(pvs: List[str], **kwargs) -> List[CAInfo]:
+    results = await asyncio.gather(*[cainfo(pv, **kwargs) for pv in pvs])
+    return list(results)
 
 
 # ----------------------------------------------------------------------------
@@ -1135,10 +965,21 @@ _flush_io = _FlushIo()
 #   Helper function for running async code.
 
 
-def run(coro):
+def run(coro, forever=False):
+    """Convenience function that makes an event loop and runs the async
+    function within it.
+
+    Args:
+        forever: If True then run the event loop forever, otherwise
+            return on completion of the coro
+    """
     loop = asyncio.get_event_loop()
     try:
-        return loop.run_until_complete(coro)
+        if forever:
+            loop.create_task(coro)
+            loop.run_forever()
+        else:
+            return loop.run_until_complete(coro)
     finally:
         loop.stop()
         loop.close()

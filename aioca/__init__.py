@@ -22,10 +22,9 @@ from epicscorelibs.ca.dbr import (
 )
 
 from ._catools import (
-    AugmentedValue,
+    CAInfo,
+    CANothing,
     Subscription,
-    ca_info,
-    ca_nothing,
     caget,
     cainfo,
     camonitor,
@@ -37,15 +36,14 @@ from ._version_git import __version__
 
 __all__ = [
     # The core functions
-    "AugmentedValue",  # Protocol of all the fields we have
     "Subscription",  # Returned from camonitor
     "caput",  # Write PVs to channel access
     "caget",  # Read PVs from channel access
     "camonitor",  # Monitor PVs over channel access
     "connect",  # Establish PV connection
     "cainfo",  # Returns ca_info describing PV connection
-    "ca_info",  # Ca info object
-    "ca_nothing",  # No value
+    "CAInfo",  # Ca info object
+    "CANothing",  # No value
     "run",  # Run one aioca coroutine and clean up
     # The version of aioca
     "__version__",

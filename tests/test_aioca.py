@@ -14,11 +14,10 @@ from epicscorelibs.ca import cadef, dbr
 
 from aioca import (
     FORMAT_CTRL,
-    AugmentedValue,
+    CAInfo,
+    CANothing,
     Subscription,
     _catools,
-    ca_info,
-    ca_nothing,
     caget,
     cainfo,
     camonitor,
@@ -26,6 +25,7 @@ from aioca import (
     connect,
     run,
 )
+from aioca.types import AugmentedValue
 
 SOFT_RECORDS = str(Path(__file__).parent / "soft_records.db")
 
@@ -46,7 +46,7 @@ WAVEFORM = PV_PREFIX + "waveform"
 RO = PV_PREFIX + "waveform.NELM"
 
 
-def boom(value, *args):
+def boom(value, *args) -> None:
     """Function for raising an error"""
     raise ValueError("Boom")
 
@@ -83,13 +83,23 @@ async def ioc():
 @pytest.mark.asyncio
 async def test_connect_one_pv(ioc: subprocess.Popen) -> None:
     conn = await connect(LONGOUT)
-    assert type(conn) == ca_nothing
+    assert type(conn) is CANothing
+
+
+@pytest.mark.asyncio
+async def test_connect_two_pvs(ioc: subprocess.Popen) -> None:
+    conn = await connect([LONGOUT, NE], throw=False, timeout=1.0)
+    assert len(conn) == 2
+    assert type(conn[0]) is CANothing
+    assert conn[0].ok
+    assert type(conn[1]) is CANothing
+    assert not conn[1].ok
 
 
 @pytest.mark.asyncio
 async def test_cainfo_one_pv(ioc: subprocess.Popen) -> None:
     conn = await cainfo(LONGOUT)
-    assert type(conn) == ca_info
+    assert type(conn) is CAInfo
     assert conn.ok is True
     assert conn.name == LONGOUT
     assert conn.state_strings[conn.state] == "connected"
@@ -139,7 +149,7 @@ async def test_get_ne_pvs_no_throw(ioc: subprocess.Popen) -> None:
     values = await caget([WAVEFORM, NE], throw=False, timeout=0.1)
     assert [False, False] == [v.ok for v in values]
     assert [cadef.ECA_DISCONN, cadef.ECA_TIMEOUT] == [v.errorcode for v in values]
-    with pytest.raises(ca_nothing):
+    with pytest.raises(CANothing):
         await caget(NE, timeout=0.1)
     with pytest.raises(cadef.Disconnected):
         await caget(WAVEFORM, timeout=0.1)
@@ -172,10 +182,10 @@ async def test_get_waveform_pv(ioc: subprocess.Popen) -> None:
 
 @pytest.mark.asyncio
 async def test_caput(ioc: subprocess.Popen) -> None:
-    value = await caput(LONGOUT, 43, timeout=None)
-    assert isinstance(value, ca_nothing)
-    value = await caget(LONGOUT)
-    assert 43 == value
+    v1 = await caput(LONGOUT, 43, timeout=None)
+    assert isinstance(v1, CANothing)
+    v2 = await caget(LONGOUT)
+    assert 43 == v2
 
 
 @pytest.mark.asyncio
@@ -212,10 +222,10 @@ async def test_caput_wait(ioc: subprocess.Popen) -> None:
 
 @pytest.mark.asyncio
 async def test_caget_non_existent(ioc: subprocess.Popen) -> None:
-    with pytest.raises(ca_nothing) as cm:
+    with pytest.raises(CANothing) as cm:
         await caget(NE, timeout=0.1)
 
-    assert f"ca_nothing('{NE}', 80)" == repr(cm.value)
+    assert f"CANothing('{NE}', 80)" == repr(cm.value)
     assert f"{NE}: User specified timeout on IO operation expired" == str(cm.value)
     assert False is bool(cm.value)
     with pytest.raises(TypeError):
@@ -228,7 +238,7 @@ async def test_caget_non_existent_and_good(ioc: subprocess.Popen) -> None:
     await caput(WAVEFORM, [1, 2, 3, 4])
     try:
         await caget([NE, WAVEFORM], timeout=1.0)
-    except ca_nothing:
+    except CANothing:
         # That's what we expected
         pass
     await asyncio.sleep(0.5)
@@ -485,19 +495,19 @@ def test_closing_event_loop(ioc: subprocess.Popen, capsys) -> None:
 @pytest.mark.asyncio
 async def test_value_event_raises():
     e = _catools.ValueEvent()
-    e.set(ca_nothing("blah"))
-    with pytest.raises(ca_nothing):
+    e.set(CANothing("blah"))
+    with pytest.raises(CANothing):
         await e.wait()
 
 
 def test_ca_nothing_dunder_methods():
-    good = ca_nothing("all ok")
+    good = CANothing("all ok")
     assert good
     with pytest.raises(TypeError):
-        for x in good:
+        for x in good:  # type: ignore
             pass
-    bad = ca_nothing("not all ok", cadef.ECA_DISCONN)
+    bad = CANothing("not all ok", cadef.ECA_DISCONN)
     assert not bad
     with pytest.raises(TypeError):
-        for x in bad:
+        for x in bad:  # type: ignore
             pass

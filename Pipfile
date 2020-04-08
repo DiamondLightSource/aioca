@@ -15,6 +15,7 @@ pytest-asyncio = "*"
 rope = "*"
 black = "*"
 mypy = "*"
+pytest = "==5.3.0"
 
 [packages]
 numpy = "*"
@@ -23,7 +24,7 @@ epicscorelibs = ">=7.0.3.99.3.0a1"
 [scripts]
 # Put coverage here so we don't interfere with debugging in the IDE
 tests = "python -m pytest --cov-fail-under=90 --cov=aioca --cov-report xml:cov.xml"
-docs = "sphinx-build -b html docs build/html"
+docs = "sphinx-build -E -b html docs build/html"
 
 [pipenv]
 allow_prereleases = true

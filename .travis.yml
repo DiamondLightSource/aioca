@@ -41,7 +41,7 @@ install:
 
 script:
   - pipenv run tests
-#  - pipenv run docs
+  - pipenv run docs
 
 after_script:
   - coveralls
