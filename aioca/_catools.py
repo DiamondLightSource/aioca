@@ -689,8 +689,8 @@ async def caput(
 
 
 @maybe_throw
-async def caput(pv: str, value, datatype=None, wait=False, timeout=5) -> CANothing:
-    """Writes values to one or more PVs.
+async def caput(pv: str, value, datatype=None, wait=False, timeout=5):
+    """Writes values to one or more PVs, returning `CANothing`.
 
     If a list of PVs is given, then normally value will have the same length
     and value[i] is written to pv[i]. If value is a scalar or
@@ -743,9 +743,7 @@ async def caput(pv: str, value, datatype=None, wait=False, timeout=5) -> CANothi
 
 
 @caput.register  # type: ignore
-async def caput_array(
-    pvs: list, values, repeat_value=False, **kwargs
-) -> List[CANothing]:
+async def caput_array(pvs: list, values, repeat_value=False, **kwargs):
     # Bring the arrays of pvs and values into alignment.
     if repeat_value or isinstance(values, str):
         # If repeat_value is requested or the value is a string then we treat
@@ -844,8 +842,8 @@ async def connect(
 
 
 @maybe_throw
-async def connect(pv: str, wait=True, timeout=5) -> CANothing:
-    """Establishes a connection to one or more PVs.
+async def connect(pv: str, wait=True, timeout=5):
+    """Establishes a connection to one or more PVs, returning `CANothing`.
 
     A single PV or a list of PVs can be given. This does not normally need to be
     called, as the ca...() routines will establish their own connections as
@@ -867,7 +865,7 @@ async def connect(pv: str, wait=True, timeout=5) -> CANothing:
 
 
 @connect.register(list)  # type: ignore
-async def connect_array(pvs: List[str], **kwargs) -> List[CANothing]:
+async def connect_array(pvs: List[str], **kwargs):
     results = await asyncio.gather(*[connect(pv, **kwargs) for pv in pvs])
     return list(results)
 
@@ -887,7 +885,7 @@ async def cainfo(
 
 
 @maybe_throw
-async def cainfo(pv: str, wait=True, timeout=5) -> CAInfo:
+async def cainfo(pv: str, wait=True, timeout=5):
     """Returns a `CAInfo` structure for the given PVs.
 
     See the documentation for `connect()` for details of arguments.
@@ -899,7 +897,7 @@ async def cainfo(pv: str, wait=True, timeout=5) -> CAInfo:
 
 
 @cainfo.register(list)  # type: ignore
-async def cainfo_array(pvs: List[str], **kwargs) -> List[CAInfo]:
+async def cainfo_array(pvs: List[str], **kwargs):
     results = await asyncio.gather(*[cainfo(pv, **kwargs) for pv in pvs])
     return list(results)
 
