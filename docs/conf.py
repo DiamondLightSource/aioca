@@ -24,14 +24,15 @@ project = "aioca"
 copyright = "2019, Diamond Light Source"
 author = "Tom Cobb"
 
+
 # The short X.Y version.
 version = aioca.__version__.split("+")[0]
 # The full version, including alpha/beta/rc tags.
 release = aioca.__version__
 
-if os.environ.get("READTHEDOCS") == "True":
+if os.environ.get("READTHEDOCS") == "True" and "+0" in release:
     # Readthedocs modifies conf.py, so will appear dirty when it isn't
-    release = release.replace(".dirty", "")
+    release = version
 
 extensions = [
     # Use this for generating API docs
