@@ -489,13 +489,10 @@ def camonitor(
     notify_disconnect=False,
     connect_timeout=None,
 ):
-    """Create a subscription to one or more PVs, returning a `Subscription`
-    object for each PV. If a single PV is given then a single subscription
-    object is returned, otherwise a list of subscriptions is returned.
-
-    Callback methods can be regular functions or async functions.
+    """Create a subscription to one or more PVs
 
     Args:
+        callback: Regular function or async function
         events: Bit-wise or of `Dbe` types to notify about. If not given the
             default mask depends on the requested format
         datatype: Override `Datatype` to a non-native type
@@ -514,6 +511,8 @@ def camonitor(
             made even if notify_disconnect is False, and that if the PV
             subsequently connects it will update as normal.
 
+    Returns:
+        `Subscription` for single PV or [`Subscription`] for a list of PVs
     """
     kwargs = locals().copy()
     if isinstance(kwargs.pop("pv"), str):
@@ -578,9 +577,7 @@ async def caget(
 
 
 @maybe_throw
-async def caget(
-    pv: str, timeout=5, datatype=None, format=dbr.FORMAT_RAW, count=0,
-) -> AugmentedValue:
+async def caget(pv: str, timeout=5, datatype=None, format=dbr.FORMAT_RAW, count=0):
     """Retrieves an `AugmentedValue` from one or more PVs.
 
     Args:
@@ -591,8 +588,7 @@ async def caget(
         throw: If False then return `CANothing` instead of raising an exception
 
     Returns:
-        If a single PV is given then a single `AugmentedValue` is returned,
-        otherwise a list of `AugmentedValue` instances is returned.
+        `AugmentedValue` for single PV or [`AugmentedValue`] for a list of PVs
     """
     # Note: docstring refers to both this function and caget_array below
     # Start by converting the timeout into an absolute timeout.  This allows
@@ -690,7 +686,7 @@ async def caput(
 
 @maybe_throw
 async def caput(pv: str, value, datatype=None, wait=False, timeout=5):
-    """Writes values to one or more PVs, returning `CANothing`.
+    """Writes values to one or more PVs
 
     If a list of PVs is given, then normally value will have the same length
     and value[i] is written to pv[i]. If value is a scalar or
@@ -703,6 +699,9 @@ async def caput(pv: str, value, datatype=None, wait=False, timeout=5):
         wait: Do a caput with callback, waiting for completion
         timeout: After how long should a caput with wait=True `Timeout`
         throw: If False then return `CANothing` instead of raising an exception
+
+    Returns:
+        `CANothing` for single PV or [`CANothing`] for a list of PVs
     """
 
     # Connect to the channel and wait for connection to complete.
@@ -843,7 +842,7 @@ async def connect(
 
 @maybe_throw
 async def connect(pv: str, wait=True, timeout=5):
-    """Establishes a connection to one or more PVs, returning `CANothing`.
+    """Establishes a connection to one or more PVs
 
     A single PV or a list of PVs can be given. This does not normally need to be
     called, as the ca...() routines will establish their own connections as
@@ -856,6 +855,9 @@ async def connect(pv: str, wait=True, timeout=5):
         wait: If False then queue a connection without waiting for completion
         timeout: After how long should the connect with wait=True `Timeout`
         throw: If False then return `CANothing` instead of raising an exception
+
+    Returns:
+        `CANothing` for single PV or [`CANothing`] for a list of PVs
     """
 
     channel = get_channel(pv)
