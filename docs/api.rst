@@ -45,8 +45,7 @@ handled, ``timeout`` determines timeouts, and finally ``datatype``, ``format`` a
 Functions
 ---------
 
-.. automodule:: aioca
-    :members: caput
+.. autofunction:: caput
 
 The return value from `caput` is either a list or a single value,
 depending on the shape of ``pv``.  For each PV a `CANothing` success
@@ -64,8 +63,7 @@ that the puts for each PV will occur strictly in sequence.  For any PVs
 which need a connection to be established the order of execution of puts
 is completely undefined.
 
-.. automodule:: aioca
-    :members: caget
+.. autofunction:: caget
 
 The various arguments control the behaviour of `caget` as follows:
 
@@ -101,15 +99,13 @@ is called on the returned subscription object:
 .. autoclass:: Subscription()
     :members:
 
-.. automodule:: aioca
-    :members: connect
+.. autofunction:: connect
 
 It is possible to test whether a channel has successfully connected without
 provoking suspension by calling ``connect(pv, wait=False, cainfo=True)``
 and testing the ``.state`` attribute of the result.
 
-.. automodule:: aioca
-    :members: cainfo
+.. autofunction:: cainfo
 
 .. autoclass:: CAInfo()
     :members:
