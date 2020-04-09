@@ -489,8 +489,8 @@ def camonitor(
     notify_disconnect=False,
     connect_timeout=None,
 ):
-    """Create a subscription to one or more PVs, returning a subscription
-    object for each PV.  If a single PV is given then a single subscription
+    """Create a subscription to one or more PVs, returning a `Subscription`
+    object for each PV. If a single PV is given then a single subscription
     object is returned, otherwise a list of subscriptions is returned.
 
     Callback methods can be regular functions or async functions.
@@ -513,6 +513,7 @@ def camonitor(
             has not completed by this time. Note that this notification will be
             made even if notify_disconnect is False, and that if the PV
             subsequently connects it will update as normal.
+
     """
     kwargs = locals().copy()
     if isinstance(kwargs.pop("pv"), str):
