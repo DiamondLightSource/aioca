@@ -23,7 +23,7 @@ tools::
 Documentation
 -------------
 
-Full documentation is available at http://aioca.readthedocs.org
+Full documentation is available at http://aioca.readthedocs.io
 
 Source Code
 -----------
@@ -52,8 +52,8 @@ License
 
 APACHE License. (see LICENSE_)
 
-.. |build_status| image:: https://travis-ci.org/dls-controls/aioca.svg?branch=master
-    :target: https://travis-ci.org/dls-controls/aioca
+.. |build_status| image:: https://travis-ci.com/dls-controls/aioca.svg?branch=master
+    :target: https://travis-ci.com/dls-controls/aioca
     :alt: Build Status
 
 .. |coverage| image:: https://coveralls.io/repos/github/dls-controls/aioca/badge.svg?branch=master
@@ -65,7 +65,7 @@ APACHE License. (see LICENSE_)
     :alt: Latest PyPI version
 
 .. |readthedocs| image:: https://readthedocs.org/projects/aioca/badge/?version=latest
-    :target: http://aioca.readthedocs.org
+    :target: http://aioca.readthedocs.io
     :alt: Documentation
 
 .. _CHANGELOG:

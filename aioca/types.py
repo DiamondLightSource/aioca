@@ -5,7 +5,7 @@ from typing_extensions import Literal, Protocol
 
 AbsTimeout = Union[None, Tuple[float]]
 
-#: A timeout is represented by one of the following:
+#: A timeout is represented by one of the following
 #:
 #: ======== ============================================================
 #: None     A timeout that never expires
@@ -15,7 +15,7 @@ AbsTimeout = Union[None, Tuple[float]]
 #: ======== ============================================================
 Timeout = Union[AbsTimeout, float]
 
-#: A bitwise or of DBE event codes from epicscorelibs.ca.dbr:
+#: A bitwise or of DBE event codes from epicscorelibs.ca.dbr
 #:
 #: ============ ===========================================================
 #: DBE_VALUE    Trigger an event when a significant change in the channel's
@@ -29,7 +29,7 @@ Timeout = Union[AbsTimeout, float]
 #:              graphical limit, status string, enum string ...) occurs.
 #: ============ ===========================================================
 #:
-#: If not specified then the default value depends on the requested `Format`:
+#: If not specified then the default value depends on the requested `Format`
 #:
 #: ============ =============================================
 #: Format       Default value for events
@@ -40,7 +40,7 @@ Timeout = Union[AbsTimeout, float]
 #: ============ =============================================
 Dbe = Union[None, int]
 
-#: A DBR request code from epicscorelibs.ca.dbr. One of:
+#: A DBR request code from epicscorelibs.ca.dbr. One of
 #:
 #: ==================== ================================================
 #: DBR_STRING           40 character strings
@@ -61,9 +61,9 @@ Dbe = Union[None, int]
 #: ==================== ================================================
 Dbr = Literal[0, 1, 2, 3, 4, 5, 6, 35, 36, 37, 38, 996, 997, 998, 999]
 
-#: The format of the requested data can be one of the following:
+#: The format of the requested data can be one of the following
 #:
-#: - None (the default): In this case the "native" datatype provided
+#: - None (the default), in this case the "native" datatype provided
 #:   by the channel will be returned
 #: - A `Dbr` value
 #: - A python type compatible with any of the above values, such as
@@ -72,7 +72,7 @@ Dbr = Literal[0, 1, 2, 3, 4, 5, 6, 35, 36, 37, 38, 996, 997, 998, 999]
 Datatype = Union[None, Dbr, Type]
 
 #: How much auxilliary information will be returned with the retrieved data.
-#: From epicscorelibs.ca.dbr, one of the following:
+#: From epicscorelibs.ca.dbr, one of the following
 #:
 #: ============ ===========================================================
 #: FORMAT_RAW   The data is returned unaugmented except for the .name field
@@ -83,7 +83,7 @@ Datatype = Union[None, Dbr, Type]
 #: ============ ===========================================================
 Format = Literal[0, 1, 2]
 
-#: How many array elements to retrieve from the server. One of the following:
+#: How many array elements to retrieve from the server. One of the following
 #:
 #: ======== ============================================================
 #: 0        Server and data dependent waveform length
