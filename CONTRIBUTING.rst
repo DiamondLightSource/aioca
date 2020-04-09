@@ -8,15 +8,15 @@ involves big changes, please file a ticket before making a pull request! We
 want to make sure you don't spend your time coding something that might not fit
 the scope of the project.
 
-.. _dls_controls repository: https://github.com/dls-controls/versiongit/issues
+.. _dls_controls repository: https://github.com/dls-controls/aioca/issues
 
 Running the tests
 -----------------
 
 To get the source source code and run the unit tests, run::
 
-    $ git clone git://github.com/dls-controls/versiongit.git
-    $ cd versiongit
+    $ git clone git://github.com/dls-controls/aioca.git
+    $ cd aioca
     $ pipenv install --dev
     $ pipenv run tests
 
@@ -41,8 +41,8 @@ These tests will be run on code when running ``pipenv run tests`` and also
 automatically at check in. Please read the tool documentation for details
 on how to fix the errors it reports.
 
-Documenation
-------------
+Documentation
+-------------
 
 Documentation is contained in the ``docs`` directory and extracted from
 docstrings of the API.

@@ -6,11 +6,11 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 Unreleased_
 -----------
 
-- Added support for git archive output
+- Nothing yet
 
-0.1 - 2019-09-20
+0.1 - 2020-04-09
 ----------------
 
 - Initial release
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/0.1...HEAD
+.. _Unreleased: https://github.com/dls-controls/aioca/compare/0.1...HEAD
