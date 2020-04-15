@@ -5,9 +5,7 @@ aioca
 
 aioca is an asynchronous Channel Access client for asyncio and Python using
 libca via ctypes. It exposes a high level interface similar to the commandline
-tools:
-
-.. code:: python
+tools::
 
     caget(pvs, ...)
         Returns a single snapshot of the current value of each PV.
