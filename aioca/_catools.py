@@ -828,14 +828,14 @@ class CAInfo:
 
 @overload
 async def connect(
-    pv: str, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...,
+    pv: str, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
 ) -> CANothing:
     ...  # pragma: no cover
 
 
 @overload
 async def connect(
-    pv: List[str], wait: bool = ..., timeout: Timeout = ..., throw: bool = ...,
+    pv: List[str], wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
 ) -> List[CANothing]:
     ...  # pragma: no cover
 
@@ -874,14 +874,14 @@ async def connect_array(pvs: List[str], **kwargs):
 
 @overload
 async def cainfo(
-    pv: str, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...,
+    pv: str, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
 ) -> CAInfo:
     ...  # pragma: no cover
 
 
 @overload
 async def cainfo(
-    pv: List[str], wait: bool = ..., timeout: Timeout = ..., throw: bool = ...,
+    pv: List[str], wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
 ) -> List[CAInfo]:
     ...  # pragma: no cover
 
