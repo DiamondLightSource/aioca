@@ -23,7 +23,7 @@ typing_extensions = "*"
 
 [scripts]
 # Put coverage here so we don't interfere with debugging in the IDE
-tests = "python -m pytest --cov-fail-under=90 --cov=aioca --cov-report xml:cov.xml"
+tests = "python -m pytest --cov-fail-under=90 --cov=aioca --cov-report term"
 docs = "sphinx-build -E -b html docs build/html"
 
 [pipenv]

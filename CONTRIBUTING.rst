@@ -30,12 +30,14 @@ Code Styling
 The code in this repository conforms to standards set by the following tools:
 
 - black_ for code formatting
-- isort_ for import ordering
 - flake8_ for style checks
+- isort_ for import ordering
+- mypy_ for static type checking
 
 .. _black: https://github.com/psf/black
-.. _isort: https://github.com/timothycrosley/isort
 .. _flake8: http://flake8.pycqa.org/en/latest/
+.. _isort: https://github.com/timothycrosley/isort
+.. _mypy: https://github.com/python/mypy
 
 These tests will be run on code when running ``pipenv run tests`` and also
 automatically at check in. Please read the tool documentation for details
@@ -62,7 +64,7 @@ Docs follow the underlining convention::
 You can build the docs from the project directory by running::
 
     $ pipenv run docs
-    $ firefox docs/_build/html/index.html
+    $ firefox build/html/index.html
 
 Release Checklist
 -----------------
