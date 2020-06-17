@@ -496,3 +496,16 @@ def test_ca_nothing_dunder_methods():
     with pytest.raises(TypeError):
         for x in bad:  # type: ignore
             pass
+
+
+def test_run_forever(event_loop: AbstractEventLoop):
+    asyncio.set_event_loop(event_loop)
+
+    async def run_for_a_bit():
+        while True:
+            await asyncio.sleep(0.2)
+            asyncio.get_event_loop().stop()
+
+    start = time.time()
+    run(run_for_a_bit(), forever=True)
+    assert time.time() - start == pytest.approx(0.2, rel=0.1)
