@@ -172,7 +172,8 @@ async def test_get_waveform_pv(ioc: subprocess.Popen) -> None:
 
 @pytest.mark.asyncio
 async def test_caput(ioc: subprocess.Popen) -> None:
-    v1 = await caput(LONGOUT, 43, wait=True, timeout=None)
+    # Need to test the timeout=None branch, but wrap with wait_for in case it fails
+    v1 = await asyncio.wait_for(caput(LONGOUT, 43, wait=True, timeout=None), 5)
     assert isinstance(v1, CANothing)
     v2 = await caget(LONGOUT)
     assert 43 == v2
