@@ -15,6 +15,7 @@ from typing import (
     Dict,
     Generic,
     List,
+    Sequence,
     Set,
     TypeVar,
     Union,
@@ -23,9 +24,11 @@ from typing import (
 
 from epicscorelibs.ca import cadef, dbr
 
-from .types import AbsTimeout, AugmentedValue, Count, Datatype, Dbe, Format, Timeout
+from .types import AugmentedValue, Count, Datatype, Dbe, Format, Timeout
 
 T = TypeVar("T")
+
+DEFAULT_TIMEOUT = 5
 
 
 class ValueEvent(Generic[T]):
@@ -41,12 +44,9 @@ class ValueEvent(Generic[T]):
         self._event.clear()
         self.value = None
 
-    async def wait(self, timeout: Timeout = None) -> T:
+    async def wait(self) -> T:
         if not self._event.is_set():
-            # Convert (abstimeout,) to relative timeout for asyncio
-            if isinstance(timeout, tuple):
-                timeout = timeout[0] - time.time()
-            await asyncio.wait_for(self._event.wait(), timeout)
+            await self._event.wait()
         if isinstance(self.value, Exception):
             raise self.value
         else:
@@ -84,15 +84,18 @@ def maybe_throw(async_function):
 
     @functools.singledispatch
     @functools.wraps(async_function)
-    async def throw_wrapper(pv, *args, **kwargs):
-        if kwargs.pop("throw", True):
-            return await async_function(pv, *args, **kwargs)
+    async def throw_wrapper(
+        pv, *args, timeout: Timeout = DEFAULT_TIMEOUT, throw=True, **kwargs
+    ):
+        awaitable = ca_timeout(async_function(pv, *args, **kwargs), pv, timeout)
+        if throw:
+            return await awaitable
         else:
             # We catch all the expected exceptions, converting them into
             # CANothing() objects as appropriate.  Any unexpected exceptions
             # will be raised anyway, which seems fair enough!
             try:
-                return await async_function(pv, *args, **kwargs)
+                return await awaitable
             except CANothing as error:
                 return error
             except cadef.CAException as error:
@@ -103,26 +106,45 @@ def maybe_throw(async_function):
     return throw_wrapper
 
 
-async def ca_timeout(awaitable: Awaitable[T], name: str) -> T:
-    """Converts an ordinary cothread timeout into a more informative
-    CANothing timeout exception containing the PV name."""
-    try:
-        return await awaitable
-    except asyncio.TimeoutError as e:
-        raise CANothing(name, cadef.ECA_TIMEOUT) from e
-
-
-def abs_timeout(timeout: Timeout) -> AbsTimeout:
-    """A timeout is represented in one of three forms:
-    None            A timeout that never expires
-    interval        A relative timeout interval
-    (deadline,)     An absolute deadline
-    This routine checks that the given input is in one of these three forms
-    and returns a timeout in absolute deadline format."""
-    if timeout is None or isinstance(timeout, tuple):
-        return timeout
+async def ca_timeout(awaitable: Awaitable[T], name: str, timeout: Timeout = None) -> T:
+    """Wait for awaitable to complete, with timeout one of:
+    None            Wait forever
+    interval        Wait for this amount of seconds
+    (deadline,)     Wait until this absolute timestamp
+    Convert any timeouts into a CANothing timeout containing the pv name
+    """
+    if timeout is not None:
+        # Convert (abstimeout,) to relative timeout for asyncio
+        if isinstance(timeout, tuple):
+            timeout = timeout[0] - time.time()
+        try:
+            result = await asyncio.wait_for(awaitable, timeout)
+        except asyncio.TimeoutError as e:
+            raise CANothing(name, cadef.ECA_TIMEOUT) from e
     else:
-        return (timeout + time.time(),)
+        result = await awaitable
+    return result
+
+
+def parallel_timeout(kwargs: Dict[str, Any]) -> Dict[str, Any]:
+    """Return kwargs with a suitable timeout for running in parallel"""
+    if kwargs.get("throw", True):
+        # told to throw, so remove the timeout as it will be done at the top level
+        kwargs = dict(kwargs, timeout=None)
+    return kwargs
+
+
+async def in_parallel(
+    awaitables: Sequence[Awaitable[T]], kwargs: Dict[str, Any]
+) -> List[T]:
+    if kwargs.get("throw", True):
+        # timeout at this level, awaitables will not timeout themselves
+        timeout = kwargs.get("timeout", DEFAULT_TIMEOUT)
+        results = await ca_timeout(asyncio.gather(*awaitables), "Multiple PVs", timeout)
+    else:
+        # timeout being done at the level of each awaitable
+        results = await asyncio.gather(*awaitables)
+    return list(results)
 
 
 # ----------------------------------------------------------------------------
@@ -199,10 +221,9 @@ class Channel(object):
         """Removes the given subscription from the list of receivers."""
         self.__subscriptions.remove(subscription)
 
-    async def wait(self, timeout: Timeout = None):
-        """Waits for the channel to become connected if not already connected.
-        Raises a Timeout exception if the timeout expires first."""
-        await ca_timeout(self.__connect_event.wait(timeout), self.name)
+    async def wait(self):
+        """Waits for the channel to become connected if not already connected."""
+        await self.__connect_event.wait()
 
 
 class ChannelCache(object):
@@ -400,7 +421,7 @@ class Subscription(object):
     async def __wait_for_channel(self, timeout):
         try:
             # Wait for channel to be connected
-            await self.channel.wait(timeout)
+            await ca_timeout(self.channel.wait(), self.name, timeout)
         except CANothing as e:
             # Connection timeout.  Let the caller know and now just block
             # until we connect (if ever).  Note that in this case the caller
@@ -555,10 +576,10 @@ def _caget_event_handler(args):  # pragma: no cover
 @overload
 async def caget(
     pv: str,
-    timeout: Timeout = ...,
     datatype: Datatype = ...,
     format: Format = ...,
     count: Count = ...,
+    timeout: Timeout = ...,
     throw: bool = ...,
 ) -> AugmentedValue:
     ...  # pragma: no cover
@@ -567,37 +588,33 @@ async def caget(
 @overload
 async def caget(
     pvs: List[str],
-    timeout: Timeout = ...,
     datatype: Datatype = ...,
     format: Format = ...,
     count: Count = ...,
+    timeout: Timeout = ...,
     throw: bool = ...,
 ) -> List[AugmentedValue]:
     ...  # pragma: no cover
 
 
 @maybe_throw
-async def caget(pv: str, timeout=5, datatype=None, format=dbr.FORMAT_RAW, count=0):
+async def caget(pv: str, datatype=None, format=dbr.FORMAT_RAW, count=0):
     """Retrieves an `AugmentedValue` from one or more PVs.
 
     Args:
-        timeout: After how long should caget `Timeout`
         datatype: Override `Datatype` to a non-native type
         format: Request extra `Format` fields
         count: Request a specific element `Count` in an array
+        timeout: After how long should caget `Timeout`
         throw: If False then return `CANothing` instead of raising an exception
 
     Returns:
         `AugmentedValue` for single PV or [`AugmentedValue`] for a list of PVs
     """
     # Note: docstring refers to both this function and caget_array below
-    # Start by converting the timeout into an absolute timeout.  This allows
-    # us to do repeated timeouts without actually extending the timeout
-    # deadline.
-    timeout = abs_timeout(timeout)
     # Retrieve the requested channel and ensure it's connected.
     channel = get_channel(pv)
-    await channel.wait(timeout)
+    await channel.wait()
 
     # A count of zero will be treated by EPICS in a version dependent manner,
     # either returning the entire waveform (equivalent to count=-1) or a data
@@ -626,7 +643,7 @@ async def caget(pv: str, timeout=5, datatype=None, format=dbr.FORMAT_RAW, count=
         dbrcode, count, channel, _caget_event_handler, ctypes.py_object(context)
     )
     _flush_io()
-    result = await ca_timeout(done.wait(timeout), pv)
+    result = await done.wait()
     return result
 
 
@@ -634,8 +651,9 @@ async def caget(pv: str, timeout=5, datatype=None, format=dbr.FORMAT_RAW, count=
 async def caget_array(pvs: List[str], **kwargs):
     # Spawn a separate caget task for each pv: this allows them to complete
     # in parallel which can speed things up considerably.
-    futures = [caget(pv, **kwargs) for pv in pvs]
-    return list(await asyncio.gather(*futures))
+    coros = [caget(pv, **parallel_timeout(kwargs)) for pv in pvs]
+    results = await in_parallel(coros, kwargs)
+    return results
 
 
 # ----------------------------------------------------------------------------
@@ -685,7 +703,7 @@ async def caput(
 
 
 @maybe_throw
-async def caput(pv: str, value, datatype=None, wait=False, timeout=5):
+async def caput(pv: str, value, datatype=None, wait=False):
     """Writes values to one or more PVs
 
     If a list of PVs is given, then normally value will have the same length
@@ -693,7 +711,7 @@ async def caput(pv: str, value, datatype=None, wait=False, timeout=5):
     repeat_value=True then the same value is written to all PVs.
 
     Args:
-        repeat_value: If True and a list of PVs is give, write the same
+        repeat_value: If True and a list of PVs is given, write the same
             value to every PV.
         datatype: Override `Datatype` to a non-native type
         wait: Do a caput with callback, waiting for completion
@@ -705,9 +723,8 @@ async def caput(pv: str, value, datatype=None, wait=False, timeout=5):
     """
 
     # Connect to the channel and wait for connection to complete.
-    timeout = abs_timeout(timeout)
     channel = get_channel(pv)
-    await channel.wait(timeout)
+    await channel.wait()
 
     # Note: the unused value returned below needs to be retained so that
     # dbr_array, a pointer to C memory, has the right lifetime: it has to
@@ -731,7 +748,7 @@ async def caput(pv: str, value, datatype=None, wait=False, timeout=5):
             ctypes.py_object(context),
         )
         _flush_io()
-        await ca_timeout(done.wait(timeout), pv)
+        await done.wait()
     else:
         # Asynchronous caput, just do it now.
         cadef.ca_array_put(dbrtype, count, channel, dbr_array)
@@ -756,11 +773,11 @@ async def caput_array(pvs: list, values, repeat_value=False, **kwargs):
             # as a single value
             values = [values] * len(pvs)
     assert len(pvs) == len(values), "PV and value lists must match in length"
-
-    result = await asyncio.gather(
-        *[caput(pv, value, **kwargs) for pv, value in zip(pvs, values)]
-    )
-    return list(result)
+    coros = [
+        caput(pv, value, **parallel_timeout(kwargs)) for pv, value in zip(pvs, values)
+    ]
+    results = await in_parallel(coros, kwargs)
+    return results
 
 
 # ----------------------------------------------------------------------------
@@ -841,7 +858,7 @@ async def connect(
 
 
 @maybe_throw
-async def connect(pv: str, wait=True, timeout=5):
+async def connect(pv: str, wait=True):
     """Establishes a connection to one or more PVs
 
     A single PV or a list of PVs can be given. This does not normally need to be
@@ -862,14 +879,15 @@ async def connect(pv: str, wait=True, timeout=5):
 
     channel = get_channel(pv)
     if wait:
-        await channel.wait(timeout)
+        await channel.wait()
     return CANothing(pv)
 
 
 @connect.register(list)  # type: ignore
-async def connect_array(pvs: List[str], **kwargs):
-    results = await asyncio.gather(*[connect(pv, **kwargs) for pv in pvs])
-    return list(results)
+async def connect_array(pvs: List[str], wait=True, **kwargs):
+    coros = [connect(pv, **parallel_timeout(kwargs)) for pv in pvs]
+    results = await in_parallel(coros, kwargs)
+    return results
 
 
 @overload
@@ -887,21 +905,22 @@ async def cainfo(
 
 
 @maybe_throw
-async def cainfo(pv: str, wait=True, timeout=5):
+async def cainfo(pv: str, wait=True):
     """Returns a `CAInfo` structure for the given PVs.
 
     See the documentation for `connect()` for details of arguments.
     """
     channel = get_channel(pv)
     if wait:
-        await channel.wait(timeout)
+        await channel.wait()
     return CAInfo(pv, channel)
 
 
 @cainfo.register(list)  # type: ignore
-async def cainfo_array(pvs: List[str], **kwargs):
-    results = await asyncio.gather(*[cainfo(pv, **kwargs) for pv in pvs])
-    return list(results)
+async def cainfo_array(pvs: List[str], wait=True, **kwargs):
+    coros = [cainfo(pv, **parallel_timeout(kwargs)) for pv in pvs]
+    results = await in_parallel(coros, kwargs)
+    return results
 
 
 # ----------------------------------------------------------------------------
@@ -951,15 +970,10 @@ cadef.ca_context_create(1)
 
 # Another delicacy arising from relying on asynchronous CA event dispatching is
 # that we need to manually flush IO events such as caget commands.  To ensure
-# that large blocks of channel access activity really are aggregated we ensure
-# that ca_flush_io() is only called once in any scheduling cycle by requesting
-# IO flushing.
-class _FlushIo:
-    def __call__(self):
-        cadef.ca_flush_io()
-
-
-_flush_io = _FlushIo()
+# that large blocks of channel access activity really are aggregated we used to
+# ensure that ca_flush_io() is only called once in any scheduling cycle, but now
+# we just call it every time
+_flush_io = cadef.ca_flush_io
 
 
 # ----------------------------------------------------------------------------

@@ -6,6 +6,7 @@ import string
 import subprocess
 import sys
 import time
+from asyncio.events import AbstractEventLoop
 from pathlib import Path
 from typing import Callable, List, Tuple
 
@@ -321,49 +322,34 @@ async def test_long_monitor_callback(ioc: subprocess.Popen) -> None:
         await asyncio.sleep(0.2)
 
     m = camonitor(LONGOUT, cb, connect_timeout=(time.time() + 0.5,))
-    # Wait for connection, callling first cb
+    # Wait for connection, calling first cb
     while not values:
         await asyncio.sleep(0.01)
+    assert values == [42]
+    assert m.dropped_callbacks == 0
     # These two caputs happen during the sleep of the first cb, and are
     # squashed together for the second cb
     await caput(LONGOUT, 43)
     await caput(LONGOUT, 44)
-    # Wait until everything has cleared and put in two more that will
-    # be squashed together for the third
-    await asyncio.sleep(0.5)
-    await caput(LONGOUT, 45)
-    await caput(LONGOUT, 46)
-    # Block the event loop to make sure the caputs have triggered updates
-    # without the callback running
-    time.sleep(0.05)
-    # Then a single one for the fourth
-    await asyncio.sleep(0.1)
-    await caput(LONGOUT, 47)
-    # Only first three should have completed
-    assert [42, 44, 46] == values
-    values.clear()
-    # Wait for the last to have started
-    await asyncio.sleep(0.25)
-    assert [47] == values
-    values.clear()
+    # Wait until the second cb has finished
+    await asyncio.sleep(0.3)
+    assert [42, 44] == values
+    assert m.dropped_callbacks == 0
+    # Wait until the third cb (which is dropped) has finished
+    await asyncio.sleep(0.3)
+    assert [42, 44] == values
     assert m.dropped_callbacks == 1
-    # And then for it to be finished
-    await asyncio.sleep(0.4)
-    assert [] == values
-    assert m.dropped_callbacks == 2
-    # Then add another three and close before the cb can fire
-    await caput(LONGOUT, 48)
-    await caput(LONGOUT, 49)
-    # Manually flush to make sure it goes
-    cadef.ca_flush_io()
-    # Block the event loop to make sure the caputs have triggered updates
+    values.clear()
+    # Add another one and close before the cb can fire
+    await caput(LONGOUT, 45)
+    # Block the event loop to make sure the caput has triggered updates
     # without the callback running
-    time.sleep(0.05)
+    time.sleep(0.2)
     # Now close so that the callback finds the connection closed and doesn't fire
     m.close()
     await asyncio.sleep(0.2)
     assert [] == values
-    assert m.dropped_callbacks == 2
+    assert m.dropped_callbacks == 1
 
 
 @pytest.mark.asyncio

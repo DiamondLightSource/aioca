@@ -3,8 +3,6 @@ from typing import List, Sized, Tuple, Type, Union
 
 from typing_extensions import Literal, Protocol
 
-AbsTimeout = Union[None, Tuple[float]]
-
 #: A timeout is represented by one of the following
 #:
 #: ======== ============================================================
@@ -13,7 +11,7 @@ AbsTimeout = Union[None, Tuple[float]]
 #: float    A relative timeout interval in seconds
 #: (float,) An absolute deadline in seconds past epoch
 #: ======== ============================================================
-Timeout = Union[AbsTimeout, float]
+Timeout = Union[None, Tuple[float], float]
 
 #: A bitwise or of DBE event codes from epicscorelibs.ca.dbr
 #:
@@ -171,7 +169,7 @@ class AugmentedValue(Protocol, Sized):
     lower_warning_limit: float  #: Below this limit is a warning
     upper_ctrl_limit: float  #: Upper limit for puts to this value
     lower_ctrl_limit: float  #: Lower limit for puts to this value
-    precision: float  #: Display precision for floating point values
+    precision: int  #: Display precision for floating point values
     enums: List[str]  #: Enumeration strings for ENUM type
     #: Used for global alarm acknowledgement. Do transient alarms have
     #: to be acknowledged? (0,1) means (no, yes).
