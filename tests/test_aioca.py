@@ -499,4 +499,4 @@ def test_run_forever(event_loop: AbstractEventLoop):
 
     start = time.time()
     run(run_for_a_bit(), forever=True)
-    assert time.time() - start == pytest.approx(0.2, rel=0.1)
+    assert 0.2 < time.time() - start < 0.4
