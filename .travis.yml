@@ -52,6 +52,7 @@ deploy:
   user: "__token__"
   password:
     secure: "1D96l9DQhR55GEuqp4qvYwsERRJcoH2pZkcGwgWYVFmgqQHQFM2/3fcv/c27mi0axda7dgs8m6X8dmBfdKa6mjOmn/nwQl3Hx6BTwCcav/HWJj5OErMotziTOLvu6xvm37uftYT9wWf5CuhJ11re9JSVCumIIncK9cW6UG9laXvJVHK/JT7CKGTafu+wAH/X9Im5527RL+iUxcKdbbyu+jrJlmUnw64ARtBlUkHy6mUh5UuKjJcJxQGtmflclnkHCLyCIuDnoIPr5fwZ8FoTUaaMghYIzPNtsxY0pIMNt63TNTwMdUNh7BzeggJsd4rAW4CpSykZX01IGXaEzzLQCXxNwLI/vxOxY0fgw39ZHh9JZXFD0J1ty1WCl9V4CYILk2Im1JYfNYqXqTX+jTHvyEfAX2tQBbhmA+wI4/riqnbP1OeIMdCqCu9hmqN47rHrvja/56B2h5XqW8fRQtG+XaGZSiQRXScFfTOvvSME8W+X9UBlQ0wAulwNBdYrR4xyl6dwoPJIGk+Ypj+DCBGQK9jpgMfA47CpdFfniVWc7UnV+1Ay7v9ca6sRV9+KiuWuksaZD2kNpDXtN/uzwpcfQakQ23CgWTyAnHdE8UO5UUY2SFjjRbRa8sWGnnue4m+5Md97bUeO5W/xX/fGXz2JkJRABL+GSkfCFxpe2fQzSqQ="
+  distributions: "sdist bdist_wheel"
   # Only deploy on one linux
   on:
     tags: true
