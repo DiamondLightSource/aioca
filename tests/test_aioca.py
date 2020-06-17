@@ -59,10 +59,10 @@ def ioc():
             sys.executable,
             "-m",
             "epicscorelibs.ioc",
-            "-d",
-            SOFT_RECORDS,
             "-m",
             f"P={PV_PREFIX}",
+            "-d",
+            SOFT_RECORDS,
         ],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
@@ -77,8 +77,10 @@ def ioc():
         pass
 
 
-def wait_for_ioc(ioc):
+def wait_for_ioc(ioc, timeout=5):
+    start = time.time()
     while True:
+        assert time.time() - start < timeout
         line = ioc.stdout.readline()
         if "complete" in line:
             return
