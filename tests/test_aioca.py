@@ -233,14 +233,20 @@ async def test_caget_non_existent_and_good(ioc: subprocess.Popen) -> None:
     assert len(x) == 0
 
 
+async def poll_length(array, gt=0, timeout=5):
+    start = time.time()
+    while not len(array) > gt:
+        await asyncio.sleep(0.01)
+        assert time.time() - start < timeout
+
+
 @pytest.mark.asyncio
 async def test_monitor(ioc: subprocess.Popen) -> None:
     values: List[AugmentedValue] = []
     m = camonitor(LONGOUT, values.append, notify_disconnect=True)
 
     # Wait for connection
-    while not values:
-        await asyncio.sleep(0.1)
+    await poll_length(values)
     await asyncio.sleep(0.1)
     await caput(LONGOUT, 43, wait=True)
     await asyncio.sleep(0.1)
@@ -261,8 +267,7 @@ async def test_monitor_with_failing_dbr(ioc: subprocess.Popen, capsys) -> None:
     m = camonitor(LONGOUT, values.append, notify_disconnect=True)
 
     # Wait for connection
-    while not values:
-        await asyncio.sleep(0.1)
+    await poll_length(values)
 
     assert values == [42]
     values.clear()
@@ -293,8 +298,7 @@ async def test_monitor_two_pvs(ioc: subprocess.Popen) -> None:
     ms = camonitor([WAVEFORM, LONGOUT], lambda v, n: values.append((v, n)), count=-1)
 
     # Wait for connection
-    while len(values) != 2:
-        await asyncio.sleep(0.1)
+    await poll_length(values, gt=1)
 
     assert values == [(pytest.approx([1, 2, 0, 0, 0]), 0), (42, 1)]
     values.clear()
@@ -324,8 +328,7 @@ async def test_long_monitor_callback(ioc: subprocess.Popen) -> None:
 
     m = camonitor(LONGOUT, cb, connect_timeout=(time.time() + 0.5,))
     # Wait for connection, calling first cb
-    while not values:
-        await asyncio.sleep(0.01)
+    await poll_length(values)
     assert values == [42]
     assert m.dropped_callbacks == 0
     # These two caputs happen during the sleep of the first cb, and are
@@ -401,8 +404,7 @@ async def test_monitor_gc(ioc: subprocess.Popen) -> None:
     camonitor(LONGOUT, values.append, notify_disconnect=True)
 
     # Wait for connection
-    while not values:
-        await asyncio.sleep(0.01)
+    await poll_length(values)
     assert len(values) == 1
     await caput(LONGOUT, 43, wait=True)
     # Check the monitor survives a garbage collect
