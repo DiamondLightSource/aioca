@@ -438,11 +438,9 @@ def test_closing_event_loop(ioc: subprocess.Popen, capsys) -> None:
     m = run(monitor_for_a_bit(q.put, ioc))
     # Most of we get the initial value 0, then an update of 1
     # On travis sometimes the IOC is too late to startup and we
-    # get 1 as the first value with no update
-    update = q.get_nowait()
-    if update == 0:
-        update = q.get_nowait()
-    assert update == 1
+    # get 1 and 2
+    updates = (q.get_nowait(), q.get_nowait())
+    assert updates in [(0, 1), (1, 2)]
     assert q.qsize() == 0
     captured = capsys.readouterr()
     assert captured.out == ""
