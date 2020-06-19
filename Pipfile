@@ -11,15 +11,6 @@ pytest-black = "*"
 flake8-isort = "*"
 sphinx-rtd-theme = "*"
 pytest-asyncio = "*"
-# VSCode needs these
-rope = "*"
-black = "*"
-mypy = "*"
-
-[packages]
-numpy = "*"
-epicscorelibs = ">=7.0.3.99.4.0"
-typing_extensions = "*"
 
 [scripts]
 # Put coverage here so we don't interfere with debugging in the IDE
@@ -28,3 +19,7 @@ docs = "sphinx-build -E -b html docs build/html"
 
 [pipenv]
 allow_prereleases = true
+
+[packages]
+# All other package requirements from setup.cfg
+aioca = {editable = true,path = "."}
