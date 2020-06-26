@@ -62,7 +62,6 @@ deploy:
   distributions: "sdist bdist_wheel"
   # Use the same version of wheel as inside DLS
   wheel_version: "0.33.1"
-  # Only deploy on one linux
+  skip_existing: true
   on:
     tags: true
-    condition: $TRAVIS_JOB_NAME = "Python 3.8 on Linux"
