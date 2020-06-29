@@ -42,7 +42,8 @@ install:
   - which $PYTHON
   - $PYTHON --version
   - $PYTHON -m pip install --upgrade pip coveralls pipenv==2018.11.26
-  - pipenv install --dev
+  # Skip lock as we have multiple versions of python
+  - pipenv install --skip-lock --dev
   - $PYTHON setup.py $BDIST
 
 script:
