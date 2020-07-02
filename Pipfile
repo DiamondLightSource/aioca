@@ -4,6 +4,8 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+black = "==19.10b0"
+mypy = "*"
 pytest-cov = "*"
 pytest-mypy = "*"
 pytest-flake8 = "*"
@@ -16,9 +18,6 @@ pytest-asyncio = "*"
 # Put coverage here so we don't interfere with debugging in the IDE
 tests = "python -m pytest --cov-fail-under=90 --cov=aioca --cov-report term"
 docs = "sphinx-build -E -b html docs build/html"
-
-[pipenv]
-allow_prereleases = true
 
 [packages]
 # All other package requirements from setup.cfg
