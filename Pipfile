@@ -4,8 +4,6 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-black = "==19.10b0"
-mypy = "*"
 pytest-cov = "*"
 pytest-mypy = "*"
 pytest-flake8 = "*"
@@ -13,6 +11,11 @@ pytest-black = "*"
 flake8-isort = "*"
 sphinx-rtd-theme = "*"
 pytest-asyncio = "*"
+# Pinning black stops us having to allow pre-releases globally
+black = "==19.10b0"
+# Without these lines lockfile isn't usable on multiple Python versions and platforms
+mypy = "*"
+atomicwrites = "*"
 
 [scripts]
 # Put coverage here so we don't interfere with debugging in the IDE
