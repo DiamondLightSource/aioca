@@ -1,5 +1,4 @@
 {
-    "python.pythonPath": "/home/tom/.local/share/virtualenvs/aioca-4YYuDdK-/bin/python",
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
     "python.linting.enabled": true,
@@ -8,8 +7,5 @@
     "python.testing.nosetestsEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.formatting.provider": "black",
-    "python.jediEnabled": false,
-    "vsintellicode.python.completionsEnabled": true,
-    "restructuredtext.confPath": "${workspaceFolder}/docs"
-
+    "python.languageServer": "Microsoft"
 }

@@ -130,7 +130,8 @@ async def test_cainfo(ioc: subprocess.Popen) -> None:
 
 @pytest.mark.asyncio
 async def test_get_ne_pvs_no_throw(ioc: subprocess.Popen) -> None:
-    values = await caget([WAVEFORM, NE], throw=False, timeout=2.0)
+    wait_for_ioc(ioc)
+    values = await caget([WAVEFORM, NE], throw=False, timeout=1.0)
     assert [True, False] == [v.ok for v in values]
     assert pytest.approx([]) == values[0]
     ioc.communicate("exit")
