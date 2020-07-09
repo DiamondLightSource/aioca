@@ -8,6 +8,13 @@ Unreleased_
 
 - Nothing yet
 
+
+1.0_ - 2020-07-09
+-----------------
+
+- Improve packaging
+
+
 0.2_ - 2020-06-17
 -----------------
 
@@ -18,7 +25,8 @@ Unreleased_
 0.1 - 2020-04-09
 ----------------
 
-- Initial release
+- Port of cothread.catools to asyncio
 
-.. _Unreleased: https://github.com/dls-controls/aioca/compare/0.2...HEAD
+.. _Unreleased: https://github.com/dls-controls/aioca/compare/1.0...HEAD
+.. _1.0: https://github.com/dls-controls/aioca/compare/0.2...1.0
 .. _0.2: https://github.com/dls-controls/aioca/compare/0.1...0.2
