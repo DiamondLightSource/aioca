@@ -1,4 +1,4 @@
-AIOCA
+aioca
 =====
 
 aioca is an asynchronous Channel Access client for asyncio and Python using
@@ -49,6 +49,14 @@ If running under IPython you can also do awaits from the interactive console::
     In [1]: from aioca import caput
 
     In [2]: await caput("PV1", 5678)
+
+
+How do I pronounce aioca?
+-------------------------
+
+Good question. The closest we have to a canonical pronounciation is eye-oak-ah,
+as the alternatives are a bit of a mouthful...
+
 
 .. _environment:
 
