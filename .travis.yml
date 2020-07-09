@@ -64,3 +64,5 @@ deploy:
   skip_existing: true
   on:
     tags: true
+    # Only deploy on one Linux as its the same wheel
+    condition: $TRAVIS_JOB_NAME = "Python 3.8 on Linux"    
