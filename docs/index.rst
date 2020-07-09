@@ -46,7 +46,7 @@ it and dispense with the `run` function.
 
 If running under IPython you can also do awaits from the interactive console::
 
-    In [1]: from aioca import caget
+    In [1]: from aioca import caput
 
     In [2]: await caput("PV1", 5678)
 
