@@ -1,2 +1,2 @@
-epicscorelibs>=7.0.3.99.3.0a1
+epicscorelibs>=7.0.3.99.4.0
 typing_extensions
