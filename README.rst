@@ -1,11 +1,18 @@
 aioca
 =====
 
-|build_status| |coverage| |pypi_version| |readthedocs|
+|code_ci| |docs_ci| |coverage| |pypi_version| |license|
 
 aioca is an asynchronous Channel Access client for asyncio and Python using
-libca via ctypes. It exposes a high level interface similar to the commandline
-tools::
+libca via ctypes.
+
+============== ==============================================================
+PyPI           ``pip install aioca``
+Source code    https://github.com/dls-controls/aioca
+Documentation  https://dls-controls.github.io/aioca
+============== ==============================================================
+
+It exposes a high level interface similar to the commandline tools::
 
     caget(pvs, ...)
         Returns a single snapshot of the current value of each PV.
@@ -20,59 +27,28 @@ tools::
         Optionally can be used to establish PV connection before using the PV.
 
 
-Documentation
--------------
+.. |code_ci| image:: https://github.com/dls-controls/aioca/workflows/Code%20CI/badge.svg?branch=master
+    :target: https://github.com/dls-controls/aioca/actions?query=workflow%3A%22Code+CI%22
+    :alt: Code CI
 
-Full documentation is available at http://aioca.readthedocs.io
+.. |docs_ci| image:: https://github.com/dls-controls/aioca/workflows/Docs%20CI/badge.svg?branch=master
+    :target: https://github.com/dls-controls/aioca/actions?query=workflow%3A%22Docs+CI%22
+    :alt: Docs CI
 
-Source Code
------------
+.. |coverage| image:: https://codecov.io/gh/dls-controls/aioca/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/dls-controls/aioca
+    :alt: Test Coverage
 
-Available from https://github.com/dls-controls/aioca
-
-Installation
-------------
-
-To install the latest release, type::
-
-    pip install aioca
-
-Changelog
----------
-
-See CHANGELOG_
-
-Contributing
-------------
-
-See CONTRIBUTING_
-
-License
--------
-
-APACHE License. (see LICENSE_)
-
-.. |build_status| image:: https://travis-ci.com/dls-controls/aioca.svg?branch=master
-    :target: https://travis-ci.com/dls-controls/aioca
-    :alt: Build Status
-
-.. |coverage| image:: https://coveralls.io/repos/github/dls-controls/aioca/badge.svg?branch=master
-    :target: https://coveralls.io/github/dls-controls/aioca?branch=master
-    :alt: Test coverage
-
-.. |pypi_version| image:: https://badge.fury.io/py/aioca.svg
-    :target: https://badge.fury.io/py/aioca
+.. |pypi_version| image:: https://badge.fury.io/py/dls-controls.svg
+    :target: https://badge.fury.io/py/dls-controls
     :alt: Latest PyPI version
 
-.. |readthedocs| image:: https://readthedocs.org/projects/aioca/badge/?version=latest
-    :target: http://aioca.readthedocs.io
-    :alt: Documentation
+.. |license| image:: https://img.shields.io/badge/License-Apache%202.0-blue.svg
+    :target: https://opensource.org/licenses/Apache-2.0
+    :alt: Apache License
 
-.. _CHANGELOG:
-    https://github.com/dls-controls/aioca/blob/master/CHANGELOG.rst
+..
+    These definitions are used when viewing README.rst and will be replaced
+    when included in index.rst
 
-.. _CONTRIBUTING:
-    https://github.com/dls-controls/aioca/blob/master/CONTRIBUTING.rst
-
-.. _LICENSE:
-    https://github.com/dls-controls/aioca/blob/master/LICENSE
+See https://dls-controls.github.io/aioca for more detailed documentation.

@@ -1,2 +1,0 @@
-epicscorelibs>=7.0.3.99.3.0a1
-typing_extensions

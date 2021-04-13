@@ -9,5 +9,5 @@
     "python.formatting.provider": "black",
     "python.languageServer": "Pylance",
     "restructuredtext.confPath": "${workspaceFolder}/docs",
-    "python.pythonPath": "/scratch/tmc43/pipenv/aioca-Ci9C3xlA/bin/python"
+    "python.pythonPath": "/home/tom/.local/share/virtualenvs/aioca-4YYuDdK-/bin/python"
 }

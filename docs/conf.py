@@ -25,14 +25,15 @@ copyright = "2019, Diamond Light Source"
 author = "Tom Cobb"
 
 
-# The short X.Y version.
-version = aioca.__version__.split("+")[0]
 # The full version, including alpha/beta/rc tags.
 release = aioca.__version__
 
-if os.environ.get("READTHEDOCS") == "True":
-    # Readthedocs modifies conf.py, so will appear dirty when it isn't
-    release = release.split("+0")[0].replace(".dirty", "")
+# The short X.Y version.
+if "+" in release:
+    # Not on a tag
+    version = "master"
+else:
+    version = release
 
 extensions = [
     # Use this for generating API docs
@@ -52,14 +53,6 @@ extensions = [
 # If true, Sphinx will warn about all references where the target cannot
 # be found.
 nitpicky = True
-
-# Don’t use a saved environment (the structure caching all cross-references),
-# but rebuild it completely.
-fresh_env = True
-
-# Turn warnings into errors. This means that the build stops at the first
-# warning and sphinx-build exits with exit status 1.
-warning_is_error = True
 
 # Both the class’ and the __init__ method’s docstring are concatenated and
 # inserted into the main body of the autoclass directive
@@ -126,3 +119,11 @@ html_show_copyright = True
 
 # Override the colour in a custom css file
 html_css_files = ["theme_overrides.css"]
+
+# sphinx-multiversion config
+smv_rebuild_tags = False
+smv_tag_whitelist = r"^\d+\.\d+.*$"  # only document tags with form 0.9*
+smv_branch_whitelist = r"^master$"  # only branch to document is master
+smv_outputdir_format = "{ref.name}"
+smv_prefer_remote_refs = True
+smv_remote_whitelist = "origin|github"
