@@ -8,7 +8,7 @@ import sys
 import time
 from asyncio.events import AbstractEventLoop
 from pathlib import Path
-from typing import Callable, List, Tuple
+from typing import Callable, List, Tuple, Union
 
 import pytest
 from epicscorelibs.ca import cadef, dbr
@@ -37,7 +37,7 @@ LONGOUT = PV_PREFIX + "longout"
 SI = PV_PREFIX + "si"
 # A PV that increments every 0.5s
 TICKING = PV_PREFIX + "ticking"
-# A non-existant pv
+# A non-existent pv
 NE = PV_PREFIX + "ne"
 # A PV with bad EGU field
 BAD_EGUS = PV_PREFIX + "bad_egus"
@@ -129,7 +129,7 @@ async def test_cainfo(ioc: subprocess.Popen) -> None:
 
 
 @pytest.mark.asyncio
-async def test_get_ne_pvs_no_throw(ioc: subprocess.Popen) -> None:
+async def test_get_non_existent_pvs_no_throw(ioc: subprocess.Popen) -> None:
     wait_for_ioc(ioc)
     values = await caget([WAVEFORM, NE], throw=False, timeout=1.0)
     assert [True, False] == [v.ok for v in values]
@@ -148,9 +148,13 @@ async def test_get_ne_pvs_no_throw(ioc: subprocess.Popen) -> None:
         await caget(WAVEFORM, timeout=0.1)
 
 
+# Ensure both lists and tuples of PVs can be handled.
 @pytest.mark.asyncio
-async def test_get_two_pvs(ioc: subprocess.Popen) -> None:
-    value = await caget([LONGOUT, SI])
+@pytest.mark.parametrize("pvs", ([LONGOUT, SI], (LONGOUT, SI),))
+async def test_get_two_pvs(
+    ioc: subprocess.Popen, pvs: Union[List[str], Tuple[str]]
+) -> None:
+    value = await caget(pvs)
     assert [42, "me"] == value
 
 
@@ -191,7 +195,10 @@ async def test_caput_on_ro_pv_fails(ioc: subprocess.Popen) -> None:
 
 
 @pytest.mark.asyncio
-async def test_caput_two_pvs_same_value(ioc: subprocess.Popen) -> None:
+@pytest.mark.parametrize("pvs", ([LONGOUT, SI], (LONGOUT, SI),))
+async def test_caput_two_pvs_same_value(
+    ioc: subprocess.Popen, pvs: Union[List[str], Tuple[str]]
+) -> None:
     await caput([LONGOUT, SI], 43)
     value = await caget([LONGOUT, SI])
     assert [43, "43"] == value
