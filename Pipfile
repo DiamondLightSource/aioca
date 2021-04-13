@@ -18,6 +18,7 @@ pytest-asyncio = "*"
 mypy = "*"
 typing-extensions = "*"
 atomicwrites = "*"
+importlib-metadata = "*"
 # switch to main repo after PR https://github.com/Holzhaus/sphinx-multiversion/pull/60 is merged
 sphinx-multiversion = {editable = true,git = "https://github.com/dls-controls/sphinx-multiversion.git",ref = "only-arg"}
 
