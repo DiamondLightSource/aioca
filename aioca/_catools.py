@@ -28,6 +28,7 @@ from epicscorelibs.ca import cadef, dbr
 from .types import AugmentedValue, Count, Datatype, Dbe, Format, Timeout
 
 T = TypeVar("T")
+PVS = Union[List[str], Tuple[str]]
 
 DEFAULT_TIMEOUT = 5
 
@@ -588,19 +589,7 @@ async def caget(
 
 @overload
 async def caget(
-    pvs: List[str],
-    datatype: Datatype = ...,
-    format: Format = ...,
-    count: Count = ...,
-    timeout: Timeout = ...,
-    throw: bool = ...,
-) -> List[AugmentedValue]:
-    ...  # pragma: no cover
-
-
-@overload
-async def caget(
-    pvs: Tuple[str],
+    pvs: PVS,
     datatype: Datatype = ...,
     format: Format = ...,
     count: Count = ...,
@@ -661,17 +650,13 @@ async def caget(pv: str, datatype=None, format=dbr.FORMAT_RAW, count=0):
 
 
 @caget.register(list)  # type: ignore
-async def caget_array(pvs: List[str], **kwargs):
+@caget.register(tuple)  # type: ignore
+async def caget_array(pvs: PVS, **kwargs):
     # Spawn a separate caget task for each pv: this allows them to complete
     # in parallel which can speed things up considerably.
     coros = [caget(pv, **parallel_timeout(kwargs)) for pv in pvs]
     results = await in_parallel(coros, kwargs)
     return results
-
-
-@caget.register(tuple)  # type: ignore
-async def caget_tuple(pvs: Tuple[str], **kwargs):
-    return await caget_array(list(pvs), **kwargs)
 
 
 # ----------------------------------------------------------------------------
@@ -709,20 +694,7 @@ async def caput(
 
 @overload
 async def caput(
-    pvs: List[str],
-    values,
-    repeat_value: bool = ...,
-    datatype: Datatype = ...,
-    wait: bool = ...,
-    timeout: Timeout = ...,
-    throw: bool = ...,
-) -> List[CANothing]:
-    ...  # pragma: no cover
-
-
-@overload
-async def caput(
-    pvs: Tuple[str],
+    pvs: PVS,
     values,
     repeat_value: bool = ...,
     datatype: Datatype = ...,
@@ -790,6 +762,7 @@ async def caput(pv: str, value, datatype=None, wait=False):
 
 
 @caput.register(list)  # type: ignore
+@caput.register(tuple)  # type: ignore
 async def caput_array(pvs: List[str], values, repeat_value=False, **kwargs):
     # Bring the arrays of pvs and values into alignment.
     if repeat_value or isinstance(values, str):
@@ -809,11 +782,6 @@ async def caput_array(pvs: List[str], values, repeat_value=False, **kwargs):
     ]
     results = await in_parallel(coros, kwargs)
     return results
-
-
-@caput.register(tuple)  # type: ignore
-async def caput_tuple(pvs: Tuple[str], values, repeat_value=False, **kwargs):
-    return await caget(list(pvs), values, repeat_value, **kwargs)
 
 
 # ----------------------------------------------------------------------------
@@ -888,14 +856,7 @@ async def connect(
 
 @overload
 async def connect(
-    pv: List[str], wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
-) -> List[CANothing]:
-    ...  # pragma: no cover
-
-
-@overload
-async def connect(
-    pv: Tuple[str], wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
+    pv: PVS, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
 ) -> List[CANothing]:
     ...  # pragma: no cover
 
@@ -927,15 +888,11 @@ async def connect(pv: str, wait=True):
 
 
 @connect.register(list)  # type: ignore
+@connect.register(tuple)  # type: ignore
 async def connect_array(pvs: List[str], wait=True, **kwargs):
     coros = [connect(pv, **parallel_timeout(kwargs)) for pv in pvs]
     results = await in_parallel(coros, kwargs)
     return results
-
-
-@connect.register(tuple)  # type: ignore
-async def connect_tuple(pvs: Tuple[str], wait=True, **kwargs):
-    return await connect_array(list(pvs), wait, **kwargs)
 
 
 @overload
@@ -947,14 +904,7 @@ async def cainfo(
 
 @overload
 async def cainfo(
-    pv: List[str], wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
-) -> List[CAInfo]:
-    ...  # pragma: no cover
-
-
-@overload
-async def cainfo(
-    pv: Tuple[str], wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
+    pv: PVS, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
 ) -> List[CAInfo]:
     ...  # pragma: no cover
 
@@ -971,16 +921,12 @@ async def cainfo(pv: str, wait=True):
     return CAInfo(pv, channel)
 
 
+@cainfo.register(tuple)  # type: ignore
 @cainfo.register(list)  # type: ignore
-async def cainfo_array(pvs: List[str], wait=True, **kwargs):
+async def cainfo_array(pvs: PVS, wait=True, **kwargs):
     coros = [cainfo(pv, **parallel_timeout(kwargs)) for pv in pvs]
     results = await in_parallel(coros, kwargs)
     return results
-
-
-@cainfo.register(tuple)  # type: ignore
-async def cainfo_tuple(pvs: Tuple[str], wait=True, **kwargs):
-    return await cainfo_array(list(pvs), wait, **kwargs)
 
 
 # ----------------------------------------------------------------------------
