@@ -28,7 +28,7 @@ from epicscorelibs.ca import cadef, dbr
 from .types import AugmentedValue, Count, Datatype, Dbe, Format, Timeout
 
 T = TypeVar("T")
-PVS = Union[List[str], Tuple[str]]
+PVS = Union[List[str], Tuple[str, ...]]
 
 DEFAULT_TIMEOUT = 5
 
@@ -488,7 +488,7 @@ def camonitor(
 
 @overload
 def camonitor(
-    pv: List[str],
+    pv: PVS,
     callback: Callable[[Any, int], Union[None, Awaitable]],
     events: Dbe = ...,
     datatype: Datatype = ...,
@@ -763,7 +763,7 @@ async def caput(pv: str, value, datatype=None, wait=False):
 
 @caput.register(list)  # type: ignore
 @caput.register(tuple)  # type: ignore
-async def caput_array(pvs: List[str], values, repeat_value=False, **kwargs):
+async def caput_array(pvs: PVS, values, repeat_value=False, **kwargs):
     # Bring the arrays of pvs and values into alignment.
     if repeat_value or isinstance(values, str):
         # If repeat_value is requested or the value is a string then we treat
@@ -889,7 +889,7 @@ async def connect(pv: str, wait=True):
 
 @connect.register(list)  # type: ignore
 @connect.register(tuple)  # type: ignore
-async def connect_array(pvs: List[str], wait=True, **kwargs):
+async def connect_array(pvs: PVS, wait=True, **kwargs):
     coros = [connect(pv, **parallel_timeout(kwargs)) for pv in pvs]
     results = await in_parallel(coros, kwargs)
     return results
