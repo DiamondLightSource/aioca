@@ -7,6 +7,7 @@
     "python.testing.nosetestsEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.formatting.provider": "black",
-    "python.languageServer": "Microsoft",
-    "restructuredtext.confPath": "${workspaceFolder}/docs"
+    "python.languageServer": "Pylance",
+    "restructuredtext.confPath": "${workspaceFolder}/docs",
+    "python.pythonPath": "/scratch/tmc43/pipenv/aioca-Ci9C3xlA/bin/python"
 }
