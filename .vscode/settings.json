@@ -8,5 +8,6 @@
     "python.testing.pytestEnabled": true,
     "python.formatting.provider": "black",
     "python.languageServer": "Microsoft",
-    "restructuredtext.confPath": "${workspaceFolder}/docs"
+    "restructuredtext.confPath": "${workspaceFolder}/docs",
+    "editor.defaultFormatter": null
 }
