@@ -12,21 +12,6 @@ Source code    https://github.com/dls-controls/aioca
 Documentation  https://dls-controls.github.io/aioca
 ============== ==============================================================
 
-It exposes a high level interface similar to the commandline tools::
-
-    caget(pvs, ...)
-        Returns a single snapshot of the current value of each PV.
-
-    caput(pvs, values, ...)
-        Writes values to one or more PVs.
-
-    camonitor(pvs, callback, ...)
-        Receive notification each time any of the listed PVs changes.
-
-    connect(pvs, ...)
-        Optionally can be used to establish PV connection before using the PV.
-
-
 .. |code_ci| image:: https://github.com/dls-controls/aioca/workflows/Code%20CI/badge.svg?branch=master
     :target: https://github.com/dls-controls/aioca/actions?query=workflow%3A%22Code+CI%22
     :alt: Code CI
@@ -50,5 +35,19 @@ It exposes a high level interface similar to the commandline tools::
 ..
     These definitions are used when viewing README.rst and will be replaced
     when included in index.rst
+
+It exposes a high level interface similar to the commandline tools::
+
+    caget(pvs, ...)
+        Returns a single snapshot of the current value of each PV.
+
+    caput(pvs, values, ...)
+        Writes values to one or more PVs.
+
+    camonitor(pvs, callback, ...)
+        Receive notification each time any of the listed PVs changes.
+
+    connect(pvs, ...)
+        Optionally can be used to establish PV connection before using the PV.
 
 See https://dls-controls.github.io/aioca for more detailed documentation.
