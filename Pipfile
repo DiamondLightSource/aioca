@@ -29,5 +29,5 @@ aioca = {editable = true,path = "."}
 [scripts]
 # Put coverage here so we don't interfere with debugging in the IDE
 tests = "python -m pytest --cov=aioca --cov-report term"
-docs = "sphinx-build -ET --keep-going docs build/html"
+docs = "sphinx-build -EWT --keep-going docs build/html"
 clean = "rm -rf build prefix */__pycache__ .coverage cov.xml *.egg-info .mypy_cache .pytest_cache"
