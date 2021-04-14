@@ -39,8 +39,8 @@ It exposes a high level interface similar to the commandline tools::
     :target: https://codecov.io/gh/dls-controls/aioca
     :alt: Test Coverage
 
-.. |pypi_version| image:: https://badge.fury.io/py/dls-controls.svg
-    :target: https://badge.fury.io/py/dls-controls
+.. |pypi_version| image:: https://badge.fury.io/py/aioca.svg
+    :target: https://badge.fury.io/py/aioca
     :alt: Latest PyPI version
 
 .. |license| image:: https://img.shields.io/badge/License-Apache%202.0-blue.svg
