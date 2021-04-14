@@ -71,6 +71,6 @@ jobs:
         run: |
           curl --request POST \
           --url https://api.github.com/repos/${{ github.repository }}/pages \
-          --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
           --header 'Accept: application/vnd.github.switcheroo-preview+json' \
+          --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
           --data '{"source":{"branch":"gh-pages","path":"/"}}' \
