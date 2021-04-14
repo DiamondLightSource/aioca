@@ -71,6 +71,8 @@ Release Checklist
 
 Before a new release, please go through the following checklist:
 
-* Add a release note in CHANGELOG.rst
-* Git tag the version with message from CHANGELOG
-* Push to github and travis will make a release on pypi
+- Choose a new PEP440 compliant release number
+- Add a release note in CHANGELOG.rst
+- Git tag the version with message from CHANGELOG
+- Push to github and the actions will make a release on pypi
+- Push to internal gitlab and do a dls-release.py of the tag

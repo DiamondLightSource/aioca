@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 from typing import List, Sized, Tuple, Type, Union
 
@@ -61,12 +63,14 @@ Dbr = Literal[0, 1, 2, 3, 4, 5, 6, 35, 36, 37, 38, 996, 997, 998, 999]
 
 #: The format of the requested data can be one of the following
 #:
-#: - None (the default), in this case the "native" datatype provided
-#:   by the channel will be returned
-#: - A `Dbr` value
-#: - A python type compatible with any of the above values, such as
-#:   int, float or str
-#: - Any numpy dtype compatible with any of the above values
+#: ==================== ================================================
+#: None (the default)   In this case the "native" datatype provided
+#:                      by the channel will be returned
+#: A `Dbr` value        To request this type from the IOC
+#: A python type        Compatible with any of the above values,
+#:                      such as int, float or str
+#: A numpy dtype        Compatible with any of the above values
+#: ==================== ================================================
 Datatype = Union[None, Dbr, Type]
 
 #: How much auxilliary information will be returned with the retrieved data.
@@ -88,7 +92,7 @@ Format = Literal[0, 1, 2]
 #: -1       The full data length
 #: +ve int  A maximum of this number of elements
 #: ======== ============================================================
-Count = Union[Literal[0], int]
+Count = Union[Literal[0, -1], int]
 
 
 class AugmentedValue(Protocol, Sized):

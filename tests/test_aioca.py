@@ -223,7 +223,7 @@ async def test_caget_non_existent() -> None:
     assert f"{NE}: User specified timeout on IO operation expired" == str(cm.value)
     assert False is bool(cm.value)
     with pytest.raises(TypeError):
-        for _ in cm.value:
+        for _ in cm.value:  # type: ignore
             pass
 
 

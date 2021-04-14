@@ -6,7 +6,7 @@
         {
             "type": "shell",
             "label": "Fix all isort issues",
-            "command": "pipenv run isort -y",
+            "command": "pipenv run isort .",
             "options": {
                 "cwd": "${workspaceRoot}"
             },
