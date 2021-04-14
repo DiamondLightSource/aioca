@@ -119,6 +119,11 @@ event loop. A convenience function is provided to do this:
 
 .. autofunction:: run
 
+You may be running aioca on a system without the caRepeater executable. This
+generates a warning which is harmless, but annoying. To silence it you can call:
+
+.. autofunction:: carepeater
+
 ..  _Values:
 
 Working with Values

@@ -6,8 +6,8 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 Unreleased_
 -----------
 
-- Nothing yet
-
+- Support (pv1, pv2) as well as [pv1, pv2] in caget, camonitor, etc.
+- Add function carepeater() which starts caRepeater thread
 
 1.0_ - 2020-07-09
 -----------------

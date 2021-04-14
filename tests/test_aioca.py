@@ -23,6 +23,7 @@ from aioca import (
     cainfo,
     camonitor,
     caput,
+    carepeater,
     connect,
     run,
 )
@@ -510,3 +511,12 @@ def test_run_forever(event_loop: AbstractEventLoop):
     start = time.time()
     run(run_for_a_bit(), forever=True)
     assert 0.2 < time.time() - start < 0.4
+
+
+@pytest.mark.asyncio
+async def test_carepeater_quells_error(capfd) -> None:
+    carepeater()
+    await caget(LONGOUT, timeout=0.1, throw=False)
+    captured = capfd.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""

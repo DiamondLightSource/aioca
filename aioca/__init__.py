@@ -21,6 +21,7 @@ from epicscorelibs.ca.dbr import (
     ca_extra_fields,
 )
 
+from ._carepeater import carepeater
 from ._catools import (
     CAInfo,
     CANothing,
@@ -45,6 +46,8 @@ __all__ = [
     "CAInfo",  # Ca info object
     "CANothing",  # No value
     "run",  # Run one aioca coroutine and clean up
+    # caRepeater
+    "carepeater",
     # The version of aioca
     "__version__",
     # Event type notification codes for camonitor
