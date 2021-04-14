@@ -61,6 +61,23 @@ autoclass_content = "both"
 # Order the members by the order they appear in the source code
 autodoc_member_order = "bysource"
 
+# A dictionary for users defined type aliases that maps a type name to the
+# full-qualified object name. It is used to keep type aliases not evaluated in
+# the document. Defaults to empty ({}).
+# TODO: drop when https://github.com/sphinx-doc/sphinx/issues/8934 works
+autodoc_type_aliases = dict(
+    Count="aioca.types.Count",
+    Datatype="aioca.types.Datatype",
+    Dbe="aioca.types.Dbe",
+    Dbr="aioca.types.Dbr",
+    Format="aioca.types.Format",
+    Timeout="aioca.types.Timeout",
+    # Explicitly tell sphinx to use the right namespace for these, otherwise
+    # we get aioca._catools.CANothing that it can't find
+    CANothing="aioca.CANothing",
+    CAInfo="aioca.CAInfo",
+    Subscription="aioca.Subscription",
+)
 # Output graphviz directive produced images in a scalable format
 graphviz_output_format = "svg"
 

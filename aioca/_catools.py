@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import atexit
 import collections
@@ -28,9 +30,9 @@ from epicscorelibs.ca import cadef, dbr
 from .types import AugmentedValue, Count, Datatype, Dbe, Format, Timeout
 
 T = TypeVar("T")
-PVS = Union[List[str], Tuple[str, ...]]
+PVs = Union[List[str], Tuple[str, ...]]
 
-DEFAULT_TIMEOUT = 5
+DEFAULT_TIMEOUT = 5.0
 
 
 class ValueEvent(Generic[T]):
@@ -85,7 +87,6 @@ def maybe_throw(async_function):
     transformed into an ordinary CANothing value!"""
 
     @functools.singledispatch
-    @functools.wraps(async_function)
     async def throw_wrapper(
         pv, *args, timeout: Timeout = DEFAULT_TIMEOUT, throw=True, **kwargs
     ):
@@ -105,7 +106,24 @@ def maybe_throw(async_function):
             except cadef.Disconnected:
                 return CANothing(pv, cadef.ECA_DISCONN)
 
-    return throw_wrapper
+    # The singledispatch decorator makes a sync wrapper. We need it to be
+    # async so it works with inspect.iscoroutine, so wrap it again
+    @functools.wraps(async_function)
+    async def call_wrapper(*args, **kwargs):
+        return await throw_wrapper(*args, **kwargs)
+
+    # But keep the register function and register a signature that includes
+    # the extras we added
+    call_wrapper.register = throw_wrapper.register
+    original_sig = inspect.signature(async_function)
+    throw_parameters = inspect.signature(throw_wrapper).parameters
+    parameters = [
+        *original_sig.parameters.values(),
+        throw_parameters["timeout"],
+        throw_parameters["throw"],
+    ]
+    call_wrapper.__signature__ = original_sig.replace(parameters=parameters)
+    return call_wrapper
 
 
 async def ca_timeout(awaitable: Awaitable[T], name: str, timeout: Timeout = None) -> T:
@@ -488,7 +506,7 @@ def camonitor(
 
 @overload
 def camonitor(
-    pv: PVS,
+    pv: PVs,
     callback: Callable[[Any, int], Union[None, Awaitable]],
     events: Dbe = ...,
     datatype: Datatype = ...,
@@ -589,7 +607,7 @@ async def caget(
 
 @overload
 async def caget(
-    pvs: PVS,
+    pvs: PVs,
     datatype: Datatype = ...,
     format: Format = ...,
     count: Count = ...,
@@ -651,7 +669,7 @@ async def caget(pv: str, datatype=None, format=dbr.FORMAT_RAW, count=0):
 
 @caget.register(list)  # type: ignore
 @caget.register(tuple)  # type: ignore
-async def caget_array(pvs: PVS, **kwargs):
+async def caget_array(pvs: PVs, **kwargs):
     # Spawn a separate caget task for each pv: this allows them to complete
     # in parallel which can speed things up considerably.
     coros = [caget(pv, **parallel_timeout(kwargs)) for pv in pvs]
@@ -694,7 +712,7 @@ async def caput(
 
 @overload
 async def caput(
-    pvs: PVS,
+    pvs: PVs,
     values,
     repeat_value: bool = ...,
     datatype: Datatype = ...,
@@ -763,7 +781,7 @@ async def caput(pv: str, value, datatype=None, wait=False):
 
 @caput.register(list)  # type: ignore
 @caput.register(tuple)  # type: ignore
-async def caput_array(pvs: PVS, values, repeat_value=False, **kwargs):
+async def caput_array(pvs: PVs, values, repeat_value=False, **kwargs):
     # Bring the arrays of pvs and values into alignment.
     if repeat_value or isinstance(values, str):
         # If repeat_value is requested or the value is a string then we treat
@@ -856,7 +874,7 @@ async def connect(
 
 @overload
 async def connect(
-    pv: PVS, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
+    pv: PVs, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
 ) -> List[CANothing]:
     ...  # pragma: no cover
 
@@ -889,7 +907,7 @@ async def connect(pv: str, wait=True):
 
 @connect.register(list)  # type: ignore
 @connect.register(tuple)  # type: ignore
-async def connect_array(pvs: PVS, wait=True, **kwargs):
+async def connect_array(pvs: PVs, wait=True, **kwargs):
     coros = [connect(pv, **parallel_timeout(kwargs)) for pv in pvs]
     results = await in_parallel(coros, kwargs)
     return results
@@ -904,7 +922,7 @@ async def cainfo(
 
 @overload
 async def cainfo(
-    pv: PVS, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
+    pv: PVs, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
 ) -> List[CAInfo]:
     ...  # pragma: no cover
 
@@ -923,7 +941,7 @@ async def cainfo(pv: str, wait=True):
 
 @cainfo.register(tuple)  # type: ignore
 @cainfo.register(list)  # type: ignore
-async def cainfo_array(pvs: PVS, wait=True, **kwargs):
+async def cainfo_array(pvs: PVs, wait=True, **kwargs):
     coros = [cainfo(pv, **parallel_timeout(kwargs)) for pv in pvs]
     results = await in_parallel(coros, kwargs)
     return results
