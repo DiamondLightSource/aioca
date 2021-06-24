@@ -13,4 +13,6 @@
     "editor.codeActionsOnSave": {
         "source.organizeImports": true
     },
+    "python.pythonPath": "/scratch/tmc43/pipenv/aioca-Ci9C3xlA/bin/python",
+    "restructuredtext.confPath": "",
 }
