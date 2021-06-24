@@ -31,11 +31,11 @@ jobs:
       - name: Build Docs
         run: pipenv run docs
 
-      - uses: jungwinter/split@v1
+      - uses: rishabhgupta/split-by@v1
         id: split
         with:
-          msg: ${{ github.ref }}
-          seperator: /
+          string: ${{ github.ref }}
+          split-by: /
 
       - name: Move to versioned directory
         # e.g. master or 0.1.2
