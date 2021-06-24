@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>aioca._catools &mdash; aioca 1.0+29.g2f38913 documentation</title>
+  <title>aioca._catools &mdash; aioca 1.0+31.g189407f documentation</title>
   
 
   
@@ -1162,6 +1162,13 @@
 <span class="n">_channel_caches</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span><span class="p">,</span> <span class="n">ChannelCache</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
 
+<div class="viewcode-block" id="purge_channel_caches"><a class="viewcode-back" href="../../api.html#aioca.purge_channel_caches">[docs]</a><span class="k">def</span> <span class="nf">purge_channel_caches</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Remove cached channel connections. This will close all subscriptions&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">channel_cache</span> <span class="ow">in</span> <span class="n">_channel_caches</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="n">channel_cache</span><span class="o">.</span><span class="n">purge</span><span class="p">()</span>
+    <span class="n">_channel_caches</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
+
+
 <span class="k">def</span> <span class="nf">get_channel</span><span class="p">(</span><span class="n">pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Channel</span><span class="p">:</span>
     <span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
     <span class="k">try</span><span class="p">:</span>
@@ -1169,9 +1176,7 @@
     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
         <span class="c1"># Channel from new event loop. Don&#39;t support multiple event loops, so</span>
         <span class="c1"># clear out all the old channels</span>
-        <span class="k">for</span> <span class="n">old_cache</span> <span class="ow">in</span> <span class="n">_channel_caches</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="n">old_cache</span><span class="o">.</span><span class="n">purge</span><span class="p">()</span>
-        <span class="n">_channel_caches</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="n">purge_channel_caches</span><span class="p">()</span>
         <span class="n">channel_cache</span> <span class="o">=</span> <span class="n">ChannelCache</span><span class="p">(</span><span class="n">loop</span><span class="p">)</span>
         <span class="n">_channel_caches</span><span class="p">[</span><span class="n">loop</span><span class="p">]</span> <span class="o">=</span> <span class="n">channel_cache</span>
     <span class="n">channel</span> <span class="o">=</span> <span class="n">channel_cache</span><span class="o">.</span><span class="n">get_channel</span><span class="p">(</span><span class="n">pv</span><span class="p">)</span>
@@ -1186,8 +1191,7 @@
     <span class="c1"># application exit.</span>
     <span class="c1">#    One reason that it&#39;s rather important to do this properly is that we</span>
     <span class="c1"># can&#39;t safely do *any* ca_ calls once ca_context_destroy() is called!</span>
-    <span class="k">for</span> <span class="n">channel_cache</span> <span class="ow">in</span> <span class="n">_channel_caches</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-        <span class="n">channel_cache</span><span class="o">.</span><span class="n">purge</span><span class="p">()</span>
+    <span class="n">purge_channel_caches</span><span class="p">()</span>
     <span class="n">cadef</span><span class="o">.</span><span class="n">ca_flush_io</span><span class="p">()</span>
     <span class="n">cadef</span><span class="o">.</span><span class="n">ca_context_destroy</span><span class="p">()</span>
 

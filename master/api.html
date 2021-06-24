@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>aioca API &mdash; aioca 1.0+29.g2f38913 documentation</title>
+  <title>aioca API &mdash; aioca 1.0+31.g189407f documentation</title>
   
 
   
@@ -508,6 +508,14 @@ for textual description.</p>
 <p>The <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><code class="xref any docutils literal notranslate"><span class="pre">str</span></code></a> representation of this structure can be printed to
 produce output similar to that produced by the <code class="docutils literal notranslate"><span class="pre">cainfo</span></code> command line
 tool.</p>
+<p>All of the above functions will make a connection to a channel which is cached
+for future calls. If you need to clear this cache (e.g. in tests) you can call:</p>
+<dl class="py function">
+<dt id="aioca.purge_channel_caches">
+<code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">purge_channel_caches</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aioca/_catools.html#purge_channel_caches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aioca.purge_channel_caches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove cached channel connections. This will close all subscriptions</p>
+</dd></dl>
+
 <p>All the async functions in the <a class="reference internal" href="#module-aioca" title="aioca"><code class="xref any py py-mod docutils literal notranslate"><span class="pre">aioca</span></code></a> interface can be run under the asyncio
 event loop. A convenience function is provided to do this:</p>
 <dl class="py function">
