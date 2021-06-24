@@ -6,7 +6,7 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 Unreleased_
 -----------
 
-- Nothing yet
+- Update CI
 
 
 1.0_ - 2020-07-09

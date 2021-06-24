@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime  # noqa
 from typing import List, Sized, Tuple, Type, Union
 
 from typing_extensions import Literal, Protocol

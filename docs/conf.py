@@ -48,8 +48,6 @@ extensions = [
     "sphinx.ext.inheritance_diagram",
     # Adds embedded graphviz support
     "sphinx.ext.graphviz",
-    # Add multiple versions of documentation on CI
-    "sphinx_multiversion",
 ]
 
 # If true, Sphinx will warn about all references where the target cannot
@@ -138,11 +136,3 @@ html_show_copyright = True
 
 # Override the colour in a custom css file
 html_css_files = ["theme_overrides.css"]
-
-# sphinx-multiversion config
-smv_rebuild_tags = False
-smv_tag_whitelist = r"^\d+\.\d+.*$"  # only document tags with form 0.9*
-smv_branch_whitelist = r"^master$"  # only branch to document is master
-smv_outputdir_format = "{ref.name}"
-smv_prefer_remote_refs = False
-smv_remote_whitelist = "origin|github"

@@ -43,7 +43,6 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
-*,cover
 cov.xml
 
 # Translations
@@ -59,16 +58,8 @@ docs/_build/
 # PyBuilder
 target/
 
-# PyCharm and Eclipse project files
-/.idea/
-/.project
-/.cproject
-/.settings/
-/.pydevproject
-
 # DLS build dir and virtual environment
 /prefix/
 /venv/
 /lightweight-venv/
 /installed.files
-
