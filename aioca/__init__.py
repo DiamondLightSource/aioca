@@ -30,6 +30,7 @@ from ._catools import (
     camonitor,
     caput,
     connect,
+    purge_channel_caches,
     run,
 )
 from ._version_git import __version__
@@ -44,6 +45,7 @@ __all__ = [
     "cainfo",  # Returns ca_info describing PV connection
     "CAInfo",  # Ca info object
     "CANothing",  # No value
+    "purge_channel_caches",  # Get rid of old channels
     "run",  # Run one aioca coroutine and clean up
     # The version of aioca
     "__version__",

@@ -3,8 +3,8 @@ aioca
 
 |code_ci| |docs_ci| |coverage| |pypi_version| |license|
 
-aioca is an asynchronous Channel Access client for asyncio and Python using
-libca via ctypes.
+aioca is an asynchronous EPICS Channel Access client for asyncio and Python
+using libca via ctypes.
 
 ============== ==============================================================
 PyPI           ``pip install aioca``

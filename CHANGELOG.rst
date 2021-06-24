@@ -6,8 +6,8 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 Unreleased_
 -----------
 
-- Update CI
-
+- Update CI and build to latest standard
+- Add purge_channel_caches() function
 
 1.0_ - 2020-07-09
 -----------------

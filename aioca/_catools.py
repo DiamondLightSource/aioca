@@ -953,6 +953,13 @@ async def cainfo_array(pvs: PVs, wait=True, **kwargs):
 _channel_caches: Dict[asyncio.AbstractEventLoop, ChannelCache] = {}
 
 
+def purge_channel_caches():
+    """Remove cached channel connections. This will close all subscriptions"""
+    for channel_cache in _channel_caches.values():
+        channel_cache.purge()
+    _channel_caches.clear()
+
+
 def get_channel(pv: str) -> Channel:
     loop = asyncio.get_event_loop()
     try:
@@ -960,9 +967,7 @@ def get_channel(pv: str) -> Channel:
     except KeyError:
         # Channel from new event loop. Don't support multiple event loops, so
         # clear out all the old channels
-        for old_cache in _channel_caches.values():
-            old_cache.purge()
-        _channel_caches.clear()
+        purge_channel_caches()
         channel_cache = ChannelCache(loop)
         _channel_caches[loop] = channel_cache
     channel = channel_cache.get_channel(pv)
@@ -977,8 +982,7 @@ def _catools_atexit():  # pragma: no cover
     # application exit.
     #    One reason that it's rather important to do this properly is that we
     # can't safely do *any* ca_ calls once ca_context_destroy() is called!
-    for channel_cache in _channel_caches.values():
-        channel_cache.purge()
+    purge_channel_caches()
     cadef.ca_flush_io()
     cadef.ca_context_destroy()
 
