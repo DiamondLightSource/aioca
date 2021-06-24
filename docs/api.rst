@@ -114,6 +114,11 @@ The `str` representation of this structure can be printed to
 produce output similar to that produced by the ``cainfo`` command line
 tool.
 
+All of the above functions will make a connection to a channel which is cached
+for future calls. If you need to clear this cache (e.g. in tests) you can call:
+
+.. autofunction:: purge_channel_caches
+
 All the async functions in the `aioca` interface can be run under the asyncio
 event loop. A convenience function is provided to do this:
 

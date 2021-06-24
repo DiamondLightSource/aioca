@@ -24,6 +24,7 @@ from aioca import (
     camonitor,
     caput,
     connect,
+    purge_channel_caches,
     run,
 )
 from aioca.types import AugmentedValue
@@ -70,6 +71,8 @@ def ioc():
         text=True,
     )
     yield process
+    # close channel caches before the vent loop
+    purge_channel_caches()
     try:
         process.communicate("exit")
     except ValueError:
