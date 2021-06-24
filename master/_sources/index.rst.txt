@@ -1,9 +1,5 @@
-aioca
-=====
-
-aioca is an asynchronous Channel Access client for asyncio and Python using
-libca via ctypes. It exposes a high level interface similar to the commandline
-tools:
+.. include:: ../README.rst
+    :end-before: when included in index.rst
 
 `caget(pvs, ...) <caget>`
     Returns a single snapshot of the current value of each PV.

@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
@@ -8,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Overview: module code &mdash; aioca 0+untagged.g853e28b documentation</title>
+  <title>Overview: module code &mdash; aioca 1.0+29.g2f38913 documentation</title>
   
 
   
@@ -112,23 +111,39 @@
   <!-- Include Index in the sidebar -->
   <!-- https://stackoverflow.com/a/37843854 -->
   <a href="../genindex.html">Index</a>
-  <!-- Include all versions of the docs -->
-  <!-- https://holzhaus.github.io/sphinx-multiversion/master/templates.html -->
-  
+  <!-- Add versions for selected branches + tags -->
   <p class="caption"><span class="caption-text">Versions</span></p>
-  <ul>
-    <li><a href="index.html">master</a></li>
-    <li><a href="../../1.0/index.html">1.0</a></li>
-    <li><a href="../../0.2.4/index.html">0.2.4</a></li>
-    <li><a href="../../0.2.3/index.html">0.2.3</a></li>
-    <li><a href="../../0.2.2/index.html">0.2.2</a></li>
-    <li><a href="../../0.2.1/index.html">0.2.1</a></li>
-    <li><a href="../../0.2/index.html">0.2</a></li>
-    <li><a href="../../0.1.2/index.html">0.1.2</a></li>
-    <li><a href="../../0.1.1/index.html">0.1.1</a></li>
-    <li><a href="../../0.1/index.html">0.1</a></li>
-  </ul>
-  
+  <ul id="versions"/>
+  <script>
+    // Add any branches to appear in the side pane here, tags will be added below
+    // Will only appear if docs are built and pushed in gh-pages
+    var versions = ['master', 'main'];
+    var dirs = new Set();
+    function addVersion(name) {
+      if (dirs.has(name)) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = 'https://dls-controls.github.io/aioca/' + name;
+        a.innerText = name;
+        li.appendChild(a)
+        document.getElementById('versions').appendChild(li);
+      }
+    }
+    Promise.all([
+      // Find gh-pages directories and populate `dirs`
+      fetch("https://api.github.com/repos/dls-controls/aioca/contents?ref=gh-pages")
+      .then(response => response.json())
+      .then(data => data.forEach(function(e) {
+        if (e.type == "dir") dirs.add(e.name);
+      })),
+      // Add tags to `versions`
+      fetch('https://api.github.com/repos/dls-controls/aioca/tags')
+        .then(response => response.json())
+        .then(data => data.forEach(function(e) {
+          versions.push(e.name);
+        }))
+      ]).then(_ => versions.forEach(addVersion))
+  </script>
 
         </div>
         
@@ -192,8 +207,6 @@
   <h1>All modules for which code is available</h1>
 <ul><li><a href="aioca/_catools.html">aioca._catools</a></li>
 <li><a href="aioca/types.html">aioca.types</a></li>
-<li><a href="typing.html">typing</a></li>
-<li><a href="typing_extensions.html">typing_extensions</a></li>
 </ul>
 
            </div>

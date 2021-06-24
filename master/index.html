@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
@@ -8,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>aioca &mdash; aioca 0+untagged.g853e28b documentation</title>
+  <title>aioca &mdash; aioca 1.0+29.g2f38913 documentation</title>
   
 
   
@@ -119,23 +118,39 @@
   <!-- Include Index in the sidebar -->
   <!-- https://stackoverflow.com/a/37843854 -->
   <a href="genindex.html">Index</a>
-  <!-- Include all versions of the docs -->
-  <!-- https://holzhaus.github.io/sphinx-multiversion/master/templates.html -->
-  
+  <!-- Add versions for selected branches + tags -->
   <p class="caption"><span class="caption-text">Versions</span></p>
-  <ul>
-    <li><a href="index.html">master</a></li>
-    <li><a href="../1.0/index.html">1.0</a></li>
-    <li><a href="../0.2.4/index.html">0.2.4</a></li>
-    <li><a href="../0.2.3/index.html">0.2.3</a></li>
-    <li><a href="../0.2.2/index.html">0.2.2</a></li>
-    <li><a href="../0.2.1/index.html">0.2.1</a></li>
-    <li><a href="../0.2/index.html">0.2</a></li>
-    <li><a href="../0.1.2/index.html">0.1.2</a></li>
-    <li><a href="../0.1.1/index.html">0.1.1</a></li>
-    <li><a href="../0.1/index.html">0.1</a></li>
-  </ul>
-  
+  <ul id="versions"/>
+  <script>
+    // Add any branches to appear in the side pane here, tags will be added below
+    // Will only appear if docs are built and pushed in gh-pages
+    var versions = ['master', 'main'];
+    var dirs = new Set();
+    function addVersion(name) {
+      if (dirs.has(name)) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = 'https://dls-controls.github.io/aioca/' + name;
+        a.innerText = name;
+        li.appendChild(a)
+        document.getElementById('versions').appendChild(li);
+      }
+    }
+    Promise.all([
+      // Find gh-pages directories and populate `dirs`
+      fetch("https://api.github.com/repos/dls-controls/aioca/contents?ref=gh-pages")
+      .then(response => response.json())
+      .then(data => data.forEach(function(e) {
+        if (e.type == "dir") dirs.add(e.name);
+      })),
+      // Add tags to `versions`
+      fetch('https://api.github.com/repos/dls-controls/aioca/tags')
+        .then(response => response.json())
+        .then(data => data.forEach(function(e) {
+          versions.push(e.name);
+        }))
+      ]).then(_ => versions.forEach(addVersion))
+  </script>
 
         </div>
         
@@ -202,9 +217,26 @@
             
   <div class="section" id="aioca">
 <h1>aioca<a class="headerlink" href="#aioca" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://github.com/dls-controls/aioca/actions?query=workflow%3A%22Code+CI%22"><img alt="Code CI" src="https://github.com/dls-controls/aioca/workflows/Code%20CI/badge.svg?branch=master" /></a> <a class="reference external" href="https://github.com/dls-controls/aioca/actions?query=workflow%3A%22Docs+CI%22"><img alt="Docs CI" src="https://github.com/dls-controls/aioca/workflows/Docs%20CI/badge.svg?branch=master" /></a> <a class="reference external" href="https://codecov.io/gh/dls-controls/aioca"><img alt="Test Coverage" src="https://codecov.io/gh/dls-controls/aioca/branch/master/graph/badge.svg" /></a> <a class="reference external" href="https://badge.fury.io/py/aioca"><img alt="Latest PyPI version" src="https://badge.fury.io/py/aioca.svg" /></a> <a class="reference external" href="https://opensource.org/licenses/Apache-2.0"><img alt="Apache License" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" /></a></p>
 <p>aioca is an asynchronous Channel Access client for asyncio and Python using
-libca via ctypes. It exposes a high level interface similar to the commandline
-tools:</p>
+libca via ctypes.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 82%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>PyPI</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">aioca</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Source code</p></td>
+<td><p><a class="reference external" href="https://github.com/dls-controls/aioca">https://github.com/dls-controls/aioca</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Documentation</p></td>
+<td><p><a class="reference external" href="https://dls-controls.github.io/aioca">https://dls-controls.github.io/aioca</a></p></td>
+</tr>
+</tbody>
+</table>
 <dl class="simple">
 <dt><a class="reference internal" href="api.html#aioca.caget" title="aioca.caget"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caget(pvs,</span> <span class="pre">...)</span></code></a></dt><dd><p>Returns a single snapshot of the current value of each PV.</p>
 </dd>
