@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>aioca._catools &mdash; aioca 1.1 documentation</title>
+  <title>aioca._catools &mdash; aioca 1.1+2.g2ece1c6 documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                1.1
+                master
               </div>
             
           
@@ -1157,28 +1157,49 @@
 
 
 <span class="c1"># ----------------------------------------------------------------------------</span>
-<span class="c1">#   Final module initialisation</span>
-
-<span class="n">_channel_caches</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span><span class="p">,</span> <span class="n">ChannelCache</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="c1">#   CA Context manager</span>
 
 
-<div class="viewcode-block" id="purge_channel_caches"><a class="viewcode-back" href="../../api.html#aioca.purge_channel_caches">[docs]</a><span class="k">def</span> <span class="nf">purge_channel_caches</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Remove cached channel connections. This will close all subscriptions&quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">channel_cache</span> <span class="ow">in</span> <span class="n">_channel_caches</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-        <span class="n">channel_cache</span><span class="o">.</span><span class="n">purge</span><span class="p">()</span>
-    <span class="n">_channel_caches</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
+<span class="k">class</span> <span class="nc">_Context</span><span class="p">:</span>
+    <span class="n">created</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">_channel_caches</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span><span class="p">,</span> <span class="n">ChannelCache</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">purge_channel_caches</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove cached channel connections. This will close all subscriptions&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">channel_cache</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_channel_caches</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">channel_cache</span><span class="o">.</span><span class="n">purge</span><span class="p">()</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">_channel_caches</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_channel_cache</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">cls</span><span class="o">.</span><span class="n">created</span><span class="p">:</span>
+            <span class="c1"># EPICS Channel Access event dispatching needs to done with a little</span>
+            <span class="c1"># care.  In previous versions the solution was to repeatedly call</span>
+            <span class="c1"># ca_pend_event() in polling mode, but this does not appear to be</span>
+            <span class="c1"># efficient enough when receiving large amounts of data.  Instead we</span>
+            <span class="c1"># enable preemptive Channel Access callbacks, which means we need to</span>
+            <span class="c1"># cope with all of our channel access events occuring</span>
+            <span class="c1"># asynchronously.</span>
+            <span class="n">cadef</span><span class="o">.</span><span class="n">ca_context_create</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">created</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">channel_cache</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_channel_caches</span><span class="p">[</span><span class="n">loop</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="c1"># Channel from new event loop. Don&#39;t support multiple event loops, so</span>
+            <span class="c1"># clear out all the old channels</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">purge_channel_caches</span><span class="p">()</span>
+            <span class="n">channel_cache</span> <span class="o">=</span> <span class="n">ChannelCache</span><span class="p">(</span><span class="n">loop</span><span class="p">)</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_channel_caches</span><span class="p">[</span><span class="n">loop</span><span class="p">]</span> <span class="o">=</span> <span class="n">channel_cache</span>
+        <span class="k">return</span> <span class="n">channel_cache</span>
+
+
+<span class="n">purge_channel_caches</span> <span class="o">=</span> <span class="n">_Context</span><span class="o">.</span><span class="n">purge_channel_caches</span>
 
 
 <span class="k">def</span> <span class="nf">get_channel</span><span class="p">(</span><span class="n">pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Channel</span><span class="p">:</span>
-    <span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">channel_cache</span> <span class="o">=</span> <span class="n">_channel_caches</span><span class="p">[</span><span class="n">loop</span><span class="p">]</span>
-    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-        <span class="c1"># Channel from new event loop. Don&#39;t support multiple event loops, so</span>
-        <span class="c1"># clear out all the old channels</span>
-        <span class="n">purge_channel_caches</span><span class="p">()</span>
-        <span class="n">channel_cache</span> <span class="o">=</span> <span class="n">ChannelCache</span><span class="p">(</span><span class="n">loop</span><span class="p">)</span>
-        <span class="n">_channel_caches</span><span class="p">[</span><span class="n">loop</span><span class="p">]</span> <span class="o">=</span> <span class="n">channel_cache</span>
+    <span class="n">channel_cache</span> <span class="o">=</span> <span class="n">_Context</span><span class="o">.</span><span class="n">get_channel_cache</span><span class="p">()</span>
     <span class="n">channel</span> <span class="o">=</span> <span class="n">channel_cache</span><span class="o">.</span><span class="n">get_channel</span><span class="p">(</span><span class="n">pv</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">channel</span>
 
@@ -1192,17 +1213,9 @@
     <span class="c1">#    One reason that it&#39;s rather important to do this properly is that we</span>
     <span class="c1"># can&#39;t safely do *any* ca_ calls once ca_context_destroy() is called!</span>
     <span class="n">purge_channel_caches</span><span class="p">()</span>
-    <span class="n">cadef</span><span class="o">.</span><span class="n">ca_flush_io</span><span class="p">()</span>
-    <span class="n">cadef</span><span class="o">.</span><span class="n">ca_context_destroy</span><span class="p">()</span>
-
-
-<span class="c1"># EPICS Channel Access event dispatching needs to done with a little care.  In</span>
-<span class="c1"># previous versions the solution was to repeatedly call ca_pend_event() in</span>
-<span class="c1"># polling mode, but this does not appear to be efficient enough when receiving</span>
-<span class="c1"># large amounts of data.  Instead we enable preemptive Channel Access callbacks,</span>
-<span class="c1"># which means we need to cope with all of our channel access events occuring</span>
-<span class="c1"># asynchronously.</span>
-<span class="n">cadef</span><span class="o">.</span><span class="n">ca_context_create</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">_Context</span><span class="o">.</span><span class="n">created</span><span class="p">:</span>
+        <span class="n">cadef</span><span class="o">.</span><span class="n">ca_flush_io</span><span class="p">()</span>
+        <span class="n">cadef</span><span class="o">.</span><span class="n">ca_context_destroy</span><span class="p">()</span>
 
 
 <span class="c1"># Another delicacy arising from relying on asynchronous CA event dispatching is</span>
@@ -1226,13 +1239,16 @@
 <span class="sd">            return on completion of the coro</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">forever</span><span class="p">:</span>
-            <span class="n">loop</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">coro</span><span class="p">)</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">loop</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">coro</span><span class="p">)</span>
             <span class="n">loop</span><span class="o">.</span><span class="n">run_forever</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">loop</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">coro</span><span class="p">)</span>
     <span class="k">finally</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">t</span><span class="p">:</span>
+            <span class="n">t</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
         <span class="n">loop</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
         <span class="n">loop</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 </pre></div>
