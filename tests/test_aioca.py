@@ -513,3 +513,15 @@ def test_run_forever(event_loop: AbstractEventLoop):
     start = time.time()
     run(run_for_a_bit(), forever=True)
     assert 0.2 < time.time() - start < 0.4
+
+
+def test_import_in_a_different_thread(ioc: subprocess.Popen) -> None:
+    wait_for_ioc(ioc)
+    output = subprocess.check_output(
+        [
+            sys.executable,
+            Path(__file__).parent / "import_in_different_thread.py",
+            LONGOUT,
+        ]
+    )
+    assert output == b"42\n"
