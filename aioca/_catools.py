@@ -948,28 +948,49 @@ async def cainfo_array(pvs: PVs, wait=True, **kwargs):
 
 
 # ----------------------------------------------------------------------------
-#   Final module initialisation
-
-_channel_caches: Dict[asyncio.AbstractEventLoop, ChannelCache] = {}
+#   CA Context manager
 
 
-def purge_channel_caches():
-    """Remove cached channel connections. This will close all subscriptions"""
-    for channel_cache in _channel_caches.values():
-        channel_cache.purge()
-    _channel_caches.clear()
+class _Context:
+    created = False
+    _channel_caches: Dict[asyncio.AbstractEventLoop, ChannelCache] = {}
+
+    @classmethod
+    def purge_channel_caches(cls):
+        """Remove cached channel connections. This will close all subscriptions"""
+        for channel_cache in cls._channel_caches.values():
+            channel_cache.purge()
+        cls._channel_caches.clear()
+
+    @classmethod
+    def get_channel_cache(cls):
+        if not cls.created:
+            # EPICS Channel Access event dispatching needs to done with a little
+            # care.  In previous versions the solution was to repeatedly call
+            # ca_pend_event() in polling mode, but this does not appear to be
+            # efficient enough when receiving large amounts of data.  Instead we
+            # enable preemptive Channel Access callbacks, which means we need to
+            # cope with all of our channel access events occuring
+            # asynchronously.
+            cadef.ca_context_create(1)
+            cls.created = True
+        loop = asyncio.get_event_loop()
+        try:
+            channel_cache = cls._channel_caches[loop]
+        except KeyError:
+            # Channel from new event loop. Don't support multiple event loops, so
+            # clear out all the old channels
+            cls.purge_channel_caches()
+            channel_cache = ChannelCache(loop)
+            cls._channel_caches[loop] = channel_cache
+        return channel_cache
+
+
+purge_channel_caches = _Context.purge_channel_caches
 
 
 def get_channel(pv: str) -> Channel:
-    loop = asyncio.get_event_loop()
-    try:
-        channel_cache = _channel_caches[loop]
-    except KeyError:
-        # Channel from new event loop. Don't support multiple event loops, so
-        # clear out all the old channels
-        purge_channel_caches()
-        channel_cache = ChannelCache(loop)
-        _channel_caches[loop] = channel_cache
+    channel_cache = _Context.get_channel_cache()
     channel = channel_cache.get_channel(pv)
     return channel
 
@@ -983,17 +1004,9 @@ def _catools_atexit():  # pragma: no cover
     #    One reason that it's rather important to do this properly is that we
     # can't safely do *any* ca_ calls once ca_context_destroy() is called!
     purge_channel_caches()
-    cadef.ca_flush_io()
-    cadef.ca_context_destroy()
-
-
-# EPICS Channel Access event dispatching needs to done with a little care.  In
-# previous versions the solution was to repeatedly call ca_pend_event() in
-# polling mode, but this does not appear to be efficient enough when receiving
-# large amounts of data.  Instead we enable preemptive Channel Access callbacks,
-# which means we need to cope with all of our channel access events occuring
-# asynchronously.
-cadef.ca_context_create(1)
+    if _Context.created:
+        cadef.ca_flush_io()
+        cadef.ca_context_destroy()
 
 
 # Another delicacy arising from relying on asynchronous CA event dispatching is
@@ -1017,12 +1030,15 @@ def run(coro, forever=False):
             return on completion of the coro
     """
     loop = asyncio.get_event_loop()
+    t = None
     try:
         if forever:
-            loop.create_task(coro)
+            t = loop.create_task(coro)
             loop.run_forever()
         else:
             return loop.run_until_complete(coro)
     finally:
+        if t:
+            t.cancel()
         loop.stop()
         loop.close()
