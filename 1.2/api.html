@@ -1,0 +1,1214 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>aioca API &mdash; aioca 1.2 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Contributing" href="contributing.html" />
+    <link rel="prev" title="aioca" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="contents.html" class="icon icon-home"> aioca
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+  <style>
+    /* style mobile top nav to look like main nav */
+    .wy-nav-top {
+        background: 
+    }
+  </style>
+  
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Introduction</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">aioca API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#common-notes">Common Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#functions">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#working-with-values">Working with Values</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#values-and-their-types">Values and their Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#error-code-values">Error Code Values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#augmented-values">Augmented Values</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Change Log</a></li>
+</ul>
+
+            
+          
+  <!-- Include Index in the sidebar -->
+  <!-- https://stackoverflow.com/a/37843854 -->
+  <a href="genindex.html">Index</a>
+  <!-- Add versions for selected branches + tags -->
+  <p class="caption"><span class="caption-text">Versions</span></p>
+  <ul id="versions"/>
+  <script>
+    // Add any branches to appear in the side pane here, tags will be added below
+    // Will only appear if docs are built and pushed in gh-pages
+    var versions = ['master', 'main'];
+    var dirs = new Set();
+    function addVersion(name) {
+      if (dirs.has(name)) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = 'https://dls-controls.github.io/aioca/' + name;
+        a.innerText = name;
+        li.appendChild(a)
+        document.getElementById('versions').appendChild(li);
+      }
+    }
+    Promise.all([
+      // Find gh-pages directories and populate `dirs`
+      fetch("https://api.github.com/repos/dls-controls/aioca/contents?ref=gh-pages")
+      .then(response => response.json())
+      .then(data => data.forEach(function(e) {
+        if (e.type == "dir") dirs.add(e.name);
+      })),
+      // Add tags to `versions`
+      fetch('https://api.github.com/repos/dls-controls/aioca/tags')
+        .then(response => response.json())
+        .then(data => data.forEach(function(e) {
+          versions.push(e.name);
+        }))
+      ]).then(_ => versions.forEach(addVersion))
+  </script>
+
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="contents.html">aioca</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="contents.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>aioca API</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-aioca">
+<span id="aioca-api"></span><span id="api"></span><h1>aioca API<a class="headerlink" href="#module-aioca" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="common-notes">
+<span id="common"></span><h2>Common Notes<a class="headerlink" href="#common-notes" title="Permalink to this headline">¶</a></h2>
+<p>All four functions take an argument <code class="docutils literal notranslate"><span class="pre">pv</span></code> which can specify the name of a
+single PV or can be a list of PVs.  In all cases the returned result has the
+same “shape” as the <code class="docutils literal notranslate"><span class="pre">pv</span></code> argument, in other words, if <code class="docutils literal notranslate"><span class="pre">pv</span></code> is a single
+string then a single value (error code, value, or subscription) is returned, and
+if <code class="docutils literal notranslate"><span class="pre">pv</span></code> is a list then a list of exactly the same length is returned.</p>
+<p>In general there are advantages to calling <a class="reference internal" href="#aioca.caput" title="aioca.caput"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caput</span></code></a>, <a class="reference internal" href="#aioca.caget" title="aioca.caget"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caget</span></code></a> or <a class="reference internal" href="#aioca.connect" title="aioca.connect"><code class="xref any py py-func docutils literal notranslate"><span class="pre">connect</span></code></a> on a
+list of PVs, as in this case the channel connection and access delays will occur
+in parallel.</p>
+<p>Several arguments are common through this API: <code class="docutils literal notranslate"><span class="pre">throw</span></code> determines how errors are
+handled, <code class="docutils literal notranslate"><span class="pre">timeout</span></code> determines timeouts, and finally <code class="docutils literal notranslate"><span class="pre">datatype</span></code>, <code class="docutils literal notranslate"><span class="pre">format</span></code> and
+<code class="docutils literal notranslate"><span class="pre">count</span></code> determine data formats and are documented in <a class="reference internal" href="#augmented"><span class="std std-ref">Augmented Values</span></a>.</p>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">timeout</span></code></dt><dd><p>The <code class="docutils literal notranslate"><span class="pre">timeout</span></code> argument specified how long <a class="reference internal" href="#aioca.caput" title="aioca.caput"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caput</span></code></a> or <a class="reference internal" href="#aioca.caget" title="aioca.caget"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caget</span></code></a>
+will wait for the entire operation to complete.  This timeout is in seconds,
+and can be one of several formats: a timeout interval in seconds, an
+absolute deadline (in <a class="reference external" href="https://docs.python.org/3/library/time.html#time.time" title="(in Python v3.9)"><code class="xref any docutils literal notranslate"><span class="pre">time.time</span></code></a> format) as a single element tuple,
+or None to specify that no timeout will occur.  Note that a timeout of 0
+will timeout immediately if any waiting is required.</p>
+<p>If a timeout occurs then a <a class="reference internal" href="#aioca.CANothing" title="aioca.CANothing"><code class="xref any py py-class docutils literal notranslate"><span class="pre">CANothing</span></code></a> will be raised unless
+<code class="docutils literal notranslate"><span class="pre">throw=False</span></code> has been set.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">throw</span></code></dt><dd><p>This parameter determines the behaviour of <a class="reference internal" href="#aioca.caget" title="aioca.caget"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caget</span></code></a>, <a class="reference internal" href="#aioca.caput" title="aioca.caput"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caput</span></code></a>, and
+<a class="reference internal" href="#aioca.connect" title="aioca.connect"><code class="xref any py py-func docutils literal notranslate"><span class="pre">connect</span></code></a> when an error occurs.  If <code class="docutils literal notranslate"><span class="pre">throw=True</span></code> (the default) is
+set then an exception is raised, otherwise if <code class="docutils literal notranslate"><span class="pre">False</span></code> is specified an
+error code value is returned for each failing PV.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="aioca.caput">
+<em class="property"><span class="pre">async</span> </em><code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">caput</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pv</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Datatype" title="aioca.types.Datatype"><span class="pre">aioca.types.Datatype</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Timeout" title="aioca.types.Timeout"><span class="pre">aioca.types.Timeout</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">throw</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#aioca.CANothing" title="aioca.CANothing"><span class="pre">aioca.CANothing</span></a><a class="reference internal" href="_modules/aioca/_catools.html#caput"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aioca.caput" title="Permalink to this definition">¶</a></dt>
+<dt>
+<em class="property"><span class="pre">async</span> </em><code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">caput</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pvs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span> </span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repeat_value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">...</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Datatype" title="aioca.types.Datatype"><span class="pre">aioca.types.Datatype</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Timeout" title="aioca.types.Timeout"><span class="pre">aioca.types.Timeout</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">throw</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#aioca.CANothing" title="aioca.CANothing"><span class="pre">aioca.CANothing</span></a><span class="p"><span class="pre">]</span></span></dt>
+<dd><p>Writes values to one or more PVs</p>
+<p>If a list of PVs is given, then normally value will have the same length
+and value[i] is written to pv[i]. If value is a scalar or
+repeat_value=True then the same value is written to all PVs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repeat_value</strong> – If True and a list of PVs is given, write the same
+value to every PV.</p></li>
+<li><p><strong>datatype</strong> – Override <a class="reference internal" href="#aioca.types.Datatype" title="aioca.types.Datatype"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Datatype</span></code></a> to a non-native type</p></li>
+<li><p><strong>wait</strong> – Do a caput with callback, waiting for completion</p></li>
+<li><p><strong>timeout</strong> – After how long should a caput with wait=True <a class="reference internal" href="#aioca.types.Timeout" title="aioca.types.Timeout"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Timeout</span></code></a></p></li>
+<li><p><strong>throw</strong> – If False then return <a class="reference internal" href="#aioca.CANothing" title="aioca.CANothing"><code class="xref any py py-class docutils literal notranslate"><span class="pre">CANothing</span></code></a> instead of raising an exception</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#aioca.CANothing" title="aioca.CANothing"><code class="xref any py py-class docutils literal notranslate"><span class="pre">CANothing</span></code></a> for single PV or [<a class="reference internal" href="#aioca.CANothing" title="aioca.CANothing"><code class="xref any py py-class docutils literal notranslate"><span class="pre">CANothing</span></code></a>] for a list of PVs</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>The return value from <a class="reference internal" href="#aioca.caput" title="aioca.caput"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caput</span></code></a> is either a list or a single value,
+depending on the shape of <code class="docutils literal notranslate"><span class="pre">pv</span></code>.  For each PV a <a class="reference internal" href="#aioca.CANothing" title="aioca.CANothing"><code class="xref any py py-class docutils literal notranslate"><span class="pre">CANothing</span></code></a> success
+code is returned on success, otherwise either an exception is raised or an
+appropriate error code is returned for each failing PV if <code class="docutils literal notranslate"><span class="pre">throw=True</span></code> is
+set. The return code can be tested for boolean success, so for example it
+is possible to write:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">caput</span><span class="p">(</span><span class="n">pv</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">throw</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="c1"># process caput error</span>
+</pre></div>
+</div>
+<p>If all the PVs listed in <code class="docutils literal notranslate"><span class="pre">pv</span></code> have already been connected, through a
+successful call to any <a class="reference internal" href="#module-aioca" title="aioca"><code class="xref any py py-mod docutils literal notranslate"><span class="pre">aioca</span></code></a> method, then the library guarantees
+that the puts for each PV will occur strictly in sequence.  For any PVs
+which need a connection to be established the order of execution of puts
+is completely undefined.</p>
+<dl class="py function">
+<dt id="aioca.caget">
+<em class="property"><span class="pre">async</span> </em><code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">caget</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pv</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Datatype" title="aioca.types.Datatype"><span class="pre">aioca.types.Datatype</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Format" title="aioca.types.Format"><span class="pre">aioca.types.Format</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Count" title="aioca.types.Count"><span class="pre">aioca.types.Count</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Timeout" title="aioca.types.Timeout"><span class="pre">aioca.types.Timeout</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">throw</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#aioca.types.AugmentedValue" title="aioca.types.AugmentedValue"><span class="pre">aioca.types.AugmentedValue</span></a><a class="reference internal" href="_modules/aioca/_catools.html#caget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aioca.caget" title="Permalink to this definition">¶</a></dt>
+<dt>
+<em class="property"><span class="pre">async</span> </em><code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">caget</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pvs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span> </span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Datatype" title="aioca.types.Datatype"><span class="pre">aioca.types.Datatype</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Format" title="aioca.types.Format"><span class="pre">aioca.types.Format</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Count" title="aioca.types.Count"><span class="pre">aioca.types.Count</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Timeout" title="aioca.types.Timeout"><span class="pre">aioca.types.Timeout</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">throw</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#aioca.types.AugmentedValue" title="aioca.types.AugmentedValue"><span class="pre">aioca.types.AugmentedValue</span></a><span class="p"><span class="pre">]</span></span></dt>
+<dd><p>Retrieves an <a class="reference internal" href="#aioca.types.AugmentedValue" title="aioca.types.AugmentedValue"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AugmentedValue</span></code></a> from one or more PVs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>datatype</strong> – Override <a class="reference internal" href="#aioca.types.Datatype" title="aioca.types.Datatype"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Datatype</span></code></a> to a non-native type</p></li>
+<li><p><strong>format</strong> – Request extra <a class="reference internal" href="#aioca.types.Format" title="aioca.types.Format"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Format</span></code></a> fields</p></li>
+<li><p><strong>count</strong> – Request a specific element <a class="reference internal" href="#aioca.types.Count" title="aioca.types.Count"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Count</span></code></a> in an array</p></li>
+<li><p><strong>timeout</strong> – After how long should caget <a class="reference internal" href="#aioca.types.Timeout" title="aioca.types.Timeout"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Timeout</span></code></a></p></li>
+<li><p><strong>throw</strong> – If False then return <a class="reference internal" href="#aioca.CANothing" title="aioca.CANothing"><code class="xref any py py-class docutils literal notranslate"><span class="pre">CANothing</span></code></a> instead of raising an exception</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#aioca.types.AugmentedValue" title="aioca.types.AugmentedValue"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AugmentedValue</span></code></a> for single PV or [<a class="reference internal" href="#aioca.types.AugmentedValue" title="aioca.types.AugmentedValue"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AugmentedValue</span></code></a>] for a list of PVs</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>The various arguments control the behaviour of <a class="reference internal" href="#aioca.caget" title="aioca.caget"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caget</span></code></a> as follows:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">datatype</span></code>, <code class="docutils literal notranslate"><span class="pre">format</span></code>, <code class="docutils literal notranslate"><span class="pre">count</span></code></dt><dd><p>See documentation for <a class="reference internal" href="#augmented"><span class="std std-ref">Augmented Values</span></a> below.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">timeout</span></code>, <code class="docutils literal notranslate"><span class="pre">throw</span></code></dt><dd><p>Documented in <a class="reference internal" href="#common"><span class="std std-ref">Common Notes</span></a> above.  If a value cannot be retrieved
+and <code class="docutils literal notranslate"><span class="pre">throw=False</span></code> is set then for each failing PV an empty value with
+<code class="docutils literal notranslate"><span class="pre">.ok==False</span></code> is returned.</p>
+</dd>
+</dl>
+<p>The format of values returned depends on the number of values requested
+for each PV.  If only one value is requested then the value is returned
+as a scalar, otherwise as a numpy array.</p>
+<dl class="py function">
+<dt id="aioca.camonitor">
+<code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">camonitor</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pv</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span> </span><span class="pre">Awaitable</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Dbe" title="aioca.types.Dbe"><span class="pre">aioca.types.Dbe</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Datatype" title="aioca.types.Datatype"><span class="pre">aioca.types.Datatype</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Format" title="aioca.types.Format"><span class="pre">aioca.types.Format</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Count" title="aioca.types.Count"><span class="pre">aioca.types.Count</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_updates</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notify_disconnect</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connect_timeout</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Timeout" title="aioca.types.Timeout"><span class="pre">aioca.types.Timeout</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#aioca.Subscription" title="aioca.Subscription"><span class="pre">aioca.Subscription</span></a><a class="reference internal" href="_modules/aioca/_catools.html#camonitor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aioca.camonitor" title="Permalink to this definition">¶</a></dt>
+<dt>
+<code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">camonitor</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pv</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span> </span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span> </span><span class="pre">Awaitable</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Dbe" title="aioca.types.Dbe"><span class="pre">aioca.types.Dbe</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Datatype" title="aioca.types.Datatype"><span class="pre">aioca.types.Datatype</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Format" title="aioca.types.Format"><span class="pre">aioca.types.Format</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Count" title="aioca.types.Count"><span class="pre">aioca.types.Count</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_updates</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notify_disconnect</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connect_timeout</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Timeout" title="aioca.types.Timeout"><span class="pre">aioca.types.Timeout</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#aioca.Subscription" title="aioca.Subscription"><span class="pre">aioca.Subscription</span></a><span class="p"><span class="pre">]</span></span></dt>
+<dd><p>Create a subscription to one or more PVs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>callback</strong> – Regular function or async function</p></li>
+<li><p><strong>events</strong> – Bit-wise or of <a class="reference internal" href="#aioca.types.Dbe" title="aioca.types.Dbe"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Dbe</span></code></a> types to notify about. If not given the
+default mask depends on the requested format</p></li>
+<li><p><strong>datatype</strong> – Override <a class="reference internal" href="#aioca.types.Datatype" title="aioca.types.Datatype"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Datatype</span></code></a> to a non-native type</p></li>
+<li><p><strong>format</strong> – Request extra <a class="reference internal" href="#aioca.types.Format" title="aioca.types.Format"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Format</span></code></a> fields</p></li>
+<li><p><strong>count</strong> – Request a specific element <a class="reference internal" href="#aioca.types.Count" title="aioca.types.Count"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Count</span></code></a> in an array</p></li>
+<li><p><strong>all_updates</strong> – If True then every update received from channel
+access will trigger a callback, otherwise any updates received
+during the previous callback will be merged into the most recent
+value, incrementing <a class="reference internal" href="#aioca.Subscription.dropped_callbacks" title="aioca.Subscription.dropped_callbacks"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">Subscription.dropped_callbacks</span></code></a></p></li>
+<li><p><strong>notify_disconnect</strong> – If True then IOC disconnect events will be reported
+by calling the callback with a <a class="reference internal" href="#aioca.CANothing" title="aioca.CANothing"><code class="xref any py py-class docutils literal notranslate"><span class="pre">CANothing</span></code></a> error with .ok False,
+otherwise only valid values will be passed to the callback routine</p></li>
+<li><p><strong>connect_timeout</strong> – If specified then the camonitor will report a
+disconnection event after the specified interval if connection
+has not completed by this time. Note that this notification will be
+made even if notify_disconnect is False, and that if the PV
+subsequently connects it will update as normal.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#aioca.Subscription" title="aioca.Subscription"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Subscription</span></code></a> for single PV or [<a class="reference internal" href="#aioca.Subscription" title="aioca.Subscription"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Subscription</span></code></a>] for a list of PVs</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>For a single pv callbacks will be called as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">callback</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>for each update where value is an <a class="reference internal" href="#aioca.types.AugmentedValue" title="aioca.types.AugmentedValue"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AugmentedValue</span></code></a>. For a list of pvs then
+each update is called as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">callback</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where index is the position in the original array of pvs of the name
+generating this update.</p>
+<p>Subscriptions will remain active until the <a class="reference internal" href="#aioca.Subscription.close" title="aioca.Subscription.close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">close()</span></code></a> method
+is called on the returned subscription object:</p>
+<dl class="py class">
+<dt id="aioca.Subscription">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">Subscription</span></code><a class="reference internal" href="_modules/aioca/_catools.html#Subscription"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aioca.Subscription" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Subscription object wraps a single channel access subscription, and
+notifies all updates through an event queue.</p>
+<dl class="py method">
+<dt id="aioca.Subscription.close">
+<code class="sig-name descname"><span class="pre">close</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aioca/_catools.html#Subscription.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aioca.Subscription.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes the subscription and releases any associated resources.
+Note that no further callbacks will occur on a closed subscription,
+not even callbacks currently queued for execution.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.Subscription.dropped_callbacks">
+<code class="sig-name descname"><span class="pre">dropped_callbacks</span></code><a class="headerlink" href="#aioca.Subscription.dropped_callbacks" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of updates that have been dropped as they happened
+while another callback was in progress</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="aioca.connect">
+<em class="property"><span class="pre">async</span> </em><code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">connect</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pv</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Timeout" title="aioca.types.Timeout"><span class="pre">aioca.types.Timeout</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">throw</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#aioca.CANothing" title="aioca.CANothing"><span class="pre">aioca.CANothing</span></a><a class="reference internal" href="_modules/aioca/_catools.html#connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aioca.connect" title="Permalink to this definition">¶</a></dt>
+<dt>
+<em class="property"><span class="pre">async</span> </em><code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">connect</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pv</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span> </span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Timeout" title="aioca.types.Timeout"><span class="pre">aioca.types.Timeout</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">throw</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#aioca.CANothing" title="aioca.CANothing"><span class="pre">aioca.CANothing</span></a><span class="p"><span class="pre">]</span></span></dt>
+<dd><p>Establishes a connection to one or more PVs</p>
+<p>A single PV or a list of PVs can be given. This does not normally need to be
+called, as the ca…() routines will establish their own connections as
+required, but after a successful connection we can guarantee that
+caput(…, wait=False) will complete immediately without suspension.</p>
+<p>This routine can safely be called repeatedly without any extra side effects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>wait</strong> – If False then queue a connection without waiting for completion</p></li>
+<li><p><strong>timeout</strong> – After how long should the connect with wait=True <a class="reference internal" href="#aioca.types.Timeout" title="aioca.types.Timeout"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Timeout</span></code></a></p></li>
+<li><p><strong>throw</strong> – If False then return <a class="reference internal" href="#aioca.CANothing" title="aioca.CANothing"><code class="xref any py py-class docutils literal notranslate"><span class="pre">CANothing</span></code></a> instead of raising an exception</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#aioca.CANothing" title="aioca.CANothing"><code class="xref any py py-class docutils literal notranslate"><span class="pre">CANothing</span></code></a> for single PV or [<a class="reference internal" href="#aioca.CANothing" title="aioca.CANothing"><code class="xref any py py-class docutils literal notranslate"><span class="pre">CANothing</span></code></a>] for a list of PVs</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>It is possible to test whether a channel has successfully connected without
+provoking suspension by calling <code class="docutils literal notranslate"><span class="pre">connect(pv,</span> <span class="pre">wait=False,</span> <span class="pre">cainfo=True)</span></code>
+and testing the <code class="docutils literal notranslate"><span class="pre">.state</span></code> attribute of the result.</p>
+<dl class="py function">
+<dt id="aioca.cainfo">
+<em class="property"><span class="pre">async</span> </em><code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">cainfo</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pv</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Timeout" title="aioca.types.Timeout"><span class="pre">aioca.types.Timeout</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">throw</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#aioca.CAInfo" title="aioca.CAInfo"><span class="pre">aioca.CAInfo</span></a><a class="reference internal" href="_modules/aioca/_catools.html#cainfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aioca.cainfo" title="Permalink to this definition">¶</a></dt>
+<dt>
+<em class="property"><span class="pre">async</span> </em><code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">cainfo</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pv</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span> </span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Timeout" title="aioca.types.Timeout"><span class="pre">aioca.types.Timeout</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">throw</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#aioca.CAInfo" title="aioca.CAInfo"><span class="pre">aioca.CAInfo</span></a><span class="p"><span class="pre">]</span></span></dt>
+<dd><p>Returns a <a class="reference internal" href="#aioca.CAInfo" title="aioca.CAInfo"><code class="xref any py py-class docutils literal notranslate"><span class="pre">CAInfo</span></code></a> structure for the given PVs.</p>
+<p>See the documentation for <a class="reference internal" href="#aioca.connect" title="aioca.connect"><code class="xref any py py-func docutils literal notranslate"><span class="pre">connect()</span></code></a> for details of arguments.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="aioca.CAInfo">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">CAInfo</span></code><a class="reference internal" href="_modules/aioca/_catools.html#CAInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aioca.CAInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object representing the information returned from <a class="reference internal" href="#aioca.cainfo" title="aioca.cainfo"><code class="xref any py py-func docutils literal notranslate"><span class="pre">cainfo</span></code></a></p>
+<dl class="py attribute">
+<dt id="aioca.CAInfo.state_strings">
+<code class="sig-name descname"><span class="pre">state_strings</span></code><em class="property"> <span class="pre">=</span> <span class="pre">['never</span> <span class="pre">connected',</span> <span class="pre">'previously</span> <span class="pre">connected',</span> <span class="pre">'connected',</span> <span class="pre">'closed']</span></em><a class="headerlink" href="#aioca.CAInfo.state_strings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts <a class="reference internal" href="#aioca.CAInfo.state" title="aioca.CAInfo.state"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">state</span></code></a> into a printable description of the connection state.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.CAInfo.datatype_strings">
+<code class="sig-name descname"><span class="pre">datatype_strings</span></code><em class="property"> <span class="pre">=</span> <span class="pre">['string',</span> <span class="pre">'short',</span> <span class="pre">'float',</span> <span class="pre">'enum',</span> <span class="pre">'char',</span> <span class="pre">'long',</span> <span class="pre">'double',</span> <span class="pre">'no</span> <span class="pre">access']</span></em><a class="headerlink" href="#aioca.CAInfo.datatype_strings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Textual descriptions of the possible channel data types, can be
+used to convert <a class="reference internal" href="#aioca.CAInfo.datatype" title="aioca.CAInfo.datatype"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">datatype</span></code></a> into a printable string</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.CAInfo.ok">
+<code class="sig-name descname"><span class="pre">ok</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></em><a class="headerlink" href="#aioca.CAInfo.ok" title="Permalink to this definition">¶</a></dt>
+<dd><p>True iff the channel was successfully connected</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.CAInfo.name">
+<code class="sig-name descname"><span class="pre">name</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></em><a class="headerlink" href="#aioca.CAInfo.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the PV</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.CAInfo.state">
+<code class="sig-name descname"><span class="pre">state</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></em><a class="headerlink" href="#aioca.CAInfo.state" title="Permalink to this definition">¶</a></dt>
+<dd><p>State of channel as an integer. Look up <code class="docutils literal notranslate"><span class="pre">state_strings[state]</span></code>
+for textual description.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.CAInfo.host">
+<code class="sig-name descname"><span class="pre">host</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></em><a class="headerlink" href="#aioca.CAInfo.host" title="Permalink to this definition">¶</a></dt>
+<dd><p>Host name and port of server providing this PV</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.CAInfo.read">
+<code class="sig-name descname"><span class="pre">read</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></em><a class="headerlink" href="#aioca.CAInfo.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>True iff read access to this PV</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.CAInfo.write">
+<code class="sig-name descname"><span class="pre">write</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></em><a class="headerlink" href="#aioca.CAInfo.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>True iff write access to this PV</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.CAInfo.count">
+<code class="sig-name descname"><span class="pre">count</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></em><a class="headerlink" href="#aioca.CAInfo.count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Data count of this channel</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.CAInfo.datatype">
+<code class="sig-name descname"><span class="pre">datatype</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></em><a class="headerlink" href="#aioca.CAInfo.datatype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Underlying channel datatype as <a class="reference internal" href="#aioca.types.Dbr" title="aioca.types.Dbr"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Dbr</span></code></a> value. Look up
+<code class="docutils literal notranslate"><span class="pre">datatype_strings[datatype]</span></code> for textual description.</p>
+</dd></dl>
+
+</dd></dl>
+
+<p>The <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><code class="xref any docutils literal notranslate"><span class="pre">str</span></code></a> representation of this structure can be printed to
+produce output similar to that produced by the <code class="docutils literal notranslate"><span class="pre">cainfo</span></code> command line
+tool.</p>
+<p>All of the above functions will make a connection to a channel which is cached
+for future calls. If you need to clear this cache (e.g. in tests) you can call:</p>
+<dl class="py function">
+<dt id="aioca.purge_channel_caches">
+<code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">purge_channel_caches</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aioca.purge_channel_caches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove cached channel connections. This will close all subscriptions</p>
+</dd></dl>
+
+<p>All the async functions in the <a class="reference internal" href="#module-aioca" title="aioca"><code class="xref any py py-mod docutils literal notranslate"><span class="pre">aioca</span></code></a> interface can be run under the asyncio
+event loop. A convenience function is provided to do this:</p>
+<dl class="py function">
+<dt id="aioca.run">
+<code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">run</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coro</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forever</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aioca/_catools.html#run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aioca.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience function that makes an event loop and runs the async
+function within it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>forever</strong> – If True then run the event loop forever, otherwise
+return on completion of the coro</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="working-with-values">
+<span id="values"></span><h2>Working with Values<a class="headerlink" href="#working-with-values" title="Permalink to this headline">¶</a></h2>
+<p>There are two types of values returned by <a class="reference internal" href="#module-aioca" title="aioca"><code class="xref any py py-mod docutils literal notranslate"><span class="pre">aioca</span></code></a> functions:
+<a class="reference internal" href="#augmented"><span class="std std-ref">Augmented Values</span></a> and <a class="reference internal" href="#error"><span class="std std-ref">Error Code Values</span></a>.  The <a class="reference internal" href="#aioca.caput" title="aioca.caput"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caput</span></code></a> function only returns
+an error code value (which may indicate success), while <a class="reference internal" href="#aioca.caget" title="aioca.caget"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caget</span></code></a> and
+<a class="reference internal" href="#aioca.camonitor" title="aioca.camonitor"><code class="xref any py py-func docutils literal notranslate"><span class="pre">camonitor</span></code></a> will normally return (or deliver) augmented values, but will
+return (or deliver) an error code on failure.</p>
+<p>The following fields are common to both types of value.  This means that is is
+always safe to test <code class="docutils literal notranslate"><span class="pre">value.ok</span></code> for a value returned by <a class="reference internal" href="#aioca.caget" title="aioca.caget"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caget</span></code></a> or
+<a class="reference internal" href="#aioca.caput" title="aioca.caput"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caput</span></code></a> or delivered by <a class="reference internal" href="#aioca.camonitor" title="aioca.camonitor"><code class="xref any py py-func docutils literal notranslate"><span class="pre">camonitor</span></code></a>.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">ok</span></code></dt><dd><p>Set to <code class="docutils literal notranslate"><span class="pre">True</span></code> if the data is good, <code class="docutils literal notranslate"><span class="pre">False</span></code> if there was an
+error. For augmented values <code class="docutils literal notranslate"><span class="pre">ok</span></code> is always set to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">name</span></code></dt><dd><p>Name of the pv.</p>
+</dd>
+</dl>
+<div class="section" id="values-and-their-types">
+<h3>Values and their Types<a class="headerlink" href="#values-and-their-types" title="Permalink to this headline">¶</a></h3>
+<p>The type of values returned by <a class="reference internal" href="#aioca.caget" title="aioca.caget"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caget</span></code></a> or delivered by <a class="reference internal" href="#aioca.camonitor" title="aioca.camonitor"><code class="xref any py py-func docutils literal notranslate"><span class="pre">camonitor</span></code></a>
+callbacks is determined by the requested datatype in the original <a class="reference internal" href="#aioca.caget" title="aioca.caget"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caget</span></code></a>
+or <a class="reference internal" href="#aioca.camonitor" title="aioca.camonitor"><code class="xref any py py-func docutils literal notranslate"><span class="pre">camonitor</span></code></a> call together with the underlying length of the requested
+EPICS field.</p>
+<p>If the underlying length (<a class="reference internal" href="#aioca.types.AugmentedValue.element_count" title="aioca.types.AugmentedValue.element_count"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">element_count</span></code></a>) of the EPICS value is 1 then
+the value will be returned as a Python scalar, and will be one of the three
+basic scalar types (string, integer or floating point number), but wrapped as an
+augmented type.</p>
+<p>If on the other hand <a class="reference internal" href="#aioca.types.AugmentedValue.element_count" title="aioca.types.AugmentedValue.element_count"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">element_count</span></code></a> is not 1 then the value is treated
+as an array and is always returned as a numpy array, again wrapped as an
+augmented type.  Note that this means that even if <code class="docutils literal notranslate"><span class="pre">caget(pv,</span> <span class="pre">count=1)</span></code> is
+used to fetch a value with one element, if the underlying PV is an array then
+the result returned will be an array.</p>
+<p>The table below enumerates the possibilities:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 23%" />
+<col style="width: 61%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>aioca type</p></th>
+<th class="head"><p>Derived from</p></th>
+<th class="head"><p>For these values</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="#aioca.ca_str" title="aioca.ca_str"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ca_str</span></code></a></p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><code class="xref any docutils literal notranslate"><span class="pre">str</span></code></a></p></td>
+<td><p>String value</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#aioca.ca_int" title="aioca.ca_int"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ca_int</span></code></a></p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><code class="xref any docutils literal notranslate"><span class="pre">int</span></code></a></p></td>
+<td><p>Integral value</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#aioca.ca_float" title="aioca.ca_float"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ca_float</span></code></a></p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><code class="xref any docutils literal notranslate"><span class="pre">float</span></code></a></p></td>
+<td><p>Floating point value</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#aioca.ca_array" title="aioca.ca_array"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ca_array</span></code></a></p></td>
+<td><p><a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-ndarray" title="(in NumPy v1.21)"><code class="xref any docutils literal notranslate"><span class="pre">ndarray</span></code></a></p></td>
+<td><p>Any array value</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<dl class="py class">
+<dt id="aioca.ca_str">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">ca_str</span></code><a class="headerlink" href="#aioca.ca_str" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="aioca.ca_int">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">ca_int</span></code><a class="headerlink" href="#aioca.ca_int" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="aioca.ca_float">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">ca_float</span></code><a class="headerlink" href="#aioca.ca_float" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scalar types derived from basic Python types.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="aioca.ca_array">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">ca_array</span></code><a class="headerlink" href="#aioca.ca_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Array type derived from <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><code class="xref any docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>. The associated
+<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.dtype.html#numpy.ndarray.dtype" title="(in NumPy v1.21)"><code class="xref py py-attr docutils literal notranslate"><span class="pre">dtype</span></code></a> will be as close a fit to the underlying data
+as possible.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="error-code-values">
+<span id="error"></span><h3>Error Code Values<a class="headerlink" href="#error-code-values" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt id="aioca.CANothing">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">CANothing</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errorcode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aioca/_catools.html#CANothing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aioca.CANothing" title="Permalink to this definition">¶</a></dt>
+<dd><p>This value is returned as a success or failure indicator from <a class="reference internal" href="#aioca.caput" title="aioca.caput"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caput</span></code></a>,
+as a failure indicator from <a class="reference internal" href="#aioca.caget" title="aioca.caget"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caget</span></code></a>, and may be raised as an exception to
+report a data error on caget or caput with wait.</p>
+<dl class="py attribute">
+<dt id="aioca.CANothing.name">
+<code class="sig-name descname"><span class="pre">name</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></em><a class="headerlink" href="#aioca.CANothing.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the PV</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.CANothing.ok">
+<code class="sig-name descname"><span class="pre">ok</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></em><a class="headerlink" href="#aioca.CANothing.ok" title="Permalink to this definition">¶</a></dt>
+<dd><p>True for successful completion, False for error code</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.CANothing.errorcode">
+<code class="sig-name descname"><span class="pre">errorcode</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></em><a class="headerlink" href="#aioca.CANothing.errorcode" title="Permalink to this definition">¶</a></dt>
+<dd><p>ECA error code</p>
+</dd></dl>
+
+</dd></dl>
+
+<p>The following ECA error codes from <code class="docutils literal notranslate"><span class="pre">epicscorelibs.ca.cadef</span></code> are worth noting:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">ECA_SUCCESS</span></code></dt><dd><p>Success error code. In this case <code class="docutils literal notranslate"><span class="pre">.ok</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>.
+Returned by successful <a class="reference internal" href="#aioca.caput" title="aioca.caput"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caput</span></code></a> and <a class="reference internal" href="#aioca.connect" title="aioca.connect"><code class="xref any py py-func docutils literal notranslate"><span class="pre">connect</span></code></a> calls.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">ECA_DISCONN</span></code></dt><dd><p>Channel disconnected.  This is used by <a class="reference internal" href="#aioca.camonitor" title="aioca.camonitor"><code class="xref any py py-func docutils literal notranslate"><span class="pre">camonitor</span></code></a> to report
+channel disconnect events.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">ECA_TIMEOUT</span></code></dt><dd><p>Channel timed out.  Reported if user specified timeout ocurred
+before completion and if <code class="docutils literal notranslate"><span class="pre">throw=False</span></code> specified.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="augmented-values">
+<span id="augmented"></span><h3>Augmented Values<a class="headerlink" href="#augmented-values" title="Permalink to this headline">¶</a></h3>
+<p>Augmented values are normally Python or <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.21)"><code class="xref any docutils literal notranslate"><span class="pre">numpy</span></code></a> values with extra fields:
+the <code class="xref any docutils literal notranslate"><span class="pre">.ok</span></code> and <code class="xref any docutils literal notranslate"><span class="pre">.name</span></code> fields are already mentioned above, and
+further extra fields will be present depending on format requested for the data.
+As pointed out above, <code class="xref any docutils literal notranslate"><span class="pre">.ok</span></code> is always <a class="reference external" href="https://docs.python.org/3/library/constants.html#True" title="(in Python v3.9)"><code class="xref any docutils literal notranslate"><span class="pre">True</span></code></a> for valid data.</p>
+<p>Four different types of augmented value are returned: strings, integers,
+floating point numbers or arrays, depending on the length of the data
+requested – an array is only used when the data length is &gt;1.</p>
+<p>In almost all circumstances an augmented value will behave exactly like a
+normal value, but there are a few rare cases where differences in behaviour are
+observed (these are mostly bugs).  If this occurs the augumentation can be
+stripped from an augmented value <code class="docutils literal notranslate"><span class="pre">value</span></code> by writing <code class="docutils literal notranslate"><span class="pre">+value</span></code> – this returns
+the underlying value.</p>
+<p>The type of augmented values is determined both by parameters passed to <a class="reference internal" href="#aioca.caget" title="aioca.caget"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caget</span></code></a>
+and <a class="reference internal" href="#aioca.camonitor" title="aioca.camonitor"><code class="xref any py py-func docutils literal notranslate"><span class="pre">camonitor</span></code></a> and by the underlying datatype.  Both of these functions share
+parameters <code class="docutils literal notranslate"><span class="pre">datatype</span></code>, <code class="docutils literal notranslate"><span class="pre">format</span></code> and <code class="docutils literal notranslate"><span class="pre">count</span></code> which can be used to control
+the type of the data returned:</p>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">datatype</span></code></dt><dd><p>For <a class="reference internal" href="#aioca.caget" title="aioca.caget"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caget</span></code></a> and <a class="reference internal" href="#aioca.camonitor" title="aioca.camonitor"><code class="xref any py py-func docutils literal notranslate"><span class="pre">camonitor</span></code></a> this controls the format of the
+data that will be requested, while for <a class="reference internal" href="#aioca.caput" title="aioca.caput"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caput</span></code></a> the data will be
+coerced into the requested format. <code class="docutils literal notranslate"><span class="pre">datatype</span></code> can be any of the
+following:</p>
+<ol class="arabic">
+<li><p><code class="docutils literal notranslate"><span class="pre">None</span></code> (the default).  In this case the “native” datatype
+provided by the channel will be returned.</p></li>
+<li><p>A <a class="reference internal" href="#aioca.types.Dbr" title="aioca.types.Dbr"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Dbr</span></code></a> value. See items 5 onwards for details of the special values.</p></li>
+<li><p>A python type compatible with any of the above values, such as
+<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><code class="xref any docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><code class="xref any docutils literal notranslate"><span class="pre">float</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><code class="xref any docutils literal notranslate"><span class="pre">str</span></code></a>.  These correspond to
+<code class="docutils literal notranslate"><span class="pre">DBR_LONG</span></code>, <code class="docutils literal notranslate"><span class="pre">DBR_DOUBLE</span></code> and <code class="docutils literal notranslate"><span class="pre">DBR_STRING</span></code>
+respectively.</p></li>
+<li><p>Any <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v1.21)"><code class="xref any docutils literal notranslate"><span class="pre">numpy.dtype</span></code></a> compatible with any of the above values.</p></li>
+<li><p>One of the special values <code class="docutils literal notranslate"><span class="pre">DBR_CHAR_STR</span></code>,
+<code class="docutils literal notranslate"><span class="pre">DBR_CHAR_UNICODE</span></code>, or <code class="docutils literal notranslate"><span class="pre">DBR_CHAR_BYTES</span></code>.  This is used to
+request a char array which is then converted to a Python <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><code class="xref any docutils literal notranslate"><span class="pre">str</span></code></a>
+or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.9)"><code class="xref any docutils literal notranslate"><span class="pre">bytes</span></code></a> string on receipt.  It is not
+sensible to specify <a class="reference internal" href="#aioca.CAInfo.count" title="aioca.CAInfo.count"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">count</span></code></a> with this option.  The options
+<code class="docutils literal notranslate"><span class="pre">DBR_CHAR_BYTES</span></code> and <code class="docutils literal notranslate"><span class="pre">DBR_CHAR_UNICODE</span></code> are meaningless
+and not supported for <a class="reference internal" href="#aioca.caput" title="aioca.caput"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caput</span></code></a>.</p>
+<p>Note that if the PV name ends in <code class="docutils literal notranslate"><span class="pre">$</span></code> and <code class="docutils literal notranslate"><span class="pre">datatype</span></code> is not specified
+then <code class="docutils literal notranslate"><span class="pre">DBR_CHAR_STR</span></code> will be used.</p>
+</li>
+<li><p>The special value <code class="docutils literal notranslate"><span class="pre">DBR_ENUM_STR</span></code>, only for <a class="reference internal" href="#aioca.caget" title="aioca.caget"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caget</span></code></a> and
+<a class="reference internal" href="#aioca.camonitor" title="aioca.camonitor"><code class="xref any py py-func docutils literal notranslate"><span class="pre">camonitor</span></code></a>.  In this case the “native” channel datatype is used
+unless the channel is an enumeration, in which case the corresponding
+string is returned.</p></li>
+<li><p>For <a class="reference internal" href="#aioca.caget" title="aioca.caget"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caget</span></code></a> and <a class="reference internal" href="#aioca.camonitor" title="aioca.camonitor"><code class="xref any py py-func docutils literal notranslate"><span class="pre">camonitor</span></code></a> two further special values are
+supported.  In both of these cases <a class="reference external" href="https://docs.python.org/3/library/functions.html#format" title="(in Python v3.9)"><code class="xref any docutils literal notranslate"><span class="pre">format</span></code></a> is ignored:</p>
+<dl class="py data">
+<dt id="aioca.DBR_STSACK_STRING">
+<code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">DBR_STSACK_STRING</span></code><a class="headerlink" href="#aioca.DBR_STSACK_STRING" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current value as a string together with extra fields
+<a class="reference internal" href="#aioca.types.AugmentedValue.status" title="aioca.types.AugmentedValue.status"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">status</span></code></a>, <a class="reference internal" href="#aioca.types.AugmentedValue.severity" title="aioca.types.AugmentedValue.severity"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">severity</span></code></a>, <a class="reference internal" href="#aioca.types.AugmentedValue.ackt" title="aioca.types.AugmentedValue.ackt"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">ackt</span></code></a>, <a class="reference internal" href="#aioca.types.AugmentedValue.acks" title="aioca.types.AugmentedValue.acks"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">acks</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="aioca.DBR_CLASS_NAME">
+<code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">DBR_CLASS_NAME</span></code><a class="headerlink" href="#aioca.DBR_CLASS_NAME" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the name of the “enclosing interface”, typically the
+record type, and typically the same as the EPICS <code class="docutils literal notranslate"><span class="pre">.RTYP</span></code> field.</p>
+</dd></dl>
+
+<p>For <a class="reference internal" href="#aioca.caput" title="aioca.caput"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caput</span></code></a> also two further values are supported:</p>
+<dl class="py data">
+<dt id="aioca.DBR_PUT_ACKT">
+<code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">DBR_PUT_ACKT</span></code><a class="headerlink" href="#aioca.DBR_PUT_ACKT" title="Permalink to this definition">¶</a></dt>
+<dt id="aioca.DBR_PUT_ACKS">
+<code class="sig-prename descclassname"><span class="pre">aioca.</span></code><code class="sig-name descname"><span class="pre">DBR_PUT_ACKS</span></code><a class="headerlink" href="#aioca.DBR_PUT_ACKS" title="Permalink to this definition">¶</a></dt>
+<dd><p>These are used for global alarm acknowledgement, where
+<a class="reference internal" href="#aioca.DBR_PUT_ACKT" title="aioca.DBR_PUT_ACKT"><code class="xref any py py-data docutils literal notranslate"><span class="pre">DBR_PUT_ACKT</span></code></a> configures whether alarms need to be acknowleged
+and <a class="reference internal" href="#aioca.DBR_PUT_ACKS" title="aioca.DBR_PUT_ACKS"><code class="xref any py py-data docutils literal notranslate"><span class="pre">DBR_PUT_ACKS</span></code></a> acknowledges alarms of a particular severity.</p>
+</dd></dl>
+
+</li>
+</ol>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">format</span></code></dt><dd><p>The <a class="reference internal" href="#aioca.types.Format" title="aioca.types.Format"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Format</span></code></a> controls how much auxilliary information will be returned with
+the retrieved data.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">count</span></code></dt><dd><p>The <a class="reference internal" href="#aioca.types.Count" title="aioca.types.Count"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Count</span></code></a> determines how many elements to fetch for arrays</p>
+</dd>
+</dl>
+<span class="target" id="module-aioca.types"></span><dl class="py class">
+<dt id="aioca.types.AugmentedValue">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">aioca.types.</span></code><code class="sig-name descname"><span class="pre">AugmentedValue</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aioca/types.html#AugmentedValue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aioca.types.AugmentedValue" title="Permalink to this definition">¶</a></dt>
+<dd><p>Protocol representing a value returned from <a class="reference internal" href="#aioca.caget" title="aioca.caget"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caget</span></code></a> or <a class="reference internal" href="#aioca.camonitor" title="aioca.camonitor"><code class="xref any py py-func docutils literal notranslate"><span class="pre">camonitor</span></code></a></p>
+<p>The value itself depends on the number of values requested for the PV. If
+only one value is requested then the value is returned as a scalar,
+otherwise as a numpy array.</p>
+<p>The value will also be “augmented” with extra fields depending on the
+<a class="reference internal" href="#aioca.types.Format" title="aioca.types.Format"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Format</span></code></a> and <a class="reference internal" href="#aioca.types.Datatype" title="aioca.types.Datatype"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Datatype</span></code></a> of the pv, and if the operation was successful.</p>
+<p>Every value has the <a class="reference internal" href="#aioca.types.AugmentedValue.ok" title="aioca.types.AugmentedValue.ok"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">ok</span></code></a> and <a class="reference internal" href="#aioca.types.AugmentedValue.name" title="aioca.types.AugmentedValue.name"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">name</span></code></a> fields.</p>
+<p>If <a class="reference internal" href="#aioca.types.AugmentedValue.ok" title="aioca.types.AugmentedValue.ok"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">ok</span></code></a> is False then <a class="reference internal" href="#aioca.types.AugmentedValue.errorcode" title="aioca.types.AugmentedValue.errorcode"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">errorcode</span></code></a> is set to the appropriate ECA error code
+and str(value) will return an appropriate error message.</p>
+<p>If <a class="reference internal" href="#aioca.types.AugmentedValue.ok" title="aioca.types.AugmentedValue.ok"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">ok</span></code></a> is True then <a class="reference internal" href="#aioca.types.AugmentedValue.datatype" title="aioca.types.AugmentedValue.datatype"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">datatype</span></code></a> and <a class="reference internal" href="#aioca.types.AugmentedValue.element_count" title="aioca.types.AugmentedValue.element_count"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">element_count</span></code></a> will be present.</p>
+<p>If FORMAT_TIME is requested then <a class="reference internal" href="#aioca.types.AugmentedValue.status" title="aioca.types.AugmentedValue.status"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">status</span></code></a>, <a class="reference internal" href="#aioca.types.AugmentedValue.severity" title="aioca.types.AugmentedValue.severity"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">severity</span></code></a>, <a class="reference internal" href="#aioca.types.AugmentedValue.timestamp" title="aioca.types.AugmentedValue.timestamp"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">timestamp</span></code></a> and
+<a class="reference internal" href="#aioca.types.AugmentedValue.raw_stamp" title="aioca.types.AugmentedValue.raw_stamp"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">raw_stamp</span></code></a> will be present</p>
+<p>If FORMAT_CTRL is requested then <a class="reference internal" href="#aioca.types.AugmentedValue.status" title="aioca.types.AugmentedValue.status"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">status</span></code></a> and <a class="reference internal" href="#aioca.types.AugmentedValue.severity" title="aioca.types.AugmentedValue.severity"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">severity</span></code></a> will be present,
+along with other <a class="reference internal" href="#aioca.types.Dbr" title="aioca.types.Dbr"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Dbr</span></code></a> specific fields:</p>
+<ul class="simple">
+<li><p>DBR_SHORT, DBR_CHAR, DBR_LONG will also have <a class="reference internal" href="#aioca.types.AugmentedValue.units" title="aioca.types.AugmentedValue.units"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">units</span></code></a>, <a class="reference internal" href="#aioca.types.AugmentedValue.upper_disp_limit" title="aioca.types.AugmentedValue.upper_disp_limit"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">upper_disp_limit</span></code></a>,
+<a class="reference internal" href="#aioca.types.AugmentedValue.lower_disp_limit" title="aioca.types.AugmentedValue.lower_disp_limit"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">lower_disp_limit</span></code></a>, <a class="reference internal" href="#aioca.types.AugmentedValue.upper_alarm_limit" title="aioca.types.AugmentedValue.upper_alarm_limit"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">upper_alarm_limit</span></code></a>, <a class="reference internal" href="#aioca.types.AugmentedValue.lower_alarm_limit" title="aioca.types.AugmentedValue.lower_alarm_limit"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">lower_alarm_limit</span></code></a>,
+<a class="reference internal" href="#aioca.types.AugmentedValue.upper_warning_limit" title="aioca.types.AugmentedValue.upper_warning_limit"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">upper_warning_limit</span></code></a>, <a class="reference internal" href="#aioca.types.AugmentedValue.lower_warning_limit" title="aioca.types.AugmentedValue.lower_warning_limit"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">lower_warning_limit</span></code></a>, <a class="reference internal" href="#aioca.types.AugmentedValue.upper_ctrl_limit" title="aioca.types.AugmentedValue.upper_ctrl_limit"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">upper_ctrl_limit</span></code></a>,
+<a class="reference internal" href="#aioca.types.AugmentedValue.lower_ctrl_limit" title="aioca.types.AugmentedValue.lower_ctrl_limit"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">lower_ctrl_limit</span></code></a></p></li>
+<li><p>DBR_FLOAT, DBR_DOUBLE will have the DBR_LONG fiels together with a
+<a class="reference internal" href="#aioca.types.AugmentedValue.precision" title="aioca.types.AugmentedValue.precision"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">precision</span></code></a> field</p></li>
+<li><p>DBR_ENUM will have <a class="reference internal" href="#aioca.types.AugmentedValue.enums" title="aioca.types.AugmentedValue.enums"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">enums</span></code></a></p></li>
+<li><p>DBR_STRING does not support FORMAT_CTRL, so FORMAT_TIME data is returned
+instead</p></li>
+</ul>
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.acks">
+<code class="sig-name descname"><span class="pre">acks</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.acks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used for global alarm acknowledgement. The highest alarm severity to
+acknowledge. If the current alarm severity is less then or equal to
+this value the alarm is acknowledged.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.ackt">
+<code class="sig-name descname"><span class="pre">ackt</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.ackt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used for global alarm acknowledgement. Do transient alarms have
+to be acknowledged? (0,1) means (no, yes).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.datatype">
+<code class="sig-name descname"><span class="pre">datatype</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.datatype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Underlying <a class="reference internal" href="#aioca.types.Dbr" title="aioca.types.Dbr"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Dbr</span></code></a> code</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.datetime">
+<code class="sig-name descname"><span class="pre">datetime</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.9)"><span class="pre">datetime.datetime</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.datetime" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a dynamic property which returns <a class="reference internal" href="#aioca.types.AugmentedValue.timestamp" title="aioca.types.AugmentedValue.timestamp"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">timestamp</span></code></a> as a
+<a class="reference internal" href="#aioca.types.AugmentedValue.datetime" title="aioca.types.AugmentedValue.datetime"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">datetime</span></code></a> value, taking local time into account</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.element_count">
+<code class="sig-name descname"><span class="pre">element_count</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.element_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of elements in the underlying EPICS value. If this is not 1 then the
+value is treated as an array, otherwise up to this many elements may be
+present in the value.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.enums">
+<code class="sig-name descname"><span class="pre">enums</span></code><em class="property"><span class="pre">:</span> <span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#aioca.types.AugmentedValue.enums" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enumeration strings for ENUM type</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.errorcode">
+<code class="sig-name descname"><span class="pre">errorcode</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.errorcode" title="Permalink to this definition">¶</a></dt>
+<dd><p>ECA error code</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.lower_alarm_limit">
+<code class="sig-name descname"><span class="pre">lower_alarm_limit</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.lower_alarm_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Below this limit value in alarm</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.lower_ctrl_limit">
+<code class="sig-name descname"><span class="pre">lower_ctrl_limit</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.lower_ctrl_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lower limit for puts to this value</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.lower_disp_limit">
+<code class="sig-name descname"><span class="pre">lower_disp_limit</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.lower_disp_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lower limit for displaying value</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.lower_warning_limit">
+<code class="sig-name descname"><span class="pre">lower_warning_limit</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.lower_warning_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Below this limit is a warning</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.name">
+<code class="sig-name descname"><span class="pre">name</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the PV used to create this value</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.ok">
+<code class="sig-name descname"><span class="pre">ok</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.ok" title="Permalink to this definition">¶</a></dt>
+<dd><p>True for normal data, False for error code</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.precision">
+<code class="sig-name descname"><span class="pre">precision</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.precision" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display precision for floating point values</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.raw_stamp">
+<code class="sig-name descname"><span class="pre">raw_stamp</span></code><em class="property"><span class="pre">:</span> <span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#aioca.types.AugmentedValue.raw_stamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Record timestamp in raw format as provided by EPICS (but in the local Unix
+epoch, not the EPICS epoch).  Is a tuple of the form <code class="docutils literal notranslate"><span class="pre">(secs,</span> <span class="pre">nsec)</span></code> with
+integer seconds and nanosecond values, provided in case full ns timestamp
+precision is required.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.severity">
+<code class="sig-name descname"><span class="pre">severity</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.severity" title="Permalink to this definition">¶</a></dt>
+<dd><p>EPICS alarm severity, normally one of the values listed below.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 3%" />
+<col style="width: 97%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>No alarm</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>Alarm condition, minor severity</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>Alarm condition, major severity.</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>Invalid value.</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.status">
+<code class="sig-name descname"><span class="pre">status</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.status" title="Permalink to this definition">¶</a></dt>
+<dd><p>CA status code, the reason for severity</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.timestamp">
+<code class="sig-name descname"><span class="pre">timestamp</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Timestamp in seconds in format compatible with <code class="docutils literal notranslate"><span class="pre">time.time()</span></code> rounded to
+the nearest microsecond: for nanosecond precision use <a class="reference internal" href="#aioca.types.AugmentedValue.raw_stamp" title="aioca.types.AugmentedValue.raw_stamp"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">raw_stamp</span></code></a>
+instead.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.units">
+<code class="sig-name descname"><span class="pre">units</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.units" title="Permalink to this definition">¶</a></dt>
+<dd><p>Units for display</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.upper_alarm_limit">
+<code class="sig-name descname"><span class="pre">upper_alarm_limit</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.upper_alarm_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Above this limit value in alarm</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.upper_ctrl_limit">
+<code class="sig-name descname"><span class="pre">upper_ctrl_limit</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.upper_ctrl_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Upper limit for puts to this value</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.upper_disp_limit">
+<code class="sig-name descname"><span class="pre">upper_disp_limit</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.upper_disp_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Upper limit for displaying value</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="aioca.types.AugmentedValue.upper_warning_limit">
+<code class="sig-name descname"><span class="pre">upper_warning_limit</span></code><em class="property"><span class="pre">:</span> <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><span class="pre">float</span></a></em><a class="headerlink" href="#aioca.types.AugmentedValue.upper_warning_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Above this limit is a warning</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt id="aioca.types.Count">
+<code class="sig-prename descclassname"><span class="pre">aioca.types.</span></code><code class="sig-name descname"><span class="pre">Count</span></code><a class="headerlink" href="#aioca.types.Count" title="Permalink to this definition">¶</a></dt>
+<dd><p>How many array elements to retrieve from the server. One of the following</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 88%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>Server and data dependent waveform length</p></td>
+</tr>
+<tr class="row-even"><td><p>-1</p></td>
+<td><p>The full data length</p></td>
+</tr>
+<tr class="row-odd"><td><p>+ve int</p></td>
+<td><p>A maximum of this number of elements</p></td>
+</tr>
+</tbody>
+</table>
+<p>alias of Union[typing_extensions.Literal[0, -1], int]</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="aioca.types.Datatype">
+<code class="sig-prename descclassname"><span class="pre">aioca.types.</span></code><code class="sig-name descname"><span class="pre">Datatype</span></code><a class="headerlink" href="#aioca.types.Datatype" title="Permalink to this definition">¶</a></dt>
+<dd><p>The format of the requested data can be one of the following</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 71%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>None (the default)</p></td>
+<td><p>In this case the “native” datatype provided
+by the channel will be returned</p></td>
+</tr>
+<tr class="row-even"><td><p>A <a class="reference internal" href="#aioca.types.Dbr" title="aioca.types.Dbr"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Dbr</span></code></a> value</p></td>
+<td><p>To request this type from the IOC</p></td>
+</tr>
+<tr class="row-odd"><td><p>A python type</p></td>
+<td><p>Compatible with any of the above values,
+such as int, float or str</p></td>
+</tr>
+<tr class="row-even"><td><p>A numpy dtype</p></td>
+<td><p>Compatible with any of the above values</p></td>
+</tr>
+</tbody>
+</table>
+<p>alias of Union[None, typing_extensions.Literal[0, 1, 2, 3, 4, 5, 6, 35, 36, 37, 38, 996, 997, 998, 999], Type]</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="aioca.types.Dbe">
+<code class="sig-prename descclassname"><span class="pre">aioca.types.</span></code><code class="sig-name descname"><span class="pre">Dbe</span></code><a class="headerlink" href="#aioca.types.Dbe" title="Permalink to this definition">¶</a></dt>
+<dd><p>A bitwise or of DBE event codes from epicscorelibs.ca.dbr</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 83%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>DBE_VALUE</p></td>
+<td><p>Trigger an event when a significant change in the channel’s
+value occurs. Relies on the monitor deadband field on the
+server</p></td>
+</tr>
+<tr class="row-even"><td><p>DBE_LOG</p></td>
+<td><p>Trigger an event when an archive significant change in the
+channel’s value occurs. Relies on the archiver monitor
+deadband field on the server</p></td>
+</tr>
+<tr class="row-odd"><td><p>DBE_ALARM</p></td>
+<td><p>Trigger an event when the alarm state changes</p></td>
+</tr>
+<tr class="row-even"><td><p>DBE_PROPERTY</p></td>
+<td><p>Trigger an event when a property change (control limit,
+graphical limit, status string, enum string …) occurs.</p></td>
+</tr>
+</tbody>
+</table>
+<p>If not specified then the default value depends on the requested <a class="reference internal" href="#aioca.types.Format" title="aioca.types.Format"><code class="xref any py py-data docutils literal notranslate"><span class="pre">Format</span></code></a></p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Format</p></th>
+<th class="head"><p>Default value for events</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>FORMAT_RAW</p></td>
+<td><p>DBE_VALUE</p></td>
+</tr>
+<tr class="row-odd"><td><p>FORMAT_TIME</p></td>
+<td><p>DBE_VALUE | DBE_ALARM</p></td>
+</tr>
+<tr class="row-even"><td><p>FORMAT_CTRL</p></td>
+<td><p>DBE_VALUE | DBE_ALARM | DBE_PROPERTY</p></td>
+</tr>
+</tbody>
+</table>
+<p>alias of Union[None, int]</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="aioca.types.Dbr">
+<code class="sig-prename descclassname"><span class="pre">aioca.types.</span></code><code class="sig-name descname"><span class="pre">Dbr</span></code><a class="headerlink" href="#aioca.types.Dbr" title="Permalink to this definition">¶</a></dt>
+<dd><p>A DBR request code from epicscorelibs.ca.dbr. One of</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 71%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>DBR_STRING</p></td>
+<td><p>40 character strings</p></td>
+</tr>
+<tr class="row-even"><td><p>DBR_SHORT</p></td>
+<td><p>16 bit signed</p></td>
+</tr>
+<tr class="row-odd"><td><p>DBR_FLOAT</p></td>
+<td><p>32 bit float</p></td>
+</tr>
+<tr class="row-even"><td><p>DBR_ENUM</p></td>
+<td><p>16 bit unsigned</p></td>
+</tr>
+<tr class="row-odd"><td><p>DBR_CHAR</p></td>
+<td><p>8 bit unsigned</p></td>
+</tr>
+<tr class="row-even"><td><p>DBR_LONG</p></td>
+<td><p>32 bit signed</p></td>
+</tr>
+<tr class="row-odd"><td><p>DBR_DOUBLE</p></td>
+<td><p>64 bit float</p></td>
+</tr>
+<tr class="row-even"><td><p>DBR_PUT_ACKT</p></td>
+<td><p>Configure global alarm acknowledgement</p></td>
+</tr>
+<tr class="row-odd"><td><p>DBR_PUT_ACKS</p></td>
+<td><p>Acknowledge global alarm</p></td>
+</tr>
+<tr class="row-even"><td><p>DBR_STSACK_STRING</p></td>
+<td><p>Returns status ack structure</p></td>
+</tr>
+<tr class="row-odd"><td><p>DBR_CLASS_NAME</p></td>
+<td><p>Returns record type (same as .RTYP)</p></td>
+</tr>
+<tr class="row-even"><td><p>DBR_ENUM_STR</p></td>
+<td><p>Enums as strings, default otherwise</p></td>
+</tr>
+<tr class="row-odd"><td><p>DBR_CHAR_BYTES</p></td>
+<td><p>Long byte strings as char arrays</p></td>
+</tr>
+<tr class="row-even"><td><p>DBR_CHAR_UNICODE</p></td>
+<td><p>Long unicode strings as char arrays</p></td>
+</tr>
+<tr class="row-odd"><td><p>DBR_CHAR_STR</p></td>
+<td><p>Long strings as char arrays</p></td>
+</tr>
+</tbody>
+</table>
+<p>alias of typing_extensions.Literal[0, 1, 2, 3, 4, 5, 6, 35, 36, 37, 38, 996, 997, 998, 999]</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="aioca.types.Format">
+<code class="sig-prename descclassname"><span class="pre">aioca.types.</span></code><code class="sig-name descname"><span class="pre">Format</span></code><a class="headerlink" href="#aioca.types.Format" title="Permalink to this definition">¶</a></dt>
+<dd><p>How much auxilliary information will be returned with the retrieved data.
+From epicscorelibs.ca.dbr, one of the following</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 83%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>FORMAT_RAW</p></td>
+<td><p>The data is returned unaugmented except for the .name field</p></td>
+</tr>
+<tr class="row-even"><td><p>FORMAT_TIME</p></td>
+<td><p>The data is augmented by the data timestamp together with
+.alarm .status and .severity fields.</p></td>
+</tr>
+<tr class="row-odd"><td><p>FORMAT_CTRL</p></td>
+<td><p>The data is augmented by channel access “control” fields.
+This set of fields depends on the underlying datatype</p></td>
+</tr>
+</tbody>
+</table>
+<p>alias of typing_extensions.Literal[0, 1, 2]</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="aioca.types.Timeout">
+<code class="sig-prename descclassname"><span class="pre">aioca.types.</span></code><code class="sig-name descname"><span class="pre">Timeout</span></code><a class="headerlink" href="#aioca.types.Timeout" title="Permalink to this definition">¶</a></dt>
+<dd><p>A timeout is represented by one of the following</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 88%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>None</p></td>
+<td><p>A timeout that never expires</p></td>
+</tr>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>Timeout immediately if any waiting is required</p></td>
+</tr>
+<tr class="row-odd"><td><p>float</p></td>
+<td><p>A relative timeout interval in seconds</p></td>
+</tr>
+<tr class="row-even"><td><p>(float,)</p></td>
+<td><p>An absolute deadline in seconds past epoch</p></td>
+</tr>
+</tbody>
+</table>
+<p>alias of Union[None, Tuple[float], float]</p>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="contributing.html" class="btn btn-neutral float-right" title="Contributing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="index.html" class="btn btn-neutral float-left" title="aioca" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, Diamond Light Source.
+
+    </p>
+  </div> 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
