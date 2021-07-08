@@ -6,6 +6,13 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 Unreleased_
 -----------
 
+Nothing yet
+
+1.2_ - 2021-07-08
+-----------------
+
+- Defer creation of ca_context until first channel connect #18
+
 1.1_ - 2021-06-24
 -----------------
 
@@ -31,7 +38,8 @@ Unreleased_
 
 - Port of cothread.catools to asyncio
 
-.. _Unreleased: https://github.com/dls-controls/aioca/compare/1.1...HEAD
+.. _Unreleased: https://github.com/dls-controls/aioca/compare/1.2...HEAD
+.. _1.2: https://github.com/dls-controls/aioca/compare/1.1...1.2
 .. _1.1: https://github.com/dls-controls/aioca/compare/1.0...1.1
 .. _1.0: https://github.com/dls-controls/aioca/compare/0.2...1.0
 .. _0.2: https://github.com/dls-controls/aioca/compare/0.1...0.2
