@@ -10,6 +10,7 @@ using libca via ctypes.
 PyPI           ``pip install aioca``
 Source code    https://github.com/dls-controls/aioca
 Documentation  https://dls-controls.github.io/aioca
+Changelog      https://github.com/dls-controls/aioca/blob/master/CHANGELOG.rst
 ============== ==============================================================
 
 .. |code_ci| image:: https://github.com/dls-controls/aioca/workflows/Code%20CI/badge.svg?branch=master
@@ -24,8 +25,8 @@ Documentation  https://dls-controls.github.io/aioca
     :target: https://codecov.io/gh/dls-controls/aioca
     :alt: Test Coverage
 
-.. |pypi_version| image:: https://badge.fury.io/py/aioca.svg
-    :target: https://badge.fury.io/py/aioca
+.. |pypi_version| image:: https://img.shields.io/pypi/v/aioca.svg
+    :target: https://pypi.org/project/aioca
     :alt: Latest PyPI version
 
 .. |license| image:: https://img.shields.io/badge/License-Apache%202.0-blue.svg

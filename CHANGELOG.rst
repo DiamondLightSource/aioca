@@ -1,7 +1,10 @@
-Change Log
-==========
+Changelog
+=========
+
 All notable changes to this project will be documented in this file.
-This project adheres to `Semantic Versioning <http://semver.org/>`_.
+
+The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_,
+and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
 Unreleased_
 -----------
@@ -38,8 +41,8 @@ Nothing yet
 
 - Port of cothread.catools to asyncio
 
-.. _Unreleased: https://github.com/dls-controls/aioca/compare/1.2...HEAD
-.. _1.2: https://github.com/dls-controls/aioca/compare/1.1...1.2
-.. _1.1: https://github.com/dls-controls/aioca/compare/1.0...1.1
-.. _1.0: https://github.com/dls-controls/aioca/compare/0.2...1.0
-.. _0.2: https://github.com/dls-controls/aioca/compare/0.1...0.2
+.. _Unreleased: ../../compare/1.2...HEAD
+.. _1.2: ../../compare/1.1...1.2
+.. _1.1: ../../compare/1.0...1.1
+.. _1.0: ../../compare/0.2...1.0
+.. _0.2: ../../compare/0.1...0.2
