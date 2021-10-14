@@ -11,7 +11,7 @@ black = "==19.10b0"
 mypy = "*"
 atomicwrites = "*"
 typing-extensions = "*"
-importlib-metadata = "*"
+importlib-metadata = "<=4.0.1"
 
 # Test and docs dependencies
 pytest-asyncio = "*"

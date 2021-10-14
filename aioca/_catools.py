@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import asyncio
 import atexit
 import collections
@@ -331,7 +329,7 @@ class Subscription(object):
         self.__event_loop.call_soon_threadsafe(self.__create_signal_task, value)
 
     def __create_signal_task(self, value):
-        task = asyncio.create_task(self.__signal(value))
+        task = asyncio.ensure_future(self.__signal(value))
         self.__tasks.append(task)
 
     async def __signal(self, value):
@@ -412,7 +410,7 @@ class Subscription(object):
         #: The number of updates that have been dropped as they happened
         #: while another callback was in progress
         self.dropped_callbacks: int = 0
-        self.__event_loop = asyncio.get_running_loop()
+        self.__event_loop = asyncio.get_event_loop()
         self.__values: Deque[AugmentedValue] = collections.deque(
             maxlen=0 if all_updates else 1
         )
@@ -431,7 +429,7 @@ class Subscription(object):
         # connected.
         self.state = self.OPENING
         self.__tasks = [
-            asyncio.create_task(
+            asyncio.ensure_future(
                 self.__create_subscription(
                     events, datatype, format, count, connect_timeout
                 )
@@ -653,7 +651,7 @@ async def caget(pv: str, datatype=None, format=dbr.FORMAT_RAW, count=0):
     # callback routine gets to see it.
     dbrcode, dbr_to_value = dbr.type_to_dbr(channel, datatype, format)
     done = ValueEvent[AugmentedValue]()
-    loop = asyncio.get_running_loop()
+    loop = asyncio.get_event_loop()
     context = (pv, dbr_to_value, done, loop)
     ctypes.pythonapi.Py_IncRef(context)
 
@@ -755,7 +753,7 @@ async def caput(pv: str, value, datatype=None, wait=False):
         # Assemble the callback context and give it an extra reference count
         # to keep it alive until the callback handler sees it.
         done = ValueEvent[None]()
-        context = (pv, done, asyncio.get_running_loop())
+        context = (pv, done, asyncio.get_event_loop())
         ctypes.pythonapi.Py_IncRef(context)
 
         # caput with callback requested: need to wait for response from
@@ -1033,7 +1031,7 @@ def run(coro, forever=False):
     t = None
     try:
         if forever:
-            t = loop.create_task(coro)
+            t = asyncio.ensure_future(coro, loop=loop)
             loop.run_forever()
         else:
             return loop.run_until_complete(coro)

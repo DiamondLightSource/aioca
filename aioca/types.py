@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from datetime import datetime  # noqa
 from typing import List, Sized, Tuple, Type, Union
 

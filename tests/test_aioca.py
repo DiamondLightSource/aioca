@@ -68,7 +68,7 @@ def ioc():
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        text=True,
+        universal_newlines=True,
     )
     yield process
     # close channel caches before the vent loop
