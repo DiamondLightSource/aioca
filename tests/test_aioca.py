@@ -337,7 +337,7 @@ async def test_long_monitor_callback(ioc: subprocess.Popen) -> None:
 
     async def cb(value):
         values.append(value)
-        await asyncio.sleep(0.2)
+        await asyncio.sleep(0.4)
 
     m = camonitor(LONGOUT, cb, connect_timeout=(time.time() + 0.5,))
     # Wait for connection, calling first cb
@@ -349,11 +349,11 @@ async def test_long_monitor_callback(ioc: subprocess.Popen) -> None:
     await caput(LONGOUT, 43)
     await caput(LONGOUT, 44)
     # Wait until the second cb has finished
-    await asyncio.sleep(0.3)
+    await asyncio.sleep(0.6)
     assert [42, 44] == values
     assert m.dropped_callbacks == 0
     # Wait until the third cb (which is dropped) has finished
-    await asyncio.sleep(0.3)
+    await asyncio.sleep(0.6)
     assert [42, 44] == values
     assert m.dropped_callbacks == 1
     values.clear()
@@ -361,10 +361,10 @@ async def test_long_monitor_callback(ioc: subprocess.Popen) -> None:
     await caput(LONGOUT, 45)
     # Block the event loop to make sure the caput has triggered updates
     # without the callback running
-    time.sleep(0.2)
+    time.sleep(0.4)
     # Now close so that the callback finds the connection closed and doesn't fire
     m.close()
-    await asyncio.sleep(0.2)
+    await asyncio.sleep(0.4)
     assert [] == values
     assert m.dropped_callbacks == 1
 
@@ -457,7 +457,7 @@ def test_closing_event_loop(ioc: subprocess.Popen, capsys) -> None:
     assert captured.out == ""
     assert captured.err == ""
 
-    time.sleep(1.1)
+    time.sleep(1.0)
     # We should have 2 more updates that didn't make it to the queue
     # because loop closed
     assert q.qsize() == 0
@@ -466,8 +466,11 @@ def test_closing_event_loop(ioc: subprocess.Popen, capsys) -> None:
     assert len(closed_messages(captured.err)) == 2, captured.err
 
     m.close()
+    time.sleep(0.5)
+    # Need to clear the output in case something came in late
+    captured = capsys.readouterr()
+    # Check that there are no more updates
     time.sleep(1.0)
-    # There should be no more updates
     captured = capsys.readouterr()
     assert captured.out == ""
     assert captured.err == ""
@@ -520,8 +523,8 @@ def test_import_in_a_different_thread(ioc: subprocess.Popen) -> None:
     output = subprocess.check_output(
         [
             sys.executable,
-            Path(__file__).parent / "import_in_different_thread.py",
+            str(Path(__file__).parent / "import_in_different_thread.py"),
             LONGOUT,
         ]
     )
-    assert output == b"42\n"
+    assert output.strip() == b"42"
