@@ -9,17 +9,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
-        python: ["3.7", "3.8", "3.9"]
+        os: ["ubuntu-latest"]
+        python: ["3.6", "3.7", "3.8", "3.9"]
+        pipenv: ["skip-lock"]
 
         include:
           # Tag the Python3.7 runner as the one to publish wheels
           - os: "ubuntu-latest"
             python: "3.7"
+            pipenv: "deploy"
             publish: true
 
     name: ${{ matrix.os }}/${{ matrix.python }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout Source
@@ -33,7 +35,7 @@ jobs:
       - name: Install Python Dependencies
         run: |
           pip install pipenv twine build
-          pipenv install --dev --deploy --python $(which python) && pipenv graph
+          pipenv install --dev --${{ matrix.pipenv }} --python $(which python) && pipenv graph
 
       - name: Create Sdist and Wheel
         if: matrix.publish
@@ -49,7 +51,7 @@ jobs:
         run: pipenv run tests
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v2
         with:
           name: ${{ matrix.os }}/${{ matrix.python }}
           files: cov.xml
