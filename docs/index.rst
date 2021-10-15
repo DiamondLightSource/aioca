@@ -91,7 +91,7 @@ Example code::
     import os
     os.environ['EPICS_CA_MAX_ARRAY_BYTES'] = '1000000'
 
-    # Note: the first import of catools must come after the environ is set up.
+    # Note: the first import of aioca must come after the environ is set up.
     from aioca import *
 
 
