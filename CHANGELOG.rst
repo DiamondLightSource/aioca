@@ -11,6 +11,13 @@ Unreleased_
 
 Nothing yet
 
+1.3_ - 2021-10-15
+-----------------
+
+Added:
+
+- `Support for Python3.6 <../../pull/19>`_
+
 1.2_ - 2021-07-08
 -----------------
 
@@ -41,7 +48,8 @@ Nothing yet
 
 - Port of cothread.catools to asyncio
 
-.. _Unreleased: ../../compare/1.2...HEAD
+.. _Unreleased: ../../compare/1.3...HEAD
+.. _1.3: ../../compare/1.2...1.3
 .. _1.2: ../../compare/1.1...1.2
 .. _1.1: ../../compare/1.0...1.1
 .. _1.0: ../../compare/0.2...1.0
