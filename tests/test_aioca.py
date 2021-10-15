@@ -437,7 +437,7 @@ async def test_monitor_gc(ioc: subprocess.Popen) -> None:
 async def monitor_for_a_bit(callback: Callable, ioc) -> Subscription:
     wait_for_ioc(ioc)
     m = camonitor(TICKING, callback, notify_disconnect=True)
-    await asyncio.sleep(0.6)
+    await asyncio.sleep(1.1)
     return m
 
 
@@ -457,7 +457,10 @@ def test_closing_event_loop(ioc: subprocess.Popen, capsys) -> None:
     assert captured.out == ""
     assert captured.err == ""
 
+    time.sleep(2.0)
+    m.close()
     time.sleep(1.0)
+
     # We should have 2 more updates that didn't make it to the queue
     # because loop closed
     assert q.qsize() == 0
@@ -465,18 +468,14 @@ def test_closing_event_loop(ioc: subprocess.Popen, capsys) -> None:
     assert captured.out == ""
     assert len(closed_messages(captured.err)) == 2, captured.err
 
-    m.close()
-    time.sleep(0.5)
-    # Need to clear the output in case something came in late
-    captured = capsys.readouterr()
     # Check that there are no more updates
-    time.sleep(1.0)
+    time.sleep(2.0)
     captured = capsys.readouterr()
     assert captured.out == ""
     assert captured.err == ""
 
     ioc.communicate("exit")
-    time.sleep(0.1)
+    time.sleep(0.5)
     # We should have one more error from the disconnect
     assert q.qsize() == 0
     captured = capsys.readouterr()
