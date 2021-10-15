@@ -2,6 +2,7 @@
     "editor.defaultFormatter": "ms-python.python",
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
+    "python.linting.mypyEnabled": true,
     "python.linting.enabled": true,
     "python.testing.pytestArgs": [],
     "python.testing.unittestEnabled": false,
@@ -12,7 +13,5 @@
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
         "source.organizeImports": true
-    },
-    "python.pythonPath": "/scratch/tmc43/pipenv/aioca-Ci9C3xlA/bin/python",
-    "restructuredtext.confPath": "",
+    }
 }

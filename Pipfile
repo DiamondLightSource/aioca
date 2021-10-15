@@ -4,31 +4,12 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-# Pinning black stops us having to allow pre-releases globally
-black = "==19.10b0"
-
-# Pins to make lockfile usable on multiple Python versions and platforms
-mypy = "*"
-atomicwrites = "*"
-typing-extensions = "*"
-importlib-metadata = "<=4.0.1"
-
-# Test and docs dependencies
-pytest-asyncio = "*"
-pytest-cov = "*"
-pytest-mypy = "*"
-pytest-flake8 = "*"
-pytest-black = "*"
-flake8-isort = "*"
-isort = ">5.0"
-sphinx-rtd-theme = "*"
+aioca = {editable = true, extras = ["dev"], path = "."}
 
 [packages]
-# All other package requirements from setup.cfg
-aioca = {editable = true,path = "."}
+aioca = {editable = true, path = "."}
 
 [scripts]
-# Put coverage here so we don't interfere with debugging in the IDE
 tests = "python -m pytest"
 docs = "sphinx-build -EWT --keep-going docs build/html"
 # Delete any files that git ignore hides from us

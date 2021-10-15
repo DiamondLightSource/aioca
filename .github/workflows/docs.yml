@@ -6,6 +6,7 @@ on:
 
 jobs:
   build:
+    name: "Docs CI"
     runs-on: ubuntu-latest
 
     steps:
@@ -31,33 +32,18 @@ jobs:
       - name: Build Docs
         run: pipenv run docs
 
-      - uses: rishabhgupta/split-by@v1
-        id: split
-        with:
-          string: ${{ github.ref }}
-          split-by: /
-
       - name: Move to versioned directory
         # e.g. master or 0.1.2
-        run: mv build/html ".github/pages/${{ steps.split.outputs._2 }}"
+        run: mv build/html ".github/pages/${GITHUB_REF##*/}"
 
       - name: Publish Docs to gh-pages
         # Only master and tags are published
         if: "${{ github.repository_owner == 'dls-controls' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags')) }}"
         # We pin to the SHA, not the tag, for security reasons.
-        # https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/security-hardening-for-github-actions#using-third-party-actions
+        # https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions#using-third-party-actions
         uses: peaceiris/actions-gh-pages@bbdfb200618d235585ad98e965f4aafc39b4c501  # v3.7.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: .github/pages
           keep_files: true
 
-      - name: Enable gh-pages
-        # If we just pushed something, make sure it is visible
-        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags')
-        run: |
-          curl --request POST \
-          --url https://api.github.com/repos/${{ github.repository }}/pages \
-          --header 'Accept: application/vnd.github.switcheroo-preview+json' \
-          --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-          --data '{"source":{"branch":"gh-pages","path":"/"}}' \

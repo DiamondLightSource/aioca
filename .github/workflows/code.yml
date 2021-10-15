@@ -9,23 +9,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest"]
+        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
         python: ["3.6", "3.7", "3.8", "3.9"]
-        pipenv: ["skip-lock"]
+        pipenv: ["skip-lock"]  # --${flag} will be passed to pipenv command
 
         include:
-          # Tag the Python3.7 runner as the one to publish wheels
+          # Add an extra Python3.7 runner to publish wheels and use the lockfile
           - os: "ubuntu-latest"
             python: "3.7"
             pipenv: "deploy"
             publish: true
 
-    name: ${{ matrix.os }}/${{ matrix.python }}
+    name: build/${{ matrix.python }}/${{ matrix.os }}/${{ matrix.pipenv }}
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout Source
         uses: actions/checkout@v2
+        with:
+          # require history to get back to last tag for version number of branches
+          fetch-depth: 0
 
       - name: Set up Python ${{ matrix.python }}
         uses: actions/setup-python@v2
@@ -34,8 +37,8 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install pipenv twine build
-          pipenv install --dev --${{ matrix.pipenv }} --python $(which python) && pipenv graph
+          pip install pipenv build
+          pipenv install --dev --${{ matrix.pipenv }} --python $(python -c 'import sys; print(sys.executable)') && pipenv graph
 
       - name: Create Sdist and Wheel
         if: matrix.publish
@@ -53,7 +56,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
-          name: ${{ matrix.os }}/${{ matrix.python }}
+          name: ${{ matrix.python }}/${{ matrix.os }}/${{ matrix.pipenv }}
           files: cov.xml
 
       - name: Upload Wheel and Sdist as artifacts
@@ -63,10 +66,29 @@ jobs:
           name: dist
           path: dist/*
 
-      - name: Publish Sdist and Wheel to PyPI
-        # Only once when on a tag
-        if: matrix.publish && startsWith(github.ref, 'refs/tags')
+  release:
+    needs: [build]
+    runs-on: ubuntu-latest
+    # upload to PyPI and make a release on every tag
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: dist
+
+      - name: Github Release
+        # We pin to the SHA, not the tag, for security reasons.
+        # https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions#using-third-party-actions
+        uses: softprops/action-gh-release@2d72d869af3bf23602f9593a1e3fd739b80ac1eb  # v0.1.12
+        with:
+          files: dist/*
+          body: See [Changelog](CHANGELOG.rst) for more details
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to PyPI
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.pypi_token }}
-        run: twine upload dist/*
+        run: pipx run twine upload dist/*
