@@ -11,6 +11,5 @@ Contents
 
     api
     contributing
-    release_notes
-
-* :ref:`genindex`
+    Changelog <https://github.com/dls-controls/aioca/blob/master/CHANGELOG.rst>
+    Index <genindex.html#http://>
