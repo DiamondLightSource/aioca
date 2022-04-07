@@ -101,10 +101,6 @@ is called on the returned subscription object:
 
 .. autofunction:: connect
 
-It is possible to test whether a channel has successfully connected without
-provoking suspension by calling ``connect(pv, wait=False, cainfo=True)``
-and testing the ``.state`` attribute of the result.
-
 .. autofunction:: cainfo
 
 .. autoclass:: CAInfo()
@@ -113,6 +109,10 @@ and testing the ``.state`` attribute of the result.
 The `str` representation of this structure can be printed to
 produce output similar to that produced by the ``cainfo`` command line
 tool.
+
+It is possible to test whether a channel has successfully connected without
+provoking suspension by calling ``cainfo(pv, wait=False)`` and testing the
+``.state`` attribute of the result.
 
 All of the above functions will make a connection to a channel which is cached
 for future calls. If you need to clear this cache (e.g. in tests) you can call:

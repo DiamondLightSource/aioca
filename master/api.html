@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>aioca API &mdash; aioca 1.3 documentation</title>
+  <title>aioca API &mdash; aioca 1.3+3.g69ea466 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -32,7 +32,7 @@
             <a href="contents.html" class="icon icon-home"> aioca
           </a>
               <div class="version">
-                1.3
+                master
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -329,9 +329,6 @@ caput(…, wait=False) will complete immediately without suspension.</p>
 </dl>
 </dd></dl>
 
-<p>It is possible to test whether a channel has successfully connected without
-provoking suspension by calling <code class="docutils literal notranslate"><span class="pre">connect(pv,</span> <span class="pre">wait=False,</span> <span class="pre">cainfo=True)</span></code>
-and testing the <code class="docutils literal notranslate"><span class="pre">.state</span></code> attribute of the result.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="aioca.cainfo">
 <em class="property"><span class="pre">async</span> </em><span class="sig-prename descclassname"><span class="pre">aioca.</span></span><span class="sig-name descname"><span class="pre">cainfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pv</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#aioca.types.Timeout" title="aioca.types.Timeout"><span class="pre">aioca.types.Timeout</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">throw</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#aioca.CAInfo" title="aioca.CAInfo"><span class="pre">aioca.CAInfo</span></a></span></span><a class="reference internal" href="_modules/aioca/_catools.html#cainfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aioca.cainfo" title="Permalink to this definition"></a></dt>
@@ -413,6 +410,9 @@ for textual description.</p>
 <p>The <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">str</span></code></a> representation of this structure can be printed to
 produce output similar to that produced by the <code class="docutils literal notranslate"><span class="pre">cainfo</span></code> command line
 tool.</p>
+<p>It is possible to test whether a channel has successfully connected without
+provoking suspension by calling <code class="docutils literal notranslate"><span class="pre">cainfo(pv,</span> <span class="pre">wait=False)</span></code> and testing the
+<code class="docutils literal notranslate"><span class="pre">.state</span></code> attribute of the result.</p>
 <p>All of the above functions will make a connection to a channel which is cached
 for future calls. If you need to clear this cache (e.g. in tests) you can call:</p>
 <dl class="py function">
@@ -497,7 +497,7 @@ the result returned will be an array.</p>
 <td><p>Floating point value</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#aioca.ca_array" title="aioca.ca_array"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ca_array</span></code></a></p></td>
-<td><p><a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-ndarray" title="(in NumPy v1.21)"><code class="xref any docutils literal notranslate"><span class="pre">ndarray</span></code></a></p></td>
+<td><p><a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-ndarray" title="(in NumPy v1.22)"><code class="xref any docutils literal notranslate"><span class="pre">ndarray</span></code></a></p></td>
 <td><p>Any array value</p></td>
 </tr>
 </tbody>
@@ -522,8 +522,8 @@ the result returned will be an array.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="aioca.ca_array">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">aioca.</span></span><span class="sig-name descname"><span class="pre">ca_array</span></span><a class="headerlink" href="#aioca.ca_array" title="Permalink to this definition"></a></dt>
-<dd><p>Array type derived from <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><code class="xref any docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>. The associated
-<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.dtype.html#numpy.ndarray.dtype" title="(in NumPy v1.21)"><code class="xref py py-attr docutils literal notranslate"><span class="pre">dtype</span></code></a> will be as close a fit to the underlying data
+<dd><p>Array type derived from <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><code class="xref any docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>. The associated
+<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.dtype.html#numpy.ndarray.dtype" title="(in NumPy v1.22)"><code class="xref py py-attr docutils literal notranslate"><span class="pre">dtype</span></code></a> will be as close a fit to the underlying data
 as possible.</p>
 </dd></dl>
 
@@ -571,7 +571,7 @@ before completion and if <code class="docutils literal notranslate"><span class=
 </section>
 <section id="augmented-values">
 <span id="augmented"></span><h3>Augmented Values<a class="headerlink" href="#augmented-values" title="Permalink to this headline"></a></h3>
-<p>Augmented values are normally Python or <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.21)"><code class="xref any docutils literal notranslate"><span class="pre">numpy</span></code></a> values with extra fields:
+<p>Augmented values are normally Python or <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.22)"><code class="xref any docutils literal notranslate"><span class="pre">numpy</span></code></a> values with extra fields:
 the <code class="xref any docutils literal notranslate"><span class="pre">.ok</span></code> and <code class="xref any docutils literal notranslate"><span class="pre">.name</span></code> fields are already mentioned above, and
 further extra fields will be present depending on format requested for the data.
 As pointed out above, <code class="xref any docutils literal notranslate"><span class="pre">.ok</span></code> is always <a class="reference external" href="https://docs.python.org/3/library/constants.html#True" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">True</span></code></a> for valid data.</p>
@@ -600,7 +600,7 @@ provided by the channel will be returned.</p></li>
 <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">float</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">str</span></code></a>.  These correspond to
 <code class="docutils literal notranslate"><span class="pre">DBR_LONG</span></code>, <code class="docutils literal notranslate"><span class="pre">DBR_DOUBLE</span></code> and <code class="docutils literal notranslate"><span class="pre">DBR_STRING</span></code>
 respectively.</p></li>
-<li><p>Any <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v1.21)"><code class="xref any docutils literal notranslate"><span class="pre">numpy.dtype</span></code></a> compatible with any of the above values.</p></li>
+<li><p>Any <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v1.22)"><code class="xref any docutils literal notranslate"><span class="pre">numpy.dtype</span></code></a> compatible with any of the above values.</p></li>
 <li><p>One of the special values <code class="docutils literal notranslate"><span class="pre">DBR_CHAR_STR</span></code>,
 <code class="docutils literal notranslate"><span class="pre">DBR_CHAR_UNICODE</span></code>, or <code class="docutils literal notranslate"><span class="pre">DBR_CHAR_BYTES</span></code>.  This is used to
 request a char array which is then converted to a Python <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">str</span></code></a>
