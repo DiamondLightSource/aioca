@@ -370,6 +370,35 @@ async def test_long_monitor_callback(ioc: subprocess.Popen) -> None:
 
 
 @pytest.mark.asyncio
+async def test_long_monitor_all_updates(ioc: subprocess.Popen) -> None:
+    # Like above, but check all_updates gives us everything
+    values = []
+    wait_for_ioc(ioc)
+
+    async def cb(value):
+        values.append(value)
+        await asyncio.sleep(0.4)
+
+    m = camonitor(LONGOUT, cb, connect_timeout=(time.time() + 0.5,), all_updates=True)
+    # Wait for connection, calling first cb
+    await poll_length(values)
+    assert values == [42]
+    assert m.dropped_callbacks == 0
+    # These two caputs happen during the sleep of the first cb,
+    # they shouldn't be squashed as we ask for all_updates
+    await caput(LONGOUT, 43)
+    await caput(LONGOUT, 44)
+    # Wait until the second cb has finished
+    await asyncio.sleep(0.6)
+    assert [42, 43] == values
+    assert m.dropped_callbacks == 0
+    # Wait until the third cb (which is not dropped) has finished
+    await asyncio.sleep(0.6)
+    assert [42, 43, 44] == values
+    assert m.dropped_callbacks == 0
+
+
+@pytest.mark.asyncio
 async def test_exception_raising_monitor_callback(
     ioc: subprocess.Popen, capsys
 ) -> None:

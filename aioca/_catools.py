@@ -412,7 +412,7 @@ class Subscription(object):
         self.dropped_callbacks: int = 0
         self.__event_loop = asyncio.get_event_loop()
         self.__values: Deque[AugmentedValue] = collections.deque(
-            maxlen=0 if all_updates else 1
+            maxlen=None if all_updates else 1
         )
         self.__lock = asyncio.Lock()
 
