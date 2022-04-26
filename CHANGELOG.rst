@@ -9,7 +9,9 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 Unreleased_
 -----------
 
-Nothing yet
+Fixed:
+
+- `camonitor(all_updates=True) now works <../../pull/24>`_
 
 1.3_ - 2021-10-15
 -----------------
