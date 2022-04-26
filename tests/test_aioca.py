@@ -46,6 +46,8 @@ BAD_EGUS = PV_PREFIX + "bad_egus"
 WAVEFORM = PV_PREFIX + "waveform"
 # A read only PV
 RO = PV_PREFIX + "waveform.NELM"
+# Longer test timeouts as GHA has slow runners on Mac
+TIMEOUT = 10
 
 
 def boom(value, *args) -> None:
@@ -80,7 +82,7 @@ def ioc():
         pass
 
 
-def wait_for_ioc(ioc, timeout=5):
+def wait_for_ioc(ioc, timeout=TIMEOUT):
     start = time.time()
     while True:
         assert time.time() - start < timeout
@@ -91,7 +93,7 @@ def wait_for_ioc(ioc, timeout=5):
 
 @pytest.mark.asyncio
 async def test_connect(ioc: subprocess.Popen) -> None:
-    conn = await connect(LONGOUT)
+    conn = await connect(LONGOUT, timeout=TIMEOUT)
     assert type(conn) is CANothing
     conn2 = await connect([SI, NE], throw=False, timeout=1.0)
     assert len(conn2) == 2
@@ -103,7 +105,7 @@ async def test_connect(ioc: subprocess.Popen) -> None:
 
 @pytest.mark.asyncio
 async def test_cainfo(ioc: subprocess.Popen) -> None:
-    conn2 = await cainfo([WAVEFORM, SI])
+    conn2 = await cainfo([WAVEFORM, SI], timeout=TIMEOUT)
     assert conn2[0].datatype == 1  # array
     assert conn2[1].datatype == 0  # string
     conn = await cainfo(LONGOUT)
@@ -157,20 +159,20 @@ async def test_get_non_existent_pvs_no_throw(ioc: subprocess.Popen) -> None:
 async def test_get_two_pvs(
     ioc: subprocess.Popen, pvs: Union[List[str], Tuple[str]]
 ) -> None:
-    value = await caget(pvs)
+    value = await caget(pvs, timeout=TIMEOUT)
     assert [42, "me"] == value
 
 
 @pytest.mark.asyncio
 async def test_get_pv_with_bad_egus(ioc: subprocess.Popen) -> None:
-    value = await caget(BAD_EGUS, format=FORMAT_CTRL)
+    value = await caget(BAD_EGUS, format=FORMAT_CTRL, timeout=TIMEOUT)
     assert 32 == value
     assert value.units == "\ufffd"  # unicode REPLACEMENT CHARACTER
 
 
 @pytest.mark.asyncio
 async def test_get_waveform_pv(ioc: subprocess.Popen) -> None:
-    value = await caget(WAVEFORM)
+    value = await caget(WAVEFORM, timeout=TIMEOUT)
     assert len(value) == 0
     assert isinstance(value, dbr.ca_array)
     await caput(WAVEFORM, [1, 2, 3, 4])
@@ -183,7 +185,7 @@ async def test_get_waveform_pv(ioc: subprocess.Popen) -> None:
 @pytest.mark.asyncio
 async def test_caput(ioc: subprocess.Popen) -> None:
     # Need to test the timeout=None branch, but wrap with wait_for in case it fails
-    v1 = await asyncio.wait_for(caput(LONGOUT, 43, wait=True, timeout=None), 5)
+    v1 = await asyncio.wait_for(caput(LONGOUT, 43, wait=True, timeout=None), TIMEOUT)
     assert isinstance(v1, CANothing)
     v2 = await caget(LONGOUT)
     assert 43 == v2
@@ -192,7 +194,7 @@ async def test_caput(ioc: subprocess.Popen) -> None:
 @pytest.mark.asyncio
 async def test_caput_on_ro_pv_fails(ioc: subprocess.Popen) -> None:
     with pytest.raises(cadef.CAException):
-        await caput(RO, 43)
+        await caput(RO, 43, timeout=TIMEOUT)
     result = await caput(RO, 43, throw=False)
     assert str(result).endswith("Write access denied")
 
@@ -202,7 +204,7 @@ async def test_caput_on_ro_pv_fails(ioc: subprocess.Popen) -> None:
 async def test_caput_two_pvs_same_value(
     ioc: subprocess.Popen, pvs: Union[List[str], Tuple[str]]
 ) -> None:
-    await caput([LONGOUT, SI], 43)
+    await caput([LONGOUT, SI], 43, timeout=TIMEOUT)
     value = await caget([LONGOUT, SI])
     assert [43, "43"] == value
     await caput([LONGOUT, SI], "44")
@@ -212,7 +214,7 @@ async def test_caput_two_pvs_same_value(
 
 @pytest.mark.asyncio
 async def test_caput_two_pvs_different_value(ioc: subprocess.Popen) -> None:
-    await caput([LONGOUT, SI], [44, "blah"])
+    await caput([LONGOUT, SI], [44, "blah"], timeout=TIMEOUT)
     value = await caget([LONGOUT, SI])
     assert [44, "blah"] == value
 
@@ -232,7 +234,7 @@ async def test_caget_non_existent() -> None:
 
 @pytest.mark.asyncio
 async def test_caget_non_existent_and_good(ioc: subprocess.Popen) -> None:
-    await caput(WAVEFORM, [1, 2, 3, 4])
+    await caput(WAVEFORM, [1, 2, 3, 4], timeout=TIMEOUT)
     try:
         await caget([NE, WAVEFORM], timeout=1.0)
     except CANothing:
@@ -246,7 +248,7 @@ async def test_caget_non_existent_and_good(ioc: subprocess.Popen) -> None:
     assert len(x) == 0
 
 
-async def poll_length(array, gt=0, timeout=5):
+async def poll_length(array, gt=0, timeout=TIMEOUT):
     start = time.time()
     while not len(array) > gt:
         await asyncio.sleep(0.01)
@@ -307,7 +309,7 @@ async def test_monitor_with_failing_dbr(ioc: subprocess.Popen, capsys) -> None:
 @pytest.mark.asyncio
 async def test_monitor_two_pvs(ioc: subprocess.Popen) -> None:
     values: List[Tuple[AugmentedValue, int]] = []
-    await caput(WAVEFORM, [1, 2], wait=True)
+    await caput(WAVEFORM, [1, 2], wait=True, timeout=TIMEOUT)
     ms = camonitor([WAVEFORM, LONGOUT], lambda v, n: values.append((v, n)), count=-1)
 
     # Wait for connection
