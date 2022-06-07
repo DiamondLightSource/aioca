@@ -9,6 +9,11 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 Unreleased_
 -----------
 
+Nothing yet
+
+1.4_ - 2022-06-07
+-----------------
+
 Fixed:
 
 - `camonitor(all_updates=True) now works <../../pull/24>`_
@@ -51,7 +56,8 @@ Added:
 
 - Port of cothread.catools to asyncio
 
-.. _Unreleased: ../../compare/1.3...HEAD
+.. _Unreleased: ../../compare/1.4...HEAD
+.. _1.4: ../../compare/1.3...1.4
 .. _1.3: ../../compare/1.2...1.3
 .. _1.2: ../../compare/1.1...1.2
 .. _1.1: ../../compare/1.0...1.1
