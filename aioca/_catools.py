@@ -330,7 +330,8 @@ class Subscription(object):
 
     def __create_signal_task(self, value):
         task = asyncio.ensure_future(self.__signal(value))
-        self.__tasks.append(task)
+        self.__tasks.add(task)
+        task.add_done_callback(self.__tasks.remove)
 
     async def __signal(self, value):
         """Wrapper for performing callbacks safely: only performs the callback
@@ -428,13 +429,13 @@ class Subscription(object):
         # background, as we may have to wait for the channel to become
         # connected.
         self.state = self.OPENING
-        self.__tasks = [
+        self.__tasks = {
             asyncio.ensure_future(
                 self.__create_subscription(
                     events, datatype, format, count, connect_timeout
                 )
             )
-        ]
+        }
 
     async def __wait_for_channel(self, timeout):
         try:
