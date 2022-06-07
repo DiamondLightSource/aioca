@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>aioca._catools &mdash; aioca 1.3+7.g47155dc documentation</title>
+  <title>aioca._catools &mdash; aioca 1.3+9.g6cbe972 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -445,7 +445,8 @@
 
     <span class="k">def</span> <span class="nf">__create_signal_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="n">task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">ensure_future</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__signal</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tasks</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+        <span class="n">task</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__tasks</span><span class="o">.</span><span class="n">remove</span><span class="p">)</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">__signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Wrapper for performing callbacks safely: only performs the callback</span>
@@ -543,13 +544,13 @@
         <span class="c1"># background, as we may have to wait for the channel to become</span>
         <span class="c1"># connected.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">OPENING</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__tasks</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tasks</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">asyncio</span><span class="o">.</span><span class="n">ensure_future</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__create_subscription</span><span class="p">(</span>
                     <span class="n">events</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">connect_timeout</span>
                 <span class="p">)</span>
             <span class="p">)</span>
-        <span class="p">]</span>
+        <span class="p">}</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">__wait_for_channel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
