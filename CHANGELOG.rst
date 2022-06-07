@@ -12,6 +12,7 @@ Unreleased_
 Fixed:
 
 - `camonitor(all_updates=True) now works <../../pull/24>`_
+- `Fixed memory leak in camonitor <../../pull/26>`
 
 1.3_ - 2021-10-15
 -----------------

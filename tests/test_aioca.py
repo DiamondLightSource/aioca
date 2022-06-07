@@ -270,6 +270,9 @@ async def test_monitor(ioc: subprocess.Popen) -> None:
     ioc.communicate("exit")
 
     await asyncio.sleep(0.1)
+    # Check that all callback tasks have terminated, and all that is left
+    # is the original __create_subscription task (which has now completed)
+    assert len(m._Subscription__tasks) == 1  # type: ignore
     m.close()
 
     assert [42, 43, 44] == values[:3]
