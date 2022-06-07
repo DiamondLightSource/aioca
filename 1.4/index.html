@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>aioca &mdash; aioca 1.4 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="aioca API" href="api.html" />
+    <link rel="prev" title="Contents" href="contents.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="contents.html" class="icon icon-home"> aioca
+          </a>
+              <div class="version">
+                1.4
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-pronounce-aioca">How do I pronounce aioca?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#environment-variables">Environment Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#function-reference">Function Reference</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">aioca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/dls-controls/aioca/blob/master/CHANGELOG.rst">Changelog</a></li>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+  <!-- Add versions for selected branches + tags -->
+  <p class="caption">
+    <span class="caption-text">Versions</span>
+  </p>
+  <ul id="versions"/>
+  <script>
+    // Add any branches to appear in the side pane here, tags will be added below
+    // Will only appear if docs are built and pushed in gh-pages
+    var versions = ['main', 'master'];
+    var dirs = new Set();
+    function addVersion(name) {
+      if (dirs.has(name)) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = 'https://dls-controls.github.io/aioca/' + name;
+        a.innerText = name;
+        li.appendChild(a)
+        document.getElementById('versions').appendChild(li);
+      }
+    }
+    Promise.all([
+      // Find gh-pages directories and populate `dirs`
+      fetch("https://api.github.com/repos/dls-controls/aioca/contents?ref=gh-pages")
+      .then(response => response.json())
+      .then(data => data.forEach(function(e) {
+        if (e.type == "dir") dirs.add(e.name);
+      })),
+      // Add tags to `versions`
+      fetch('https://api.github.com/repos/dls-controls/aioca/tags')
+        .then(response => response.json())
+        .then(data => data.forEach(function(e) {
+          versions.push(e.name);
+        }))
+      ]).then(_ => versions.forEach(addVersion))
+  </script>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="contents.html">aioca</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="contents.html" class="icon icon-home"></a> &raquo;</li>
+      <li>aioca</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="aioca">
+<h1>aioca<a class="headerlink" href="#aioca" title="Permalink to this headline"></a></h1>
+<p><a class="reference external" href="https://github.com/dls-controls/aioca/actions?query=workflow%3A%22Code+CI%22"><img alt="Code CI" src="https://github.com/dls-controls/aioca/workflows/Code%20CI/badge.svg?branch=master" /></a> <a class="reference external" href="https://github.com/dls-controls/aioca/actions?query=workflow%3A%22Docs+CI%22"><img alt="Docs CI" src="https://github.com/dls-controls/aioca/workflows/Docs%20CI/badge.svg?branch=master" /></a> <a class="reference external" href="https://codecov.io/gh/dls-controls/aioca"><img alt="Test Coverage" src="https://codecov.io/gh/dls-controls/aioca/branch/master/graph/badge.svg" /></a> <a class="reference external" href="https://pypi.org/project/aioca"><img alt="Latest PyPI version" src="https://img.shields.io/pypi/v/aioca.svg" /></a> <a class="reference external" href="https://opensource.org/licenses/Apache-2.0"><img alt="Apache License" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" /></a></p>
+<p>aioca is an asynchronous EPICS Channel Access client for asyncio and Python
+using libca via ctypes.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 82%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>PyPI</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">aioca</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Source code</p></td>
+<td><p><a class="reference external" href="https://github.com/dls-controls/aioca">https://github.com/dls-controls/aioca</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Documentation</p></td>
+<td><p><a class="reference external" href="https://dls-controls.github.io/aioca">https://dls-controls.github.io/aioca</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Changelog</p></td>
+<td><p><a class="reference external" href="https://github.com/dls-controls/aioca/blob/master/CHANGELOG.rst">https://github.com/dls-controls/aioca/blob/master/CHANGELOG.rst</a></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="simple">
+<dt><a class="reference internal" href="api.html#aioca.caget" title="aioca.caget"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caget(pvs,</span> <span class="pre">...)</span></code></a></dt><dd><p>Returns a single snapshot of the current value of each PV.</p>
+</dd>
+<dt><a class="reference internal" href="api.html#aioca.caput" title="aioca.caput"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caput(pvs,</span> <span class="pre">values,</span> <span class="pre">...)</span></code></a></dt><dd><p>Writes values to one or more PVs.</p>
+</dd>
+<dt><a class="reference internal" href="api.html#aioca.camonitor" title="aioca.camonitor"><code class="xref any py py-func docutils literal notranslate"><span class="pre">camonitor(pvs,</span> <span class="pre">callback,</span> <span class="pre">...)</span></code></a></dt><dd><p>Receive notification each time any of the listed PVs changes.</p>
+</dd>
+<dt><a class="reference internal" href="api.html#aioca.connect" title="aioca.connect"><code class="xref any py py-func docutils literal notranslate"><span class="pre">connect(pvs,</span> <span class="pre">...)</span></code></a></dt><dd><p>Optionally can be used to establish PV connection before using the PV.</p>
+</dd>
+</dl>
+<p>To use these functions a certain amount of setup work is required. The following
+code illustrates a simple application which reads a value from one PV, writes to
+another PV, and monitors a third until terminated with control-C:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aioca</span> <span class="kn">import</span> <span class="n">caget</span><span class="p">,</span> <span class="n">caput</span><span class="p">,</span> <span class="n">camonitor</span><span class="p">,</span> <span class="n">run</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">do_stuff</span><span class="p">():</span>
+    <span class="c1"># Using caput: write 1234 into PV1.  Raises exception on failure</span>
+    <span class="k">await</span> <span class="n">caput</span><span class="p">(</span><span class="s1">&#39;PV1&#39;</span><span class="p">,</span> <span class="mi">1234</span><span class="p">)</span>
+
+    <span class="c1"># Print out the value reported by PV2.</span>
+    <span class="nb">print</span><span class="p">(</span><span class="k">await</span> <span class="n">caget</span><span class="p">(</span><span class="s1">&#39;PV2&#39;</span><span class="p">))</span>
+
+    <span class="c1"># Monitor PV3, printing out each update as it is received.</span>
+    <span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;callback&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="n">camonitor</span><span class="p">(</span><span class="s1">&#39;PV3&#39;</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
+
+<span class="c1"># Now run the camonitor process until interrupted by Ctrl-C.</span>
+<span class="n">run</span><span class="p">(</span><span class="n">do_stuff</span><span class="p">(),</span> <span class="n">forever</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <a class="reference internal" href="api.html#aioca.run" title="aioca.run"><code class="xref any py py-func docutils literal notranslate"><span class="pre">run</span></code></a> function is just a convenience function to allow async code to be
+tested, it just creates an asyncio event loop and runs the code under it. If you
+already have an asyncio event loop you can just call your async function within
+it and dispense with the <a class="reference internal" href="api.html#aioca.run" title="aioca.run"><code class="xref any py py-func docutils literal notranslate"><span class="pre">run</span></code></a> function.</p>
+<p>If running under IPython you can also do awaits from the interactive console:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">aioca</span> <span class="kn">import</span> <span class="n">caput</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="k">await</span> <span class="n">caput</span><span class="p">(</span><span class="s2">&quot;PV1&quot;</span><span class="p">,</span> <span class="mi">5678</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="how-do-i-pronounce-aioca">
+<h2>How do I pronounce aioca?<a class="headerlink" href="#how-do-i-pronounce-aioca" title="Permalink to this headline"></a></h2>
+<p>Good question. The closest we have to a canonical pronounciation is eye-oak-ah,
+as the alternatives are a bit of a mouthful…</p>
+</section>
+<section id="environment-variables">
+<span id="environment"></span><h2>Environment Variables<a class="headerlink" href="#environment-variables" title="Permalink to this headline"></a></h2>
+<p>A number of environment variables affect the operation of channel access.  These
+can be set using the <a class="reference external" href="https://docs.python.org/3/library/os.html#os.environ" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">os.environ</span></code></a> dictionary – but note that these need to be
+set <em>before</em> loading the <a class="reference internal" href="api.html#module-aioca" title="aioca"><code class="xref any py py-mod docutils literal notranslate"><span class="pre">aioca</span></code></a> module.  The following are documented in the
+<a class="reference external" href="http://www.aps.anl.gov/epics/EpicsDocumentation/AppDevManuals/ChannelAccess/cadoc_4.htm">EPICS channel access developers manual</a>.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">EPICS_CA_MAX_ARRAY_BYTES</span></code></dt><dd><p>Configures the maximum number of bytes that can be transferred in a single
+channel access message.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">EPICS_CA_ADDR_LIST</span></code></dt><dd><p>A space separated list of channel access server addresses.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">EPICS_CA_AUTO_ADDR_LIST</span></code></dt><dd><p>If set to <code class="docutils literal notranslate"><span class="pre">NO</span></code> the automatic scanning of networks is disabled.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">EPICS_CA_CONN_TMO</span></code></dt><dd><p>Connection timeout, 30 seconds by default.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">EPICS_CA_BEACON_PERIOD</span></code></dt><dd><p>Beacon polling period, 15 seconds by default.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">EPICS_CA_SERVER_PORT</span></code>, <code class="docutils literal notranslate"><span class="pre">EPICS_CA_REPEATER_PORT</span></code></dt><dd><p>Set these to configure the ports used to connect to channel access.  By
+default ports 5064 and 5065 are used respectively.</p>
+</dd>
+</dl>
+<p>Example code:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;EPICS_CA_MAX_ARRAY_BYTES&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;1000000&#39;</span>
+
+<span class="c1"># Note: the first import of aioca must come after the environ is set up.</span>
+<span class="kn">from</span> <span class="nn">aioca</span> <span class="kn">import</span> <span class="o">*</span>
+</pre></div>
+</div>
+</section>
+<section id="function-reference">
+<h2>Function Reference<a class="headerlink" href="#function-reference" title="Permalink to this headline"></a></h2>
+<p>The <a class="reference internal" href="api.html#api"><span class="std std-ref">aioca API</span></a> consists of the three functions <a class="reference internal" href="api.html#aioca.caput" title="aioca.caput"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caput</span></code></a>, <a class="reference internal" href="api.html#aioca.caget" title="aioca.caget"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caget</span></code></a> and <a class="reference internal" href="api.html#aioca.camonitor" title="aioca.camonitor"><code class="xref any py py-func docutils literal notranslate"><span class="pre">camonitor</span></code></a>
+together with auxilliary <a class="reference internal" href="api.html#aioca.connect" title="aioca.connect"><code class="xref any py py-func docutils literal notranslate"><span class="pre">connect</span></code></a> and <a class="reference internal" href="api.html#aioca.cainfo" title="aioca.cainfo"><code class="xref any py py-func docutils literal notranslate"><span class="pre">cainfo</span></code></a> functions.  The functions
+<a class="reference internal" href="api.html#aioca.caget" title="aioca.caget"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caget</span></code></a> and <a class="reference internal" href="api.html#aioca.camonitor" title="aioca.camonitor"><code class="xref any py py-func docutils literal notranslate"><span class="pre">camonitor</span></code></a> return or deliver “augmented” values which are
+documented in more detail in the <a class="reference internal" href="api.html#values"><span class="std std-ref">Working with Values</span></a> section.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="contents.html" class="btn btn-neutral float-left" title="Contents" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="aioca API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2019, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
