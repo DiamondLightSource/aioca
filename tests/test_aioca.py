@@ -55,6 +55,11 @@ def boom(value, *args) -> None:
     raise ValueError("Boom")
 
 
+async def boom_async(value) -> None:
+    """Async function for raising an error"""
+    raise ValueError("Boom")
+
+
 @pytest.fixture
 def ioc():
     process = subprocess.Popen(
@@ -270,9 +275,6 @@ async def test_monitor(ioc: subprocess.Popen) -> None:
     ioc.communicate("exit")
 
     await asyncio.sleep(0.1)
-    # Check that all callback tasks have terminated, and all that is left
-    # is the original __create_subscription task (which has now completed)
-    assert len(m._Subscription__tasks) == 1  # type: ignore
     m.close()
 
     assert [42, 43, 44] == values[:3]
@@ -353,11 +355,11 @@ async def test_long_monitor_callback(ioc: subprocess.Popen) -> None:
     # squashed together for the second cb
     await caput(LONGOUT, 43)
     await caput(LONGOUT, 44)
-    # Wait until the second cb has finished
-    await asyncio.sleep(0.6)
-    assert [42, 44] == values
-    assert m.dropped_callbacks == 0
-    # Wait until the third cb (which is dropped) has finished
+    # Check we get a dropped callback before the second cb fires
+    await asyncio.sleep(0.2)
+    assert [42] == values
+    assert m.dropped_callbacks == 1
+    # Wait until the second cb (which is dropped) has finished
     await asyncio.sleep(0.6)
     assert [42, 44] == values
     assert m.dropped_callbacks == 1
@@ -433,14 +435,60 @@ async def test_exception_raising_monitor_callback(
 
 
 @pytest.mark.asyncio
+async def test_async_exception_raising_monitor_callback(
+    ioc: subprocess.Popen, capsys
+) -> None:
+    wait_for_ioc(ioc)
+    m = camonitor(LONGOUT, boom_async)
+    assert m.state == m.OPENING
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+
+    # Wait for first update to come in and close the subscription
+    await asyncio.sleep(0.5)
+    assert m.state == m.CLOSED
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "ValueError: Boom" in captured.err
+
+    # Check no more updates
+    values: List[str] = []
+    m.callback = values.append
+    await caput(LONGOUT, 32)
+    assert m.state == m.CLOSED
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+    assert len(values) == 0
+
+
+@pytest.mark.asyncio
 async def test_camonitor_non_existent() -> None:
     values: List[AugmentedValue] = []
     m = camonitor(NE, values.append, connect_timeout=0.2)
     try:
         assert len(values) == 0
+        await asyncio.sleep(0.1)
+        assert len(values) == 0
         await asyncio.sleep(0.5)
         assert len(values) == 1
         assert not values[0].ok
+    finally:
+        m.close()
+
+
+@pytest.mark.asyncio
+async def test_camonitor_non_existent_async() -> None:
+    q: asyncio.Queue[AugmentedValue] = asyncio.Queue()
+    m = camonitor(NE, q.put, connect_timeout=0.2)
+    try:
+        assert q.qsize() == 0
+        await asyncio.sleep(0.1)
+        assert q.qsize() == 0
+        await asyncio.sleep(0.5)
+        assert q.qsize() == 1
+        assert not q.get_nowait().ok
     finally:
         m.close()
 
@@ -470,7 +518,7 @@ async def test_monitor_gc(ioc: subprocess.Popen) -> None:
 
 async def monitor_for_a_bit(callback: Callable, ioc) -> Subscription:
     wait_for_ioc(ioc)
-    m = camonitor(TICKING, callback, notify_disconnect=True)
+    m = camonitor(TICKING, callback, notify_disconnect=True, all_updates=True)
     await asyncio.sleep(1.1)
     return m
 
@@ -487,9 +535,7 @@ def test_closing_event_loop(ioc: subprocess.Popen, capsys) -> None:
     updates = (q.get_nowait(), q.get_nowait())
     assert updates in [(0, 1), (1, 2)]
     assert q.qsize() == 0
-    captured = capsys.readouterr()
-    assert captured.out == ""
-    assert captured.err == ""
+    assert len(m.pending_values) == 0
 
     time.sleep(2.0)
     m.close()
@@ -498,20 +544,17 @@ def test_closing_event_loop(ioc: subprocess.Popen, capsys) -> None:
     # We should have 2 more updates that didn't make it to the queue
     # because loop closed
     assert q.qsize() == 0
-    captured = capsys.readouterr()
-    assert captured.out == ""
-    assert len(closed_messages(captured.err)) == 2, captured.err
+    assert len(m.pending_values) == 2
 
     # Check that there are no more updates
     time.sleep(2.0)
-    captured = capsys.readouterr()
-    assert captured.out == ""
-    assert captured.err == ""
+    assert len(m.pending_values) == 2
 
     ioc.communicate("exit")
     time.sleep(0.5)
-    # We should have one more error from the disconnect
+    # There should be no more updates, but one error from the close message
     assert q.qsize() == 0
+    assert len(m.pending_values) == 2
     captured = capsys.readouterr()
     assert captured.out == ""
     assert len(closed_messages(captured.err)) == 1, captured.err
