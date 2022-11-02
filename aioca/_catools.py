@@ -5,6 +5,7 @@ import ctypes
 import functools
 import inspect
 import sys
+import threading
 import time
 import traceback
 from typing import (
@@ -15,6 +16,7 @@ from typing import (
     Dict,
     Generic,
     List,
+    Optional,
     Sequence,
     Set,
     Tuple,
@@ -187,7 +189,7 @@ class Channel(object):
         channel changes.  This is called directly from channel access, which
         means that user callbacks should not be called directly."""
 
-        self = cadef.ca_puser(args.chid)
+        self: Channel = cadef.ca_puser(args.chid)
         op = args.op
         self.__event_loop.call_soon_threadsafe(self.on_ca_connect_, op)
 
@@ -251,7 +253,9 @@ class ChannelCache(object):
 
     def __init__(self, loop: asyncio.AbstractEventLoop):
         self.__channels: Dict[str, Channel] = {}
-        self.loop = loop
+        self.__loop = loop
+        self.__waiting = True
+        self.__callbacks: Deque[Tuple[Callable, Tuple]] = collections.deque()
 
     def get_channel(self, name: str) -> Channel:
         try:
@@ -259,7 +263,7 @@ class ChannelCache(object):
             return self.__channels[name]
         except KeyError:
             # Have to create a new channel
-            channel = Channel(name, self.loop)
+            channel = Channel(name, self.__loop)
             self.__channels[name] = channel
             return channel
 
@@ -269,6 +273,18 @@ class ChannelCache(object):
         for channel in self.__channels.values():
             channel._purge()
         self.__channels.clear()
+
+    def __call_callbacks(self):
+        while self.__callbacks:
+            callback, args = self.__callbacks.popleft()
+            callback(*args)
+        self.__waiting = True
+
+    def call_soon_threadsafe(self, callback: Callable, *args):  # pragma: no cover
+        self.__callbacks.append((callback, args))
+        if self.__waiting:
+            self.__waiting = False
+            self.__loop.call_soon_threadsafe(self.__call_callbacks)
 
 
 # ----------------------------------------------------------------------------
@@ -289,10 +305,13 @@ class Subscription(object):
         "_as_parameter_",  # Associated channel access subscription handle
         "all_updates",  # True iff all updates delivered without merging
         "notify_disconnect",  # Whether to report disconnect events
-        "__values",  # Most recent updates from event handler
-        "__lock",  # Taken while a callback is running
+        "pending_values",  # Most recent updates from event handler
+        "__lock",  # Lock around pending_values and dropped_callbacks
         "__event_loop",  # The event loop the caller created this from
-        "__tasks",  # Tasks that have been spawned from within asyncio
+        "__call_soon_threadsafe",  # Reference to channel_cache.call_soon_threadsafe
+        "__is_async",  # If the callback is awaitable
+        "__task",  # Task for subscription updates
+        "__future",  # Future which will be updated if __is_async and pending_values
     ]
 
     # Subscription state values:
@@ -306,92 +325,6 @@ class Subscription(object):
         dbr.FORMAT_TIME: cadef.DBE_VALUE | cadef.DBE_ALARM,
         dbr.FORMAT_CTRL: cadef.DBE_VALUE | cadef.DBE_ALARM | cadef.DBE_PROPERTY,
     }
-
-    @staticmethod
-    @cadef.event_handler
-    def __on_event(args):  # pragma: no cover
-        """This is called each time the subscribed value changes.  As this is
-        called asynchronously, a signal must be queued for later dispatching
-        to the monitoring user."""
-        self = args.usr
-
-        try:
-            assert (
-                args.status == cadef.ECA_NORMAL
-            ), f"Subscription {self.name} got bad status {args.status}"
-            # Good data: extract value from the dbr. Note that this can fail
-            self.__values.append(self.dbr_to_value(args.raw_dbr, args.type, args.count))
-            # This signals update merging should occur
-            value = None
-        except Exception:
-            # Something went wrong, insert it into the processing chain
-            value = sys.exc_info()
-        self.__event_loop.call_soon_threadsafe(self.__create_signal_task, value)
-
-    def __create_signal_task(self, value):
-        task = asyncio.ensure_future(self.__signal(value))
-        self.__tasks.add(task)
-        task.add_done_callback(self.__tasks.remove)
-
-    async def __signal(self, value):
-        """Wrapper for performing callbacks safely: only performs the callback
-        if the subscription is open and reports and handles any exceptions that
-        might arise."""
-        if self.state == self.CLOSED:
-            # We have closed this subscription, don't callback on pending values
-            return
-        # Take the lock so two callbacks can't run at once
-        async with self.__lock:
-            if value is None:
-                try:
-                    # Consume a single value from the queue
-                    value = self.__values.popleft()
-                except IndexError:
-                    # Deque has overflowed, count and return
-                    self.dropped_callbacks += 1
-                    return
-            try:
-                if isinstance(value, tuple):
-                    # This should only happen if the asynchronous callback
-                    # caught an exception for us to re-raise here.
-                    raise value[1].with_traceback(value[2])
-                else:
-                    ret = self.callback(value)
-                    if inspect.isawaitable(ret):
-                        await ret
-            except Exception:
-                # We try and be robust about exceptions in handlers, but to
-                # prevent a perpetual storm of exceptions, we close the
-                # subscription after reporting the problem.
-                print(
-                    "Subscription %s callback raised exception" % self.name,
-                    file=sys.stderr,
-                )
-                traceback.print_exc()
-                print("Subscription %s closed" % self.name, file=sys.stderr)
-                self.close()
-
-    def _on_connect(self, connected):
-        """This is called each time the connection state of the underlying
-        channel changes.  It is called synchronously."""
-        if not connected and self.notify_disconnect:
-            # Channel has become disconnected: tell the subscriber.
-            self.__create_signal_task(CANothing(self.name, cadef.ECA_DISCONN))
-
-    def close(self):
-        """Closes the subscription and releases any associated resources.
-        Note that no further callbacks will occur on a closed subscription,
-        not even callbacks currently queued for execution."""
-        if self.state == self.OPEN:
-            self.channel._remove_subscription(self)
-            cadef.ca_clear_subscription(self)
-
-        if not self.__event_loop.is_closed():
-            _flush_io()
-            for task in self.__tasks:
-                task.cancel()
-
-        self.state = self.CLOSED
 
     def __init__(
         self,
@@ -407,15 +340,20 @@ class Subscription(object):
     ):
         self.name = name
         self.callback = callback
+        self.all_updates = all_updates
         self.notify_disconnect = notify_disconnect
         #: The number of updates that have been dropped as they happened
         #: while another callback was in progress
         self.dropped_callbacks: int = 0
         self.__event_loop = asyncio.get_event_loop()
-        self.__values: Deque[AugmentedValue] = collections.deque(
+        self.pending_values: Deque[AugmentedValue] = collections.deque(
             maxlen=None if all_updates else 1
         )
-        self.__lock = asyncio.Lock()
+        self.__future: Optional[asyncio.Future] = None
+        self.__lock = threading.Lock()  # Used for update merging.
+        self.__is_async = inspect.iscoroutinefunction(
+            self.callback
+        ) or inspect.isgeneratorfunction(self.callback)
 
         # If events not specified then compute appropriate default corresponding
         # to the requested format.
@@ -424,18 +362,100 @@ class Subscription(object):
 
         # Trigger channel connection if channel not already known.
         self.channel = get_channel(name)
+        self.__call_soon_threadsafe = _Context._channel_caches[
+            self.__event_loop
+        ].call_soon_threadsafe
 
         # Spawn the actual task of creating the subscription into the
         # background, as we may have to wait for the channel to become
         # connected.
         self.state = self.OPENING
-        self.__tasks = {
-            asyncio.ensure_future(
-                self.__create_subscription(
-                    events, datatype, format, count, connect_timeout
-                )
+        self.__task = asyncio.ensure_future(
+            self.__create_subscription(events, datatype, format, count, connect_timeout)
+        )
+
+    @staticmethod
+    @cadef.event_handler
+    def __on_event(args) -> None:  # pragma: no cover
+        """This is called each time the subscribed value changes.  As this is
+        called asynchronously, a signal must be queued for later dispatching
+        to the monitoring user."""
+        self: Subscription = args.usr
+
+        try:
+            assert (
+                args.status == cadef.ECA_NORMAL
+            ), f"Subscription {self.name} got bad status {args.status}"
+            # Good data: extract value from the dbr. Note that this can fail
+            value = self.dbr_to_value(args.raw_dbr, args.type, args.count)
+            self.__queue_value(value)
+            self.__call_soon_threadsafe(self.__signal)
+        except Exception:
+            # Something went wrong, report and close the connection
+            self.__call_soon_threadsafe(self.close, sys.exc_info())
+
+    def __queue_value(self, value) -> None:  # pragma: no cover
+        """Threadsafe append to the queue"""
+        with self.__lock:
+            # Need to lock to make sure __signal code below doesn't
+            # consume self.__values before we can increment dropped_callbacks
+            if self.pending_values.maxlen and self.pending_values:
+                # already full and we are going to overwrite it, so
+                # increment the dropped values counter
+                self.dropped_callbacks += 1
+            self.pending_values.append(value)
+
+    def __signal(self) -> None:
+        """Wrapper for performing callbacks safely: only performs the callback
+        if the subscription is open and reports and handles any exceptions that
+        might arise."""
+        if self.state != self.CLOSED:
+            try:
+                if self.__is_async:
+                    # Signal to __create_subscription task to handle it
+                    if self.__future:
+                        self.__future.set_result(True)
+                        self.__future = None
+                else:
+                    # Handle it directly
+                    while self.pending_values:
+                        with self.__lock:
+                            value = self.pending_values.popleft()
+                        self.callback(value)
+            except Exception:
+                # We try and be robust about exceptions in handlers, but to
+                # prevent a perpetual storm of exceptions, we close the
+                # subscription after reporting the problem.
+                self.close(sys.exc_info())
+
+    def _on_connect(self, connected: bool):
+        """This is called each time the connection state of the underlying
+        channel changes.  It is called synchronously."""
+        if not connected and self.notify_disconnect:
+            # Channel has become disconnected: tell the subscriber.
+            self.__queue_value(CANothing(self.name, cadef.ECA_DISCONN))
+            self.__signal()
+
+    def close(self, exc_info=None) -> None:
+        """Closes the subscription and releases any associated resources.
+        Note that no further callbacks will occur on a closed subscription,
+        not even callbacks currently queued for execution."""
+        if exc_info:
+            print(
+                "Subscription %s callback raised exception" % self.name,
+                file=sys.stderr,
             )
-        }
+            traceback.print_exception(*exc_info)
+            print("Subscription %s closed" % self.name, file=sys.stderr)
+        if self.state == self.OPEN:
+            self.channel._remove_subscription(self)
+            cadef.ca_clear_subscription(self)
+
+        if not self.__event_loop.is_closed():
+            _flush_io()
+            self.__task.cancel()
+
+        self.state = self.CLOSED
 
     async def __wait_for_channel(self, timeout):
         try:
@@ -445,7 +465,12 @@ class Subscription(object):
             # Connection timeout.  Let the caller know and now just block
             # until we connect (if ever).  Note that in this case the caller
             # is notified even if notify_disconnect=False is set.
-            self.__create_signal_task(e)
+            ret = self.callback(e)
+            # This would normally be handled by __signal, but the
+            # __create_subscription task is blocked by this so handle it
+            # here explicitly
+            if self.__is_async:
+                await ret
             await self.channel.wait()
 
     async def __create_subscription(
@@ -454,38 +479,56 @@ class Subscription(object):
         """Creates the channel subscription with the specified parameters:
         event mask, datatype and format, array count.  Waits for the channel
         to become connected."""
+        try:
+            # Need to first wait for the channel to connect before we can do
+            # anything else. This will either succeed, or wait forever, raising
+            # if close() is called
+            await self.__wait_for_channel(connect_timeout)
 
-        # Need to first wait for the channel to connect before we can do
-        # anything else. This will either succeed, or wait forever, raising
-        # if close() is called
-        await self.__wait_for_channel(connect_timeout)
+            self.state = self.OPEN
 
-        self.state = self.OPEN
+            # Treat a negative count as a request for the complete data
+            if count < 0:
+                count = cadef.ca_element_count(self.channel)
 
-        # Treat a negative count as a request for the complete data
-        if count < 0:
-            count = cadef.ca_element_count(self.channel)
+            # Connect to the channel to be kept informed of connection updates.
+            self.channel._add_subscription(self)
+            # Convert the datatype request into the subscription datatype.
+            dbrcode, self.dbr_to_value = dbr.type_to_dbr(self.channel, datatype, format)
 
-        # Connect to the channel to be kept informed of connection updates.
-        self.channel._add_subscription(self)
-        # Convert the datatype request into the subscription datatype.
-        dbrcode, self.dbr_to_value = dbr.type_to_dbr(self.channel, datatype, format)
+            # Finally create the subscription with all the requested properties
+            # and hang onto the returned event id as our implicit ctypes
+            # parameter.
+            event_id = ctypes.c_void_p()
+            cadef.ca_create_subscription(
+                dbrcode,
+                count,
+                self.channel,
+                events,
+                self.__on_event,
+                ctypes.py_object(self),
+                ctypes.byref(event_id),
+            )
+            _flush_io()
+            self._as_parameter_ = event_id.value
 
-        # Finally create the subscription with all the requested properties
-        # and hang onto the returned event id as our implicit ctypes
-        # parameter.
-        event_id = ctypes.c_void_p()
-        cadef.ca_create_subscription(
-            dbrcode,
-            count,
-            self.channel,
-            events,
-            self.__on_event,
-            ctypes.py_object(self),
-            ctypes.byref(event_id),
-        )
-        _flush_io()
-        self._as_parameter_ = event_id.value
+            if self.__is_async:
+                # If we are async then we should be servicing the callbacks here
+                while True:
+                    try:
+                        value = self.pending_values.popleft()
+                    except IndexError:
+                        self.__future = self.__event_loop.create_future()
+                        await self.__future
+                    else:
+                        await self.callback(value)
+        except asyncio.CancelledError:
+            # This is allowed
+            raise
+        except Exception:
+            # Unexpected exception, close the subscription
+            self.close(sys.exc_info())
+            raise
 
 
 @overload

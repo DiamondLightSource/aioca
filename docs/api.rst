@@ -93,6 +93,17 @@ each update is called as::
 where index is the position in the original array of pvs of the name
 generating this update.
 
+If an async function as passed as a callback, then it will be awaited and no
+further callbacks will be run for this particular Subscription until this
+completes. This can be useful in conjunction with the default
+``all_updates=False`` for running periodic updating code like::
+
+    async def about_once_a_second(value):
+        do_something_with(value)
+        await asyncio.sleep(1)
+
+    camonitor(pv, callback=about_once_a_second)
+
 Subscriptions will remain active until the :meth:`~Subscription.close()` method
 is called on the returned subscription object:
 
