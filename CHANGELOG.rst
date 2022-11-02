@@ -11,6 +11,13 @@ Unreleased_
 
 Nothing yet
 
+1.5_ - 2022-11-02
+-----------------
+
+Fixed:
+
+- `Improved performance <../../pull/29>`_
+
 1.4_ - 2022-06-07
 -----------------
 
@@ -56,7 +63,8 @@ Added:
 
 - Port of cothread.catools to asyncio
 
-.. _Unreleased: ../../compare/1.4...HEAD
+.. _Unreleased: ../../compare/1.5...HEAD
+.. _1.5: ../../compare/1.4...1.5
 .. _1.4: ../../compare/1.3...1.4
 .. _1.3: ../../compare/1.2...1.3
 .. _1.2: ../../compare/1.1...1.2
