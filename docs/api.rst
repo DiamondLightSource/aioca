@@ -104,6 +104,12 @@ completes. This can be useful in conjunction with the default
 
     camonitor(pv, callback=about_once_a_second)
 
+.. note::
+
+    If you have the choice between sync and async functions (like
+    `asyncio.Queue.put_nowait` vs `asyncio.Queue.put` on an unbounded Queue)
+    then choose the sync option for better performance
+
 Subscriptions will remain active until the :meth:`~Subscription.close()` method
 is called on the returned subscription object:
 

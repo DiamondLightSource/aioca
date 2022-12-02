@@ -36,17 +36,17 @@ DEFAULT_TIMEOUT = 5.0
 
 
 class ValueEvent(Generic[T]):
-    def __init__(self):
-        self.value = None
+    def __init__(self) -> None:
+        self.value: Union[T, Exception] = RuntimeError("No value set")
         self._event = asyncio.Event()
 
-    def set(self, value: Union[T, Exception] = None):
+    def set(self, value: Union[T, Exception]):
         self._event.set()
         self.value = value
 
     def clear(self):
         self._event.clear()
-        self.value = None
+        self.value = RuntimeError("No value set")
 
     async def wait(self) -> T:
         if not self._event.is_set():
@@ -62,7 +62,7 @@ class CANothing(Exception):
     as a failure indicator from `caget`, and may be raised as an exception to
     report a data error on caget or caput with wait."""
 
-    def __init__(self, name, errorcode=cadef.ECA_NORMAL):
+    def __init__(self, name: str, errorcode=cadef.ECA_NORMAL) -> None:
         #: Name of the PV
         self.name: str = name
         #: True for successful completion, False for error code
@@ -184,7 +184,7 @@ class Channel(object):
 
     @staticmethod
     @cadef.connection_handler
-    def on_ca_connect(args):  # pragma: no cover
+    def on_ca_connect(args) -> None:  # pragma: no cover
         """This routine is called every time the connection status of the
         channel changes.  This is called directly from channel access, which
         means that user callbacks should not be called directly."""
@@ -199,7 +199,7 @@ class Channel(object):
 
         if connected:
             # Trigger wakeup of all listeners
-            self.__connect_event.set()
+            self.__connect_event.set(None)
         else:
             self.__connect_event.clear()
 
@@ -207,11 +207,11 @@ class Channel(object):
         for subscription in self.__subscriptions:
             subscription._on_connect(connected)
 
-    def __init__(self, name, loop):
+    def __init__(self, name: str, loop: asyncio.AbstractEventLoop):
         """Creates a channel access channel with the given name."""
         self.name = name
         self.__subscriptions: Set[Subscription] = set()
-        self.__connect_event = ValueEvent()
+        self.__connect_event = ValueEvent[None]()
         self.__event_loop = loop
 
         chid = ctypes.c_void_p()
@@ -231,6 +231,7 @@ class Channel(object):
             subscription.close()
         cadef.ca_clear_channel(self)
         del self._as_parameter_
+        _flush_io()
 
     def _add_subscription(self, subscription):
         """Adds the given subscription to the list of receivers of connection
@@ -351,9 +352,7 @@ class Subscription(object):
         )
         self.__future: Optional[asyncio.Future] = None
         self.__lock = threading.Lock()  # Used for update merging.
-        self.__is_async = inspect.iscoroutinefunction(
-            self.callback
-        ) or inspect.isgeneratorfunction(self.callback)
+        self.__is_async: Optional[bool] = None
 
         # If events not specified then compute appropriate default corresponding
         # to the requested format.
@@ -411,17 +410,18 @@ class Subscription(object):
         might arise."""
         if self.state != self.CLOSED:
             try:
-                if self.__is_async:
-                    # Signal to __create_subscription task to handle it
-                    if self.__future:
-                        self.__future.set_result(True)
-                        self.__future = None
-                else:
-                    # Handle it directly
+                if self.__is_async is False:
+                    # The first update was not async, assume it will always not
+                    # be async and handle it here
                     while self.pending_values:
                         with self.__lock:
                             value = self.pending_values.popleft()
                         self.callback(value)
+                else:
+                    # Signal to __create_subscription task to handle it
+                    if self.__future:
+                        self.__future.set_result(True)
+                        self.__future = None
             except Exception:
                 # We try and be robust about exceptions in handlers, but to
                 # prevent a perpetual storm of exceptions, we close the
@@ -457,6 +457,12 @@ class Subscription(object):
 
         self.state = self.CLOSED
 
+    async def __do_initial_callback(self, value):
+        ret = self.callback(value)
+        self.__is_async = inspect.isawaitable(ret)
+        if self.__is_async:
+            await ret
+
     async def __wait_for_channel(self, timeout):
         try:
             # Wait for channel to be connected
@@ -465,12 +471,7 @@ class Subscription(object):
             # Connection timeout.  Let the caller know and now just block
             # until we connect (if ever).  Note that in this case the caller
             # is notified even if notify_disconnect=False is set.
-            ret = self.callback(e)
-            # This would normally be handled by __signal, but the
-            # __create_subscription task is blocked by this so handle it
-            # here explicitly
-            if self.__is_async:
-                await ret
+            await self.__do_initial_callback(e)
             await self.channel.wait()
 
     async def __create_subscription(
@@ -512,16 +513,21 @@ class Subscription(object):
             _flush_io()
             self._as_parameter_ = event_id.value
 
-            if self.__is_async:
-                # If we are async then we should be servicing the callbacks here
-                while True:
-                    try:
+            # If we are async then we should be servicing the callbacks here
+            while self.__is_async is not False:
+                try:
+                    with self.__lock:
                         value = self.pending_values.popleft()
-                    except IndexError:
-                        self.__future = self.__event_loop.create_future()
-                        await self.__future
+                except IndexError:
+                    self.__future = self.__event_loop.create_future()
+                    await self.__future
+                else:
+                    if self.__is_async is None:
+                        # This is the first callback so need to calculate is_async
+                        await self.__do_initial_callback(value)
                     else:
                         await self.callback(value)
+
         except asyncio.CancelledError:
             # This is allowed
             raise
