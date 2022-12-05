@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>aioca._catools &mdash; aioca 1.4+3.g777dab1 documentation</title>
+  <title>aioca._catools &mdash; aioca 1.5+2.g146dbaf documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -151,17 +151,17 @@
 
 
 <span class="k">class</span> <span class="nc">ValueEvent</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">]</span> <span class="o">=</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No value set&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_event</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">]):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No value set&quot;</span><span class="p">)</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
@@ -177,7 +177,7 @@
 <span class="sd">    as a failure indicator from `caget`, and may be raised as an exception to</span>
 <span class="sd">    report a data error on caget or caput with wait.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">errorcode</span><span class="o">=</span><span class="n">cadef</span><span class="o">.</span><span class="n">ECA_NORMAL</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">errorcode</span><span class="o">=</span><span class="n">cadef</span><span class="o">.</span><span class="n">ECA_NORMAL</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1">#: Name of the PV</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">name</span>
         <span class="c1">#: True for successful completion, False for error code</span>
@@ -299,7 +299,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="nd">@cadef</span><span class="o">.</span><span class="n">connection_handler</span>
-    <span class="k">def</span> <span class="nf">on_ca_connect</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+    <span class="k">def</span> <span class="nf">on_ca_connect</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
         <span class="sd">&quot;&quot;&quot;This routine is called every time the connection status of the</span>
 <span class="sd">        channel changes.  This is called directly from channel access, which</span>
 <span class="sd">        means that user callbacks should not be called directly.&quot;&quot;&quot;</span>
@@ -314,7 +314,7 @@
 
         <span class="k">if</span> <span class="n">connected</span><span class="p">:</span>
             <span class="c1"># Trigger wakeup of all listeners</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__connect_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__connect_event</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__connect_event</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
@@ -322,11 +322,11 @@
         <span class="k">for</span> <span class="n">subscription</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__subscriptions</span><span class="p">:</span>
             <span class="n">subscription</span><span class="o">.</span><span class="n">_on_connect</span><span class="p">(</span><span class="n">connected</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">loop</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">loop</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Creates a channel access channel with the given name.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__subscriptions</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Subscription</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__connect_event</span> <span class="o">=</span> <span class="n">ValueEvent</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__connect_event</span> <span class="o">=</span> <span class="n">ValueEvent</span><span class="p">[</span><span class="kc">None</span><span class="p">]()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__event_loop</span> <span class="o">=</span> <span class="n">loop</span>
 
         <span class="n">chid</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">()</span>
@@ -346,6 +346,7 @@
             <span class="n">subscription</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="n">cadef</span><span class="o">.</span><span class="n">ca_clear_channel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_as_parameter_</span>
+        <span class="n">_flush_io</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_add_subscription</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subscription</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Adds the given subscription to the list of receivers of connection</span>
@@ -466,9 +467,7 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__future</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">Future</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>  <span class="c1"># Used for update merging.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__is_async</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">iscoroutinefunction</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">callback</span>
-        <span class="p">)</span> <span class="ow">or</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isgeneratorfunction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__is_async</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># If events not specified then compute appropriate default corresponding</span>
         <span class="c1"># to the requested format.</span>
@@ -526,17 +525,18 @@
 <span class="sd">        might arise.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">CLOSED</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_async</span><span class="p">:</span>
-                    <span class="c1"># Signal to __create_subscription task to handle it</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__future</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">__future</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">__future</span> <span class="o">=</span> <span class="kc">None</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="c1"># Handle it directly</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_async</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                    <span class="c1"># The first update was not async, assume it will always not</span>
+                    <span class="c1"># be async and handle it here</span>
                     <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">pending_values</span><span class="p">:</span>
                         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">__lock</span><span class="p">:</span>
                             <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pending_values</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Signal to __create_subscription task to handle it</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__future</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__future</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__future</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                 <span class="c1"># We try and be robust about exceptions in handlers, but to</span>
                 <span class="c1"># prevent a perpetual storm of exceptions, we close the</span>
@@ -572,6 +572,12 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">CLOSED</span></div>
 
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">__do_initial_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__is_async</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isawaitable</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_async</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">ret</span>
+
     <span class="k">async</span> <span class="k">def</span> <span class="nf">__wait_for_channel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># Wait for channel to be connected</span>
@@ -580,12 +586,7 @@
             <span class="c1"># Connection timeout.  Let the caller know and now just block</span>
             <span class="c1"># until we connect (if ever).  Note that in this case the caller</span>
             <span class="c1"># is notified even if notify_disconnect=False is set.</span>
-            <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-            <span class="c1"># This would normally be handled by __signal, but the</span>
-            <span class="c1"># __create_subscription task is blocked by this so handle it</span>
-            <span class="c1"># here explicitly</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_async</span><span class="p">:</span>
-                <span class="k">await</span> <span class="n">ret</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__do_initial_callback</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">__create_subscription</span><span class="p">(</span>
@@ -627,16 +628,21 @@
             <span class="n">_flush_io</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_as_parameter_</span> <span class="o">=</span> <span class="n">event_id</span><span class="o">.</span><span class="n">value</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_async</span><span class="p">:</span>
-                <span class="c1"># If we are async then we should be servicing the callbacks here</span>
-                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-                    <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># If we are async then we should be servicing the callbacks here</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_async</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">__lock</span><span class="p">:</span>
                         <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pending_values</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
-                    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">__future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__event_loop</span><span class="o">.</span><span class="n">create_future</span><span class="p">()</span>
-                        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__future</span>
+                <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__event_loop</span><span class="o">.</span><span class="n">create_future</span><span class="p">()</span>
+                    <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__future</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_async</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="c1"># This is the first callback so need to calculate is_async</span>
+                        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__do_initial_callback</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
         <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">CancelledError</span><span class="p">:</span>
             <span class="c1"># This is allowed</span>
             <span class="k">raise</span>

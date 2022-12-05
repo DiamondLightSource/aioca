@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>aioca API &mdash; aioca 1.4+3.g777dab1 documentation</title>
+  <title>aioca API &mdash; aioca 1.5+2.g146dbaf documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -291,6 +291,12 @@ completes. This can be useful in conjunction with the default
 <span class="n">camonitor</span><span class="p">(</span><span class="n">pv</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">about_once_a_second</span><span class="p">)</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you have the choice between sync and async functions (like
+<a class="reference external" href="https://docs.python.org/3/library/asyncio-queue.html#asyncio.Queue.put_nowait" title="(in Python v3.11)"><code class="xref any docutils literal notranslate"><span class="pre">asyncio.Queue.put_nowait</span></code></a> vs <a class="reference external" href="https://docs.python.org/3/library/asyncio-queue.html#asyncio.Queue.put" title="(in Python v3.11)"><code class="xref any docutils literal notranslate"><span class="pre">asyncio.Queue.put</span></code></a> on an unbounded Queue)
+then choose the sync option for better performance</p>
+</div>
 <p>Subscriptions will remain active until the <a class="reference internal" href="#aioca.Subscription.close" title="aioca.Subscription.close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">close()</span></code></a> method
 is called on the returned subscription object:</p>
 <dl class="py class">
@@ -543,7 +549,7 @@ as possible.</p>
 <span id="error"></span><h3>Error Code Values<a class="headerlink" href="#error-code-values" title="Permalink to this headline"></a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="aioca.CANothing">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">aioca.</span></span><span class="sig-name descname"><span class="pre">CANothing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errorcode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aioca/_catools.html#CANothing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aioca.CANothing" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">aioca.</span></span><span class="sig-name descname"><span class="pre">CANothing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">errorcode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aioca/_catools.html#CANothing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aioca.CANothing" title="Permalink to this definition"></a></dt>
 <dd><p>This value is returned as a success or failure indicator from <a class="reference internal" href="#aioca.caput" title="aioca.caput"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caput</span></code></a>,
 as a failure indicator from <a class="reference internal" href="#aioca.caget" title="aioca.caget"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caget</span></code></a>, and may be raised as an exception to
 report a data error on caget or caput with wait.</p>
