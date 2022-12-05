@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>aioca.types &mdash; aioca 1.5.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../contents.html" class="icon icon-home"> aioca
+          </a>
+              <div class="version">
+                1.5.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">aioca API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/dls-controls/aioca/blob/master/CHANGELOG.rst">Changelog</a></li>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+  <!-- Add versions for selected branches + tags -->
+  <p class="caption">
+    <span class="caption-text">Versions</span>
+  </p>
+  <ul id="versions"/>
+  <script>
+    // Add any branches to appear in the side pane here, tags will be added below
+    // Will only appear if docs are built and pushed in gh-pages
+    var versions = ['main', 'master'];
+    var dirs = new Set();
+    function addVersion(name) {
+      if (dirs.has(name)) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = 'https://dls-controls.github.io/aioca/' + name;
+        a.innerText = name;
+        li.appendChild(a)
+        document.getElementById('versions').appendChild(li);
+      }
+    }
+    Promise.all([
+      // Find gh-pages directories and populate `dirs`
+      fetch("https://api.github.com/repos/dls-controls/aioca/contents?ref=gh-pages")
+      .then(response => response.json())
+      .then(data => data.forEach(function(e) {
+        if (e.type == "dir") dirs.add(e.name);
+      })),
+      // Add tags to `versions`
+      fetch('https://api.github.com/repos/dls-controls/aioca/tags')
+        .then(response => response.json())
+        .then(data => data.forEach(function(e) {
+          versions.push(e.name);
+        }))
+      ]).then(_ => versions.forEach(addVersion))
+  </script>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../contents.html">aioca</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>aioca.types</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for aioca.types</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Sized</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Protocol</span>
+
+<span class="c1">#: A timeout is represented by one of the following</span>
+<span class="c1">#:</span>
+<span class="c1">#: ======== ============================================================</span>
+<span class="c1">#: None     A timeout that never expires</span>
+<span class="c1">#: 0        Timeout immediately if any waiting is required</span>
+<span class="c1">#: float    A relative timeout interval in seconds</span>
+<span class="c1">#: (float,) An absolute deadline in seconds past epoch</span>
+<span class="c1">#: ======== ============================================================</span>
+<span class="n">Timeout</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">]</span>
+
+<span class="c1">#: A bitwise or of DBE event codes from epicscorelibs.ca.dbr</span>
+<span class="c1">#:</span>
+<span class="c1">#: ============ ===========================================================</span>
+<span class="c1">#: DBE_VALUE    Trigger an event when a significant change in the channel&#39;s</span>
+<span class="c1">#:              value occurs. Relies on the monitor deadband field on the</span>
+<span class="c1">#:              server</span>
+<span class="c1">#: DBE_LOG      Trigger an event when an archive significant change in the</span>
+<span class="c1">#:              channel&#39;s value occurs. Relies on the archiver monitor</span>
+<span class="c1">#:              deadband field on the server</span>
+<span class="c1">#: DBE_ALARM    Trigger an event when the alarm state changes</span>
+<span class="c1">#: DBE_PROPERTY Trigger an event when a property change (control limit,</span>
+<span class="c1">#:              graphical limit, status string, enum string ...) occurs.</span>
+<span class="c1">#: ============ ===========================================================</span>
+<span class="c1">#:</span>
+<span class="c1">#: If not specified then the default value depends on the requested `Format`</span>
+<span class="c1">#:</span>
+<span class="c1">#: ============ =============================================</span>
+<span class="c1">#: Format       Default value for events</span>
+<span class="c1">#: ============ =============================================</span>
+<span class="c1">#: FORMAT_RAW   DBE_VALUE</span>
+<span class="c1">#: FORMAT_TIME  DBE_VALUE | DBE_ALARM</span>
+<span class="c1">#: FORMAT_CTRL  DBE_VALUE | DBE_ALARM | DBE_PROPERTY</span>
+<span class="c1">#: ============ =============================================</span>
+<span class="n">Dbe</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+
+<span class="c1">#: A DBR request code from epicscorelibs.ca.dbr. One of</span>
+<span class="c1">#:</span>
+<span class="c1">#: ==================== ================================================</span>
+<span class="c1">#: DBR_STRING           40 character strings</span>
+<span class="c1">#: DBR_SHORT            16 bit signed</span>
+<span class="c1">#: DBR_FLOAT            32 bit float</span>
+<span class="c1">#: DBR_ENUM             16 bit unsigned</span>
+<span class="c1">#: DBR_CHAR             8 bit unsigned</span>
+<span class="c1">#: DBR_LONG             32 bit signed</span>
+<span class="c1">#: DBR_DOUBLE           64 bit float</span>
+<span class="c1">#: DBR_PUT_ACKT         Configure global alarm acknowledgement</span>
+<span class="c1">#: DBR_PUT_ACKS         Acknowledge global alarm</span>
+<span class="c1">#: DBR_STSACK_STRING    Returns status ack structure</span>
+<span class="c1">#: DBR_CLASS_NAME       Returns record type (same as .RTYP)</span>
+<span class="c1">#: DBR_ENUM_STR         Enums as strings, default otherwise</span>
+<span class="c1">#: DBR_CHAR_BYTES       Long byte strings as char arrays</span>
+<span class="c1">#: DBR_CHAR_UNICODE     Long unicode strings as char arrays</span>
+<span class="c1">#: DBR_CHAR_STR         Long strings as char arrays</span>
+<span class="c1">#: ==================== ================================================</span>
+<span class="n">Dbr</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">36</span><span class="p">,</span> <span class="mi">37</span><span class="p">,</span> <span class="mi">38</span><span class="p">,</span> <span class="mi">996</span><span class="p">,</span> <span class="mi">997</span><span class="p">,</span> <span class="mi">998</span><span class="p">,</span> <span class="mi">999</span><span class="p">]</span>
+
+<span class="c1">#: The format of the requested data can be one of the following</span>
+<span class="c1">#:</span>
+<span class="c1">#: ==================== ================================================</span>
+<span class="c1">#: None (the default)   In this case the &quot;native&quot; datatype provided</span>
+<span class="c1">#:                      by the channel will be returned</span>
+<span class="c1">#: A `Dbr` value        To request this type from the IOC</span>
+<span class="c1">#: A python type        Compatible with any of the above values,</span>
+<span class="c1">#:                      such as int, float or str</span>
+<span class="c1">#: A numpy dtype        Compatible with any of the above values</span>
+<span class="c1">#: ==================== ================================================</span>
+<span class="n">Datatype</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Dbr</span><span class="p">,</span> <span class="n">Type</span><span class="p">]</span>
+
+<span class="c1">#: How much auxilliary information will be returned with the retrieved data.</span>
+<span class="c1">#: From epicscorelibs.ca.dbr, one of the following</span>
+<span class="c1">#:</span>
+<span class="c1">#: ============ ===========================================================</span>
+<span class="c1">#: FORMAT_RAW   The data is returned unaugmented except for the .name field</span>
+<span class="c1">#: FORMAT_TIME  The data is augmented by the data timestamp together with</span>
+<span class="c1">#:              .alarm .status and .severity fields.</span>
+<span class="c1">#: FORMAT_CTRL  The data is augmented by channel access &quot;control&quot; fields.</span>
+<span class="c1">#:              This set of fields depends on the underlying datatype</span>
+<span class="c1">#: ============ ===========================================================</span>
+<span class="n">Format</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+<span class="c1">#: How many array elements to retrieve from the server. One of the following</span>
+<span class="c1">#:</span>
+<span class="c1">#: ======== ============================================================</span>
+<span class="c1">#: 0        Server and data dependent waveform length</span>
+<span class="c1">#: -1       The full data length</span>
+<span class="c1">#: +ve int  A maximum of this number of elements</span>
+<span class="c1">#: ======== ============================================================</span>
+<span class="n">Count</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="AugmentedValue"><a class="viewcode-back" href="../../api.html#aioca.types.AugmentedValue">[docs]</a><span class="k">class</span> <span class="nc">AugmentedValue</span><span class="p">(</span><span class="n">Protocol</span><span class="p">,</span> <span class="n">Sized</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Protocol representing a value returned from `caget` or `camonitor`</span>
+
+<span class="sd">    The value itself depends on the number of values requested for the PV. If</span>
+<span class="sd">    only one value is requested then the value is returned as a scalar,</span>
+<span class="sd">    otherwise as a numpy array.</span>
+
+<span class="sd">    The value will also be &quot;augmented&quot; with extra fields depending on the</span>
+<span class="sd">    `Format` and `Datatype` of the pv, and if the operation was successful.</span>
+
+<span class="sd">    Every value has the `ok` and `name` fields.</span>
+
+<span class="sd">    If `ok` is False then `errorcode` is set to the appropriate ECA error code</span>
+<span class="sd">    and str(value) will return an appropriate error message.</span>
+
+<span class="sd">    If `ok` is True then `datatype` and `element_count` will be present.</span>
+
+<span class="sd">    If FORMAT_TIME is requested then `status`, `severity`, `timestamp` and</span>
+<span class="sd">    `raw_stamp` will be present</span>
+
+<span class="sd">    If FORMAT_CTRL is requested then `status` and `severity` will be present,</span>
+<span class="sd">    along with other `Dbr` specific fields:</span>
+
+<span class="sd">    - DBR_SHORT, DBR_CHAR, DBR_LONG will also have `units`, `upper_disp_limit`,</span>
+<span class="sd">      `lower_disp_limit`, `upper_alarm_limit`, `lower_alarm_limit`,</span>
+<span class="sd">      `upper_warning_limit`, `lower_warning_limit`, `upper_ctrl_limit`,</span>
+<span class="sd">      `lower_ctrl_limit`</span>
+<span class="sd">    - DBR_FLOAT, DBR_DOUBLE will have the DBR_LONG fiels together with a</span>
+<span class="sd">      `precision` field</span>
+<span class="sd">    - DBR_ENUM will have `enums`</span>
+<span class="sd">    - DBR_STRING does not support FORMAT_CTRL, so FORMAT_TIME data is returned</span>
+<span class="sd">      instead</span>
+<span class="sd">     &quot;&quot;&quot;</span>
+
+    <span class="c1">#: Name of the PV used to create this value</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="c1">#: True for normal data, False for error code</span>
+    <span class="n">ok</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="c1">#: ECA error code</span>
+    <span class="n">errorcode</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="c1">#: Underlying `Dbr` code</span>
+    <span class="n">datatype</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="c1">#: Number of elements in the underlying EPICS value. If this is not 1 then the</span>
+    <span class="c1">#: value is treated as an array, otherwise up to this many elements may be</span>
+    <span class="c1">#: present in the value.</span>
+    <span class="n">element_count</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="c1">#: EPICS alarm severity, normally one of the values listed below.</span>
+    <span class="c1">#:</span>
+    <span class="c1">#: =  ==================================</span>
+    <span class="c1">#: 0  No alarm</span>
+    <span class="c1">#: 1  Alarm condition, minor severity</span>
+    <span class="c1">#: 2  Alarm condition, major severity.</span>
+    <span class="c1">#: 3  Invalid value.</span>
+    <span class="c1">#: =  ==================================</span>
+    <span class="n">severity</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="c1">#: CA status code, the reason for severity</span>
+    <span class="n">status</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="c1">#: Record timestamp in raw format as provided by EPICS (but in the local Unix</span>
+    <span class="c1">#: epoch, not the EPICS epoch).  Is a tuple of the form ``(secs, nsec)`` with</span>
+    <span class="c1">#: integer seconds and nanosecond values, provided in case full ns timestamp</span>
+    <span class="c1">#: precision is required.</span>
+    <span class="n">raw_stamp</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+    <span class="c1">#: Timestamp in seconds in format compatible with ``time.time()`` rounded to</span>
+    <span class="c1">#: the nearest microsecond: for nanosecond precision use `raw_stamp`</span>
+    <span class="c1">#: instead.</span>
+    <span class="n">timestamp</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="c1">#: This is a dynamic property which returns `timestamp` as a</span>
+    <span class="c1">#: `datetime` value, taking local time into account</span>
+    <span class="n">datetime</span><span class="p">:</span> <span class="n">datetime</span>
+    <span class="n">units</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1">#: Units for display</span>
+    <span class="n">upper_disp_limit</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1">#: Upper limit for displaying value</span>
+    <span class="n">lower_disp_limit</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1">#: Lower limit for displaying value</span>
+    <span class="n">upper_alarm_limit</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1">#: Above this limit value in alarm</span>
+    <span class="n">lower_alarm_limit</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1">#: Below this limit value in alarm</span>
+    <span class="n">upper_warning_limit</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1">#: Above this limit is a warning</span>
+    <span class="n">lower_warning_limit</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1">#: Below this limit is a warning</span>
+    <span class="n">upper_ctrl_limit</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1">#: Upper limit for puts to this value</span>
+    <span class="n">lower_ctrl_limit</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1">#: Lower limit for puts to this value</span>
+    <span class="n">precision</span><span class="p">:</span> <span class="nb">int</span>  <span class="c1">#: Display precision for floating point values</span>
+    <span class="n">enums</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1">#: Enumeration strings for ENUM type</span>
+    <span class="c1">#: Used for global alarm acknowledgement. Do transient alarms have</span>
+    <span class="c1">#: to be acknowledged? (0,1) means (no, yes).</span>
+    <span class="n">ackt</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="c1">#: Used for global alarm acknowledgement. The highest alarm severity to</span>
+    <span class="c1">#: acknowledge. If the current alarm severity is less then or equal to</span>
+    <span class="c1">#: this value the alarm is acknowledged.</span>
+    <span class="n">acks</span><span class="p">:</span> <span class="nb">int</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2019, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
