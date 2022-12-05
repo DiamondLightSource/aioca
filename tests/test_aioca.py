@@ -50,16 +50,6 @@ RO = PV_PREFIX + "waveform.NELM"
 TIMEOUT = 10
 
 
-def boom(value, *args) -> None:
-    """Function for raising an error"""
-    raise ValueError("Boom")
-
-
-async def boom_async(value) -> None:
-    """Async function for raising an error"""
-    raise ValueError("Boom")
-
-
 @pytest.fixture
 def ioc():
     process = subprocess.Popen(
@@ -160,7 +150,7 @@ async def test_get_non_existent_pvs_no_throw(ioc: subprocess.Popen) -> None:
 
 # Ensure both lists and tuples of PVs can be handled.
 @pytest.mark.asyncio
-@pytest.mark.parametrize("pvs", ([LONGOUT, SI], (LONGOUT, SI),))
+@pytest.mark.parametrize("pvs", ([LONGOUT, SI], (LONGOUT, SI)))
 async def test_get_two_pvs(
     ioc: subprocess.Popen, pvs: Union[List[str], Tuple[str]]
 ) -> None:
@@ -205,15 +195,15 @@ async def test_caput_on_ro_pv_fails(ioc: subprocess.Popen) -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("pvs", ([LONGOUT, SI], (LONGOUT, SI),))
+@pytest.mark.parametrize("pvs", ([LONGOUT, SI], (LONGOUT, SI)))
 async def test_caput_two_pvs_same_value(
     ioc: subprocess.Popen, pvs: Union[List[str], Tuple[str]]
 ) -> None:
-    await caput([LONGOUT, SI], 43, timeout=TIMEOUT)
-    value = await caget([LONGOUT, SI])
+    await caput(pvs, 43, timeout=TIMEOUT)
+    value = await caget(pvs)
     assert [43, "43"] == value
-    await caput([LONGOUT, SI], "44")
-    value = await caget([LONGOUT, SI])
+    await caput(pvs, "44")
+    value = await caget(pvs)
     assert [44, "44"] == value
 
 
@@ -291,6 +281,10 @@ async def test_monitor_with_failing_dbr(ioc: subprocess.Popen, capsys) -> None:
 
     assert values == [42]
     values.clear()
+
+    def boom(value, *args) -> None:
+        """Function for raising an error"""
+        raise ValueError("Boom")
 
     m.dbr_to_value = boom
     assert m.state == m.OPEN
@@ -409,19 +403,26 @@ async def test_long_monitor_all_updates(ioc: subprocess.Popen) -> None:
 async def test_exception_raising_monitor_callback(
     ioc: subprocess.Popen, capsys
 ) -> None:
+    expected = [42]
+
     wait_for_ioc(ioc)
-    m = camonitor(LONGOUT, boom)
+    m = camonitor(LONGOUT, lambda v: expected.remove(v))
     assert m.state == m.OPENING
     captured = capsys.readouterr()
     assert captured.out == ""
     assert captured.err == ""
 
-    # Wait for first update to come in and close the subscription
+    # Wait for first update to come in and work
+    await asyncio.sleep(0.5)
+    assert expected == []
+
+    # Make it trigger an error
+    await caput(LONGOUT, 35)
     await asyncio.sleep(0.5)
     assert m.state == m.CLOSED
     captured = capsys.readouterr()
     assert captured.out == ""
-    assert "ValueError: Boom" in captured.err
+    assert "ValueError: list.remove(x): x not in list" in captured.err
 
     # Check no more updates
     values: List[str] = []
@@ -439,6 +440,11 @@ async def test_async_exception_raising_monitor_callback(
     ioc: subprocess.Popen, capsys
 ) -> None:
     wait_for_ioc(ioc)
+
+    async def boom_async(value) -> None:
+        """Async function for raising an error"""
+        raise ValueError("Boom")
+
     m = camonitor(LONGOUT, boom_async)
     assert m.state == m.OPENING
     captured = capsys.readouterr()
