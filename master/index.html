@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>aioca &mdash; aioca 1.5.1 documentation</title>
+  <title>aioca &mdash; aioca 1.5.1+3.g6b16643 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -32,7 +32,7 @@
             <a href="contents.html" class="icon icon-home"> aioca
           </a>
               <div class="version">
-                1.5.1
+                master
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -49,6 +49,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#how-do-i-pronounce-aioca">How do I pronounce aioca?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#environment-variables">Environment Variables</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#function-reference">Function Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#interactions-with-other-ca-libraries">Interactions with other CA libraries</a></li>
 </ul>
 </li>
 </ul>
@@ -189,7 +190,7 @@ it and dispense with the <a class="reference internal" href="api.html#aioca.run"
 </div>
 <section id="how-do-i-pronounce-aioca">
 <h2>How do I pronounce aioca?<a class="headerlink" href="#how-do-i-pronounce-aioca" title="Permalink to this headline"></a></h2>
-<p>Good question. The closest we have to a canonical pronounciation is eye-oak-ah,
+<p>Good question. The closest we have to a canonical pronounciation is a-o-ka,
 as the alternatives are a bit of a mouthful…</p>
 </section>
 <section id="environment-variables">
@@ -229,6 +230,17 @@ default ports 5064 and 5065 are used respectively.</p>
 together with auxilliary <a class="reference internal" href="api.html#aioca.connect" title="aioca.connect"><code class="xref any py py-func docutils literal notranslate"><span class="pre">connect</span></code></a> and <a class="reference internal" href="api.html#aioca.cainfo" title="aioca.cainfo"><code class="xref any py py-func docutils literal notranslate"><span class="pre">cainfo</span></code></a> functions.  The functions
 <a class="reference internal" href="api.html#aioca.caget" title="aioca.caget"><code class="xref any py py-func docutils literal notranslate"><span class="pre">caget</span></code></a> and <a class="reference internal" href="api.html#aioca.camonitor" title="aioca.camonitor"><code class="xref any py py-func docutils literal notranslate"><span class="pre">camonitor</span></code></a> return or deliver “augmented” values which are
 documented in more detail in the <a class="reference internal" href="api.html#values"><span class="std std-ref">Working with Values</span></a> section.</p>
+</section>
+<section id="interactions-with-other-ca-libraries">
+<h2>Interactions with other CA libraries<a class="headerlink" href="#interactions-with-other-ca-libraries" title="Permalink to this headline"></a></h2>
+<p>To ensure some level of interoperability, aioca will only create (and destroy)
+its own CA context if there is not one set for the asyncio event loop thread.
+This means that it is safe to:</p>
+<ul class="simple">
+<li><p>Use aioca and pyepics in different threads</p></li>
+<li><p>Use aioca and pyepics in the same thread as long as pyepics is imported before
+aioca is first used</p></li>
+</ul>
 </section>
 </section>
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>aioca._catools &mdash; aioca 1.5.1 documentation</title>
+  <title>aioca._catools &mdash; aioca 1.5.1+3.g6b16643 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -29,7 +29,7 @@
             <a href="../../contents.html" class="icon icon-home"> aioca
           </a>
               <div class="version">
-                1.5.1
+                master
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -148,6 +148,16 @@
 <span class="n">PVs</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
 
 <span class="n">DEFAULT_TIMEOUT</span> <span class="o">=</span> <span class="mf">5.0</span>
+
+<span class="c1"># patch into epicscorelibs.ca.cadef</span>
+<span class="n">cadef</span><span class="o">.</span><span class="n">ca_current_context</span> <span class="o">=</span> <span class="n">cadef</span><span class="o">.</span><span class="n">libca</span><span class="o">.</span><span class="n">ca_current_context</span>
+<span class="n">cadef</span><span class="o">.</span><span class="n">ca_current_context</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span>
+
+<span class="n">cadef</span><span class="o">.</span><span class="n">ca_attach_context</span> <span class="o">=</span> <span class="n">cadef</span><span class="o">.</span><span class="n">libca</span><span class="o">.</span><span class="n">ca_attach_context</span>
+<span class="n">cadef</span><span class="o">.</span><span class="n">ca_attach_context</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">]</span>
+<span class="n">cadef</span><span class="o">.</span><span class="n">ca_attach_context</span><span class="o">.</span><span class="n">errcheck</span> <span class="o">=</span> <span class="n">cadef</span><span class="o">.</span><span class="n">expect_ECA_NORMAL</span>
+
+<span class="n">cadef</span><span class="o">.</span><span class="n">ca_detach_context</span> <span class="o">=</span> <span class="n">cadef</span><span class="o">.</span><span class="n">libca</span><span class="o">.</span><span class="n">ca_detach_context</span>
 
 
 <span class="k">class</span> <span class="nc">ValueEvent</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
@@ -1115,7 +1125,8 @@
 
 
 <span class="k">class</span> <span class="nc">_Context</span><span class="p">:</span>
-    <span class="n">created</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">_ca_available</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">_ca_context</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">_channel_caches</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span><span class="p">,</span> <span class="n">ChannelCache</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="nd">@classmethod</span>
@@ -1126,17 +1137,44 @@
         <span class="bp">cls</span><span class="o">.</span><span class="n">_channel_caches</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
     <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_ensure_context</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_ca_available</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">cadef</span><span class="o">.</span><span class="n">ca_current_context</span><span class="p">():</span>
+                <span class="c1"># There is no CA context available for us to use, make one</span>
+                <span class="n">cadef</span><span class="o">.</span><span class="n">ca_context_create</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="c1"># EPICS Channel Access event dispatching needs to done with a little</span>
+                <span class="c1"># care.  In previous versions the solution was to repeatedly call</span>
+                <span class="c1"># ca_pend_event() in polling mode, but this does not appear to be</span>
+                <span class="c1"># efficient enough when receiving large amounts of data.  Instead we</span>
+                <span class="c1"># enable preemptive Channel Access callbacks, which means we need to</span>
+                <span class="c1"># cope with all of our channel access events occuring</span>
+                <span class="c1"># asynchronously.</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">_ca_context</span> <span class="o">=</span> <span class="n">cadef</span><span class="o">.</span><span class="n">ca_current_context</span><span class="p">()</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_ca_available</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_destroy_context</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_destroy_context</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+        <span class="c1"># On exit we do our best to ensure that channel access shuts down cleanly.</span>
+        <span class="c1"># We do this by shutting down all channels and clearing the channel access</span>
+        <span class="c1"># context: this should reduce the risk of unexpected errors during</span>
+        <span class="c1"># application exit.</span>
+        <span class="c1">#    One reason that it&#39;s rather important to do this properly is that we</span>
+        <span class="c1"># can&#39;t safely do *any* ca_ calls once ca_context_destroy() is called!</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">purge_channel_caches</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_ca_context</span><span class="p">:</span>
+            <span class="c1"># Make sure we are attached to that context</span>
+            <span class="n">cadef</span><span class="o">.</span><span class="n">ca_detach_context</span><span class="p">()</span>
+            <span class="n">cadef</span><span class="o">.</span><span class="n">ca_attach_context</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_ca_context</span><span class="p">)</span>
+            <span class="c1"># Then destroy it</span>
+            <span class="n">cadef</span><span class="o">.</span><span class="n">ca_context_destroy</span><span class="p">()</span>
+            <span class="n">cadef</span><span class="o">.</span><span class="n">ca_detach_context</span><span class="p">()</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_ca_context</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">_ca_available</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_channel_cache</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">cls</span><span class="o">.</span><span class="n">created</span><span class="p">:</span>
-            <span class="c1"># EPICS Channel Access event dispatching needs to done with a little</span>
-            <span class="c1"># care.  In previous versions the solution was to repeatedly call</span>
-            <span class="c1"># ca_pend_event() in polling mode, but this does not appear to be</span>
-            <span class="c1"># efficient enough when receiving large amounts of data.  Instead we</span>
-            <span class="c1"># enable preemptive Channel Access callbacks, which means we need to</span>
-            <span class="c1"># cope with all of our channel access events occuring</span>
-            <span class="c1"># asynchronously.</span>
-            <span class="n">cadef</span><span class="o">.</span><span class="n">ca_context_create</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-            <span class="bp">cls</span><span class="o">.</span><span class="n">created</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">_ensure_context</span><span class="p">()</span>
         <span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">channel_cache</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_channel_caches</span><span class="p">[</span><span class="n">loop</span><span class="p">]</span>
@@ -1156,20 +1194,6 @@
     <span class="n">channel_cache</span> <span class="o">=</span> <span class="n">_Context</span><span class="o">.</span><span class="n">get_channel_cache</span><span class="p">()</span>
     <span class="n">channel</span> <span class="o">=</span> <span class="n">channel_cache</span><span class="o">.</span><span class="n">get_channel</span><span class="p">(</span><span class="n">pv</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">channel</span>
-
-
-<span class="nd">@atexit</span><span class="o">.</span><span class="n">register</span>
-<span class="k">def</span> <span class="nf">_catools_atexit</span><span class="p">():</span>  <span class="c1"># pragma: no cover</span>
-    <span class="c1"># On exit we do our best to ensure that channel access shuts down cleanly.</span>
-    <span class="c1"># We do this by shutting down all channels and clearing the channel access</span>
-    <span class="c1"># context: this should reduce the risk of unexpected errors during</span>
-    <span class="c1"># application exit.</span>
-    <span class="c1">#    One reason that it&#39;s rather important to do this properly is that we</span>
-    <span class="c1"># can&#39;t safely do *any* ca_ calls once ca_context_destroy() is called!</span>
-    <span class="n">purge_channel_caches</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">_Context</span><span class="o">.</span><span class="n">created</span><span class="p">:</span>
-        <span class="n">cadef</span><span class="o">.</span><span class="n">ca_flush_io</span><span class="p">()</span>
-        <span class="n">cadef</span><span class="o">.</span><span class="n">ca_context_destroy</span><span class="p">()</span>
 
 
 <span class="c1"># Another delicacy arising from relying on asynchronous CA event dispatching is</span>
