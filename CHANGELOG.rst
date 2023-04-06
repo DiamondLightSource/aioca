@@ -9,9 +9,14 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 Unreleased_
 -----------
 
+Nothing yet
+
+1.6_ - 2023-04-06
+-----------------
+
 Added:
 
-- Support for existing in the same process as pyepics
+- `Support for existing in the same process as pyepics <../../pull/33>`_
 
 1.5.1_ - 2022-12-05
 -----------------
@@ -72,7 +77,8 @@ Added:
 
 - Port of cothread.catools to asyncio
 
-.. _Unreleased: ../../compare/1.5.1...HEAD
+.. _Unreleased: ../../compare/1.6...HEAD
+.. _1.6: ../../compare/1.5.1...1.6
 .. _1.5.1: ../../compare/1.5...1.5.1
 .. _1.5: ../../compare/1.4...1.5
 .. _1.4: ../../compare/1.3...1.4
