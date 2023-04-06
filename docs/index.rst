@@ -50,7 +50,7 @@ If running under IPython you can also do awaits from the interactive console::
 How do I pronounce aioca?
 -------------------------
 
-Good question. The closest we have to a canonical pronounciation is eye-oak-ah,
+Good question. The closest we have to a canonical pronounciation is a-o-ka,
 as the alternatives are a bit of a mouthful...
 
 
@@ -102,3 +102,15 @@ The `API` consists of the three functions `caput`, `caget` and `camonitor`
 together with auxilliary `connect` and `cainfo` functions.  The functions
 `caget` and `camonitor` return or deliver "augmented" values which are
 documented in more detail in the `Values` section.
+
+
+Interactions with other CA libraries
+------------------------------------
+
+To ensure some level of interoperability, aioca will only create (and destroy)
+its own CA context if there is not one set for the asyncio event loop thread.
+This means that it is safe to:
+
+- Use aioca and pyepics in different threads
+- Use aioca and pyepics in the same thread as long as pyepics is imported before
+  aioca is first used

@@ -34,6 +34,16 @@ PVs = Union[List[str], Tuple[str, ...]]
 
 DEFAULT_TIMEOUT = 5.0
 
+# patch into epicscorelibs.ca.cadef
+cadef.ca_current_context = cadef.libca.ca_current_context
+cadef.ca_current_context.restype = ctypes.c_void_p
+
+cadef.ca_attach_context = cadef.libca.ca_attach_context
+cadef.ca_attach_context.argtypes = [ctypes.c_void_p]
+cadef.ca_attach_context.errcheck = cadef.expect_ECA_NORMAL
+
+cadef.ca_detach_context = cadef.libca.ca_detach_context
+
 
 class ValueEvent(Generic[T]):
     def __init__(self) -> None:
@@ -1000,7 +1010,8 @@ async def cainfo_array(pvs: PVs, wait=True, **kwargs):
 
 
 class _Context:
-    created = False
+    _ca_available = False
+    _ca_context = None
     _channel_caches: Dict[asyncio.AbstractEventLoop, ChannelCache] = {}
 
     @classmethod
@@ -1011,17 +1022,44 @@ class _Context:
         cls._channel_caches.clear()
 
     @classmethod
+    def _ensure_context(cls):
+        if not cls._ca_available:
+            if not cadef.ca_current_context():
+                # There is no CA context available for us to use, make one
+                cadef.ca_context_create(1)
+                # EPICS Channel Access event dispatching needs to done with a little
+                # care.  In previous versions the solution was to repeatedly call
+                # ca_pend_event() in polling mode, but this does not appear to be
+                # efficient enough when receiving large amounts of data.  Instead we
+                # enable preemptive Channel Access callbacks, which means we need to
+                # cope with all of our channel access events occuring
+                # asynchronously.
+                cls._ca_context = cadef.ca_current_context()
+            cls._ca_available = True
+            atexit.register(cls._destroy_context)
+
+    @classmethod
+    def _destroy_context(cls):  # pragma: no cover
+        # On exit we do our best to ensure that channel access shuts down cleanly.
+        # We do this by shutting down all channels and clearing the channel access
+        # context: this should reduce the risk of unexpected errors during
+        # application exit.
+        #    One reason that it's rather important to do this properly is that we
+        # can't safely do *any* ca_ calls once ca_context_destroy() is called!
+        cls.purge_channel_caches()
+        if cls._ca_context:
+            # Make sure we are attached to that context
+            cadef.ca_detach_context()
+            cadef.ca_attach_context(cls._ca_context)
+            # Then destroy it
+            cadef.ca_context_destroy()
+            cadef.ca_detach_context()
+            cls._ca_context = None
+        cls._ca_available = False
+
+    @classmethod
     def get_channel_cache(cls):
-        if not cls.created:
-            # EPICS Channel Access event dispatching needs to done with a little
-            # care.  In previous versions the solution was to repeatedly call
-            # ca_pend_event() in polling mode, but this does not appear to be
-            # efficient enough when receiving large amounts of data.  Instead we
-            # enable preemptive Channel Access callbacks, which means we need to
-            # cope with all of our channel access events occuring
-            # asynchronously.
-            cadef.ca_context_create(1)
-            cls.created = True
+        cls._ensure_context()
         loop = asyncio.get_event_loop()
         try:
             channel_cache = cls._channel_caches[loop]
@@ -1041,20 +1079,6 @@ def get_channel(pv: str) -> Channel:
     channel_cache = _Context.get_channel_cache()
     channel = channel_cache.get_channel(pv)
     return channel
-
-
-@atexit.register
-def _catools_atexit():  # pragma: no cover
-    # On exit we do our best to ensure that channel access shuts down cleanly.
-    # We do this by shutting down all channels and clearing the channel access
-    # context: this should reduce the risk of unexpected errors during
-    # application exit.
-    #    One reason that it's rather important to do this properly is that we
-    # can't safely do *any* ca_ calls once ca_context_destroy() is called!
-    purge_channel_caches()
-    if _Context.created:
-        cadef.ca_flush_io()
-        cadef.ca_context_destroy()
 
 
 # Another delicacy arising from relying on asynchronous CA event dispatching is

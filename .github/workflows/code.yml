@@ -10,15 +10,20 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest", "windows-latest", "macos-latest"]
-        python: ["3.6", "3.7", "3.8", "3.9"]
+        python: ["3.7", "3.8", "3.9"]
         pipenv: ["skip-lock"]  # --${flag} will be passed to pipenv command
 
         include:
+          # 3.6 only works on ubuntu 20.04
+          - os: "ubuntu-20.04"
+            python: "3.6"
+            pipenv: "skip-lock"
           # Add an extra Python3.7 runner to publish wheels and use the lockfile
           - os: "ubuntu-latest"
             python: "3.7"
             pipenv: "deploy"
             publish: true
+
 
     name: build/${{ matrix.python }}/${{ matrix.os }}/${{ matrix.pipenv }}
     runs-on: ${{ matrix.os }}
@@ -31,7 +36,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
 
