@@ -9,7 +9,9 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 Unreleased_
 -----------
 
-Nothing yet
+Added:
+
+- Support for existing in the same process as pyepics
 
 1.5.1_ - 2022-12-05
 -----------------
