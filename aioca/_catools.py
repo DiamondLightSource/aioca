@@ -8,6 +8,7 @@ import sys
 import threading
 import time
 import traceback
+from dataclasses import dataclass
 from typing import (
     Any,
     Awaitable,
@@ -53,6 +54,9 @@ class ValueEvent(Generic[T]):
     def set(self, value: Union[T, Exception]):
         self._event.set()
         self.value = value
+
+    def is_set(self) -> bool:
+        return self._event.is_set()
 
     def clear(self):
         self._event.clear()
@@ -252,6 +256,14 @@ class Channel(object):
         """Removes the given subscription from the list of receivers."""
         self.__subscriptions.remove(subscription)
 
+    def count_subscriptions(self) -> int:
+        """Return the number of currently active subscriptions for this Channel"""
+        return len(self.__subscriptions)
+
+    def connected(self) -> bool:
+        """Return whether this Channel is currently connected to a PV"""
+        return self.__connect_event.is_set()
+
     async def wait(self):
         """Waits for the channel to become connected if not already connected."""
         await self.__connect_event.wait()
@@ -277,6 +289,9 @@ class ChannelCache(object):
             channel = Channel(name, self.__loop)
             self.__channels[name] = channel
             return channel
+
+    def get_channels(self) -> List[Channel]:
+        return list(self.__channels.values())
 
     def purge(self):
         """Purges all the channels in the cache: closes them right now.  Will
@@ -1079,6 +1094,35 @@ def get_channel(pv: str) -> Channel:
     channel_cache = _Context.get_channel_cache()
     channel = channel_cache.get_channel(pv)
     return channel
+
+
+@dataclass
+class ChannelInfo:
+    """Information about a particular Channel
+
+    Attributes:
+        name: Process Variable name the Channel is targeting
+        connected: True if the Channel is currently connected
+        subscriber_count: Number of clients subscribed to this Channel"""
+
+    name: str
+    connected: bool
+    subscriber_count: int
+
+
+def get_channel_infos() -> List[ChannelInfo]:
+    """Return information about all Channels"""
+    infos: List[ChannelInfo] = []
+    channel_cache = _Context.get_channel_cache()
+
+    for channel in channel_cache.get_channels():
+        infos.append(
+            ChannelInfo(
+                channel.name, channel.connected(), channel.count_subscriptions()
+            )
+        )
+
+    return infos
 
 
 # Another delicacy arising from relying on asynchronous CA event dispatching is

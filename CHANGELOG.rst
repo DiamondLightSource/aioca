@@ -9,7 +9,9 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 Unreleased_
 -----------
 
-Nothing yet
+Added: 
+
+- `Add methods to allow inspecting Channels <../../pull/38>`_
 
 1.6_ - 2023-04-06
 -----------------

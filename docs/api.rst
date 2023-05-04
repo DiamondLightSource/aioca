@@ -141,6 +141,11 @@ event loop. A convenience function is provided to do this:
 
 .. autofunction:: run
 
+.. autoclass:: ChannelInfo()
+    :members:
+
+.. autofunction:: get_channel_infos
+
 ..  _Values:
 
 Working with Values

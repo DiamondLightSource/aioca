@@ -24,12 +24,14 @@ from epicscorelibs.ca.dbr import (
 from ._catools import (
     CAInfo,
     CANothing,
+    ChannelInfo,
     Subscription,
     caget,
     cainfo,
     camonitor,
     caput,
     connect,
+    get_channel_infos,
     purge_channel_caches,
     run,
 )
@@ -45,6 +47,8 @@ __all__ = [
     "cainfo",  # Returns ca_info describing PV connection
     "CAInfo",  # Ca info object
     "CANothing",  # No value
+    "ChannelInfo",  # Information about a particular channel
+    "get_channel_infos",  # Return information about all channels
     "purge_channel_caches",  # Get rid of old channels
     "run",  # Run one aioca coroutine and clean up
     # The version of aioca

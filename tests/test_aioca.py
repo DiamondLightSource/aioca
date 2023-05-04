@@ -24,6 +24,7 @@ from aioca import (
     camonitor,
     caput,
     connect,
+    get_channel_infos,
     purge_channel_caches,
     run,
 )
@@ -610,3 +611,34 @@ def test_import_in_a_different_thread(ioc: subprocess.Popen) -> None:
         ]
     )
     assert output.strip() == b"42"
+
+
+@pytest.mark.asyncio
+async def test_channel_connected(ioc: subprocess.Popen) -> None:
+    values: List[AugmentedValue] = []
+    m = camonitor(LONGOUT, values.append, notify_disconnect=True)
+
+    # Wait for connection
+    await poll_length(values)
+
+    channels = get_channel_infos()
+    assert len(channels) == 1
+
+    channel = channels[0]
+    # Initially the PV is connected and has one monitor
+    assert channel.connected
+    assert channel.subscriber_count == 1
+
+    ioc.communicate("exit")
+    await asyncio.sleep(0.1)
+
+    # After IOC exits the channel is disconnected but still has one monitor
+    channel = get_channel_infos()[0]
+    assert not channel.connected
+    assert channel.subscriber_count == 1
+
+    m.close()
+
+    # Once the monitor is closed the subscription disappears
+    channel = get_channel_infos()[0]
+    assert channel.subscriber_count == 0
