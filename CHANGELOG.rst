@@ -9,6 +9,11 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 Unreleased_
 -----------
 
+Nothing yet
+
+1.7_ - 2023-05-05
+-----------------
+
 Added: 
 
 - `Add methods to allow inspecting Channels <../../pull/38>`_
@@ -79,7 +84,8 @@ Added:
 
 - Port of cothread.catools to asyncio
 
-.. _Unreleased: ../../compare/1.6...HEAD
+.. _Unreleased: ../../compare/1.7...HEAD
+.. _1.7: ../../compare/1.6...1.7
 .. _1.6: ../../compare/1.5.1...1.6
 .. _1.5.1: ../../compare/1.5...1.5.1
 .. _1.5: ../../compare/1.4...1.5
