@@ -42,7 +42,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          pip install pipenv build
+          pip install pipenv==2022.4.8 build
           pipenv install --dev --${{ matrix.pipenv }} --python $(python -c 'import sys; print(sys.executable)') && pipenv graph
 
       - name: Create Sdist and Wheel
