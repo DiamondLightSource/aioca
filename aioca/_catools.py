@@ -8,7 +8,6 @@ import sys
 import threading
 import time
 import traceback
-from dataclasses import dataclass
 from typing import (
     Any,
     Awaitable,
@@ -1096,7 +1095,6 @@ def get_channel(pv: str) -> Channel:
     return channel
 
 
-@dataclass
 class ChannelInfo:
     """Information about a particular Channel
 
@@ -1109,20 +1107,18 @@ class ChannelInfo:
     connected: bool
     subscriber_count: int
 
+    def __init__(self, name, connected, subscriber_count):
+        self.name = name
+        self.connected = connected
+        self.subscriber_count = subscriber_count
+
 
 def get_channel_infos() -> List[ChannelInfo]:
     """Return information about all Channels"""
-    infos: List[ChannelInfo] = []
-    channel_cache = _Context.get_channel_cache()
-
-    for channel in channel_cache.get_channels():
-        infos.append(
-            ChannelInfo(
-                channel.name, channel.connected(), channel.count_subscriptions()
-            )
-        )
-
-    return infos
+    return [
+        ChannelInfo(channel.name, channel.connected(), channel.count_subscriptions())
+        for channel in _Context.get_channel_cache().get_channels()
+    ]
 
 
 # Another delicacy arising from relying on asynchronous CA event dispatching is

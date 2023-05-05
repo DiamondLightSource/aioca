@@ -626,6 +626,7 @@ async def test_channel_connected(ioc: subprocess.Popen) -> None:
 
     channel = channels[0]
     # Initially the PV is connected and has one monitor
+    assert channel.name == LONGOUT
     assert channel.connected
     assert channel.subscriber_count == 1
 
