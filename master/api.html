@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>aioca API &mdash; aioca 1.6 documentation</title>
+  <title>aioca API &mdash; aioca 1.6+3.gc0fd7c5 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -32,7 +32,7 @@
             <a href="contents.html" class="icon icon-home"> aioca
           </a>
               <div class="version">
-                1.6
+                master
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -451,6 +451,51 @@ function within it.</p>
 return on completion of the coro</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="aioca.ChannelInfo">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">aioca.</span></span><span class="sig-name descname"><span class="pre">ChannelInfo</span></span><a class="reference internal" href="_modules/aioca/_catools.html#ChannelInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aioca.ChannelInfo" title="Permalink to this definition"></a></dt>
+<dd><p>Information about a particular Channel</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aioca.ChannelInfo.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#aioca.ChannelInfo.name" title="Permalink to this definition"></a></dt>
+<dd><p>Process Variable name the Channel is targeting</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aioca.ChannelInfo.connected">
+<span class="sig-name descname"><span class="pre">connected</span></span><a class="headerlink" href="#aioca.ChannelInfo.connected" title="Permalink to this definition"></a></dt>
+<dd><p>True if the Channel is currently connected</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aioca.ChannelInfo.subscriber_count">
+<span class="sig-name descname"><span class="pre">subscriber_count</span></span><a class="headerlink" href="#aioca.ChannelInfo.subscriber_count" title="Permalink to this definition"></a></dt>
+<dd><p>Number of clients subscribed to this Channel</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="aioca.get_channel_infos">
+<span class="sig-prename descclassname"><span class="pre">aioca.</span></span><span class="sig-name descname"><span class="pre">get_channel_infos</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#aioca.ChannelInfo" title="aioca._catools.ChannelInfo"><span class="pre">aioca._catools.ChannelInfo</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/aioca/_catools.html#get_channel_infos"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aioca.get_channel_infos" title="Permalink to this definition"></a></dt>
+<dd><p>Return information about all Channels</p>
 </dd></dl>
 
 </section>

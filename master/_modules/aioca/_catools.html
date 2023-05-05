@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>aioca._catools &mdash; aioca 1.6 documentation</title>
+  <title>aioca._catools &mdash; aioca 1.6+3.gc0fd7c5 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -29,7 +29,7 @@
             <a href="../../contents.html" class="icon icon-home"> aioca
           </a>
               <div class="version">
-                1.6
+                master
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -168,6 +168,9 @@
     <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">]):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">is_set</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
@@ -367,6 +370,14 @@
         <span class="sd">&quot;&quot;&quot;Removes the given subscription from the list of receivers.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__subscriptions</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">subscription</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">count_subscriptions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return the number of currently active subscriptions for this Channel&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__subscriptions</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">connected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return whether this Channel is currently connected to a PV&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__connect_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">()</span>
+
     <span class="k">async</span> <span class="k">def</span> <span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Waits for the channel to become connected if not already connected.&quot;&quot;&quot;</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__connect_event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
@@ -392,6 +403,9 @@
             <span class="n">channel</span> <span class="o">=</span> <span class="n">Channel</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__loop</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__channels</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">channel</span>
             <span class="k">return</span> <span class="n">channel</span>
+
+    <span class="k">def</span> <span class="nf">get_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Channel</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__channels</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">purge</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Purges all the channels in the cache: closes them right now.  Will</span>
@@ -1194,6 +1208,32 @@
     <span class="n">channel_cache</span> <span class="o">=</span> <span class="n">_Context</span><span class="o">.</span><span class="n">get_channel_cache</span><span class="p">()</span>
     <span class="n">channel</span> <span class="o">=</span> <span class="n">channel_cache</span><span class="o">.</span><span class="n">get_channel</span><span class="p">(</span><span class="n">pv</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">channel</span>
+
+
+<div class="viewcode-block" id="ChannelInfo"><a class="viewcode-back" href="../../api.html#aioca.ChannelInfo">[docs]</a><span class="k">class</span> <span class="nc">ChannelInfo</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Information about a particular Channel</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        name: Process Variable name the Channel is targeting</span>
+<span class="sd">        connected: True if the Channel is currently connected</span>
+<span class="sd">        subscriber_count: Number of clients subscribed to this Channel&quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">connected</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">subscriber_count</span><span class="p">:</span> <span class="nb">int</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">connected</span><span class="p">,</span> <span class="n">subscriber_count</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="n">connected</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subscriber_count</span> <span class="o">=</span> <span class="n">subscriber_count</span></div>
+
+
+<div class="viewcode-block" id="get_channel_infos"><a class="viewcode-back" href="../../api.html#aioca.get_channel_infos">[docs]</a><span class="k">def</span> <span class="nf">get_channel_infos</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ChannelInfo</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Return information about all Channels&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">ChannelInfo</span><span class="p">(</span><span class="n">channel</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">channel</span><span class="o">.</span><span class="n">connected</span><span class="p">(),</span> <span class="n">channel</span><span class="o">.</span><span class="n">count_subscriptions</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">_Context</span><span class="o">.</span><span class="n">get_channel_cache</span><span class="p">()</span><span class="o">.</span><span class="n">get_channels</span><span class="p">()</span>
+    <span class="p">]</span></div>
 
 
 <span class="c1"># Another delicacy arising from relying on asynchronous CA event dispatching is</span>
