@@ -8,21 +8,21 @@ using libca via ctypes.
 
 ============== ==============================================================
 PyPI           ``pip install aioca``
-Source code    https://github.com/dls-controls/aioca
-Documentation  https://dls-controls.github.io/aioca
-Changelog      https://github.com/dls-controls/aioca/blob/master/CHANGELOG.rst
+Source code    https://github.com/epics-python/aioca
+Documentation  https://epics-python.github.io/aioca
+Changelog      https://github.com/epics-python/aioca/blob/master/CHANGELOG.rst
 ============== ==============================================================
 
-.. |code_ci| image:: https://github.com/dls-controls/aioca/workflows/Code%20CI/badge.svg?branch=master
-    :target: https://github.com/dls-controls/aioca/actions?query=workflow%3A%22Code+CI%22
+.. |code_ci| image:: https://github.com/epics-python/aioca/workflows/Code%20CI/badge.svg?branch=master
+    :target: https://github.com/epics-python/aioca/actions?query=workflow%3A%22Code+CI%22
     :alt: Code CI
 
-.. |docs_ci| image:: https://github.com/dls-controls/aioca/workflows/Docs%20CI/badge.svg?branch=master
-    :target: https://github.com/dls-controls/aioca/actions?query=workflow%3A%22Docs+CI%22
+.. |docs_ci| image:: https://github.com/epics-python/aioca/workflows/Docs%20CI/badge.svg?branch=master
+    :target: https://github.com/epics-python/aioca/actions?query=workflow%3A%22Docs+CI%22
     :alt: Docs CI
 
-.. |coverage| image:: https://codecov.io/gh/dls-controls/aioca/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/dls-controls/aioca
+.. |coverage| image:: https://codecov.io/gh/epics-python/aioca/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/epics-python/aioca
     :alt: Test Coverage
 
 .. |pypi_version| image:: https://img.shields.io/pypi/v/aioca.svg
@@ -51,4 +51,4 @@ It exposes a high level interface similar to the commandline tools::
     connect(pvs, ...)
         Optionally can be used to establish PV connection before using the PV.
 
-See https://dls-controls.github.io/aioca for more detailed documentation.
+See https://epics-python.github.io/aioca for more detailed documentation.
