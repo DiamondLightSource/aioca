@@ -11,5 +11,5 @@ Contents
 
     api
     contributing
-    Changelog <https://github.com/dls-controls/aioca/blob/master/CHANGELOG.rst>
+    Changelog <https://github.com/epics-python/aioca/blob/master/CHANGELOG.rst>
     Index <genindex.html#http://>
