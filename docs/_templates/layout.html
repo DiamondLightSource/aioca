@@ -22,7 +22,7 @@
       if (dirs.has(name)) {
         var li = document.createElement("li");
         var a = document.createElement("a");
-        a.href = 'https://dls-controls.github.io/{{ project }}/' + name;
+        a.href = 'https://DiamondLightSource.github.io/{{ project }}/' + name;
         a.innerText = name;
         li.appendChild(a)
         document.getElementById('versions').appendChild(li);
@@ -30,13 +30,13 @@
     }
     Promise.all([
       // Find gh-pages directories and populate `dirs`
-      fetch("https://api.github.com/repos/dls-controls/{{ project }}/contents?ref=gh-pages")
+      fetch("https://api.github.com/repos/DiamondLightSource/{{ project }}/contents?ref=gh-pages")
       .then(response => response.json())
       .then(data => data.forEach(function(e) {
         if (e.type == "dir") dirs.add(e.name);
       })),
       // Add tags to `versions`
-      fetch('https://api.github.com/repos/dls-controls/{{ project }}/tags')
+      fetch('https://api.github.com/repos/DiamondLightSource/{{ project }}/tags')
         .then(response => response.json())
         .then(data => data.forEach(function(e) {
           versions.push(e.name);
