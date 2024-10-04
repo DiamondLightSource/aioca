@@ -9,8 +9,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
-        python: ["3.7", "3.8", "3.9"]
+        # MacOS version can be restored to "latest" once we drop older Python versions
+        os: ["ubuntu-latest", "windows-latest", "macos-13"]
+        python: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
         pipenv: ["skip-lock"]  # --${flag} will be passed to pipenv command
 
         include:
