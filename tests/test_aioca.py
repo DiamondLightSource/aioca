@@ -622,25 +622,24 @@ def test_import_in_a_different_thread(ioc: subprocess.Popen) -> None:
     assert output.strip() == b"42"
 
 
-def test_read_pvs_from_different_threads(ioc: subprocess.Popen) -> None:
+@pytest.mark.asyncio
+async def test_read_pvs_from_different_threads(ioc: subprocess.Popen) -> None:
     wait_for_ioc(ioc)
     returned_values = []
     threads = []
+
+    returned_values.append(await caget(LONGOUT, timeout=0.5))
 
     async def get_value():
         returned_values.append(await caget(LONGOUT, timeout=0.5))
         await asyncio.sleep(1)
 
-    for _ in range(2):
-        # Run event loop in a different thread
-        t = threading.Thread(
-            target=asyncio.new_event_loop().run_until_complete, args=[get_value()]
-        )
-        threads.append(t)
-        t.start()
-
-    for t in threads:
-        t.join()
+    t = threading.Thread(
+        target=asyncio.new_event_loop().run_until_complete, args=[get_value()]
+    )
+    threads.append(t)
+    t.start()
+    t.join()
 
     assert len(returned_values) == 2
 
