@@ -1,9 +1,11 @@
 # Changes here will be overwritten by Copier
-_commit: 1.0.0
+_commit: 2.3.0
 _src_path: gh:DiamondLightSource/python-copier-template
 author_email: tom.cobb@diamond.ac.uk
 author_name: Tom Cobb
+component_lifecycle: production
 component_owner: coretl:tmc43
+component_type: library
 description: Asynchronous Channel Access client for asyncio and Python using libca
     via ctypes
 distribution_name: aioca
@@ -12,4 +14,6 @@ docs_type: sphinx
 git_platform: github.com
 github_org: DiamondLightSource
 package_name: aioca
+pypi: true
 repo_name: aioca
+type_checker: mypy

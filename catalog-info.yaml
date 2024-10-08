@@ -3,7 +3,7 @@ kind: Component
 metadata:
   name: aioca
   title: Aioca
-  description:  Asynchronous Channel Access client for asyncio and Python using libca via ctypes 
+  description: Asynchronous Channel Access client for asyncio and Python using libca via ctypes
   annotations:
     backstage.io/techdocs-ref: dir:.
     github.com/project-slug: DiamondLightSource/aioca
