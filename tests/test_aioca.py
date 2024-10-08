@@ -579,12 +579,12 @@ def test_ca_nothing_dunder_methods():
     good = CANothing("all ok")
     assert good
     with pytest.raises(TypeError):
-        for x in good:  # type: ignore
+        for _x in good:  # type: ignore
             pass
     bad = CANothing("not all ok", cadef.ECA_DISCONN)
     assert not bad
     with pytest.raises(TypeError):
-        for x in bad:  # type: ignore
+        for _x in bad:  # type: ignore
             pass
 
 

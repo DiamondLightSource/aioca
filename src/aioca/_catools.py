@@ -87,7 +87,7 @@ class CANothing(Exception):
         return "CANothing(%r, %d)" % (self.name, self.errorcode)
 
     def __str__(self):
-        return "%s: %s" % (self.name, cadef.ca_message(self.errorcode))
+        return f"{self.name}: {cadef.ca_message(self.errorcode)}"
 
     def __bool__(self):
         return self.ok
@@ -184,7 +184,7 @@ async def in_parallel(
 #   Channel object and cache
 
 
-class Channel(object):
+class Channel:
     """Wraps a single channel access channel object."""
 
     __slots__ = [
@@ -268,7 +268,7 @@ class Channel(object):
         await self.__connect_event.wait()
 
 
-class ChannelCache(object):
+class ChannelCache:
     """A cache of all open channels.  If a channel is not present in the
     cache it is automatically opened.  The cache needs to be purged to
     ensure a clean shutdown."""
@@ -316,7 +316,7 @@ class ChannelCache(object):
 #   camonitor
 
 
-class Subscription(object):
+class Subscription:
     """A Subscription object wraps a single channel access subscription, and
     notifies all updates through an event queue."""
 
@@ -466,11 +466,11 @@ class Subscription(object):
         not even callbacks currently queued for execution."""
         if exc_info:
             print(
-                "Subscription %s callback raised exception" % self.name,
+                f"Subscription {self.name} callback raised exception",
                 file=sys.stderr,
             )
             traceback.print_exception(*exc_info)
-            print("Subscription %s closed" % self.name, file=sys.stderr)
+            print(f"Subscription {self.name} closed", file=sys.stderr)
         if self.state == self.OPEN:
             self.channel._remove_subscription(self)
             cadef.ca_clear_subscription(self)
