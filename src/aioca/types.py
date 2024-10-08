@@ -1,7 +1,5 @@
 from datetime import datetime  # noqa
-from typing import List, Sized, Tuple, Type, Union
-
-from typing_extensions import Literal, Protocol
+from typing import List, Literal, Protocol, Sized, Tuple, Type, Union
 
 #: A timeout is represented by one of the following
 #:
