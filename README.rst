@@ -1,5 +1,5 @@
 aioca
-=====
+=============================================================================
 
 |code_ci| |docs_ci| |coverage| |pypi_version| |license|
 
@@ -11,17 +11,18 @@ PyPI           ``pip install aioca``
 Source code    https://github.com/DiamondLightSource/aioca
 Documentation  https://DiamondLightSource.github.io/aioca
 Changelog      https://github.com/DiamondLightSource/aioca/blob/master/CHANGELOG.rst
+Releases       https://github.com/DiamondLightSource/aioca/releases
 ============== ==============================================================
 
-.. |code_ci| image:: https://github.com/DiamondLightSource/aioca/workflows/Code%20CI/badge.svg?branch=master
-    :target: https://github.com/DiamondLightSource/aioca/actions?query=workflow%3A%22Code+CI%22
+.. |code_ci| image:: https://github.com/DiamondLightSource/aioca/actions/workflows/code.yml/badge.svg?branch=main
+    :target: https://github.com/DiamondLightSource/aioca/actions/workflows/code.yml
     :alt: Code CI
 
-.. |docs_ci| image:: https://github.com/DiamondLightSource/aioca/workflows/Docs%20CI/badge.svg?branch=master
-    :target: https://github.com/DiamondLightSource/aioca/actions?query=workflow%3A%22Docs+CI%22
+.. |docs_ci| image:: https://github.com/DiamondLightSource/aioca/actions/workflows/docs.yml/badge.svg?branch=main
+    :target: https://github.com/DiamondLightSource/aioca/actions/workflows/docs.yml
     :alt: Docs CI
 
-.. |coverage| image:: https://codecov.io/gh/DiamondLightSource/aioca/branch/master/graph/badge.svg
+.. |coverage| image:: https://codecov.io/gh/DiamondLightSource/aioca/branch/main/graph/badge.svg
     :target: https://codecov.io/gh/DiamondLightSource/aioca
     :alt: Test Coverage
 
@@ -33,8 +34,9 @@ Changelog      https://github.com/DiamondLightSource/aioca/blob/master/CHANGELOG
     :target: https://opensource.org/licenses/Apache-2.0
     :alt: Apache License
 
+
 ..
-    These definitions are used when viewing README.rst and will be replaced
+    Anything below this line is used when viewing README.rst and will be replaced
     when included in index.rst
 
 It exposes a high level interface similar to the commandline tools::

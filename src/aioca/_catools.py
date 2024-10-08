@@ -572,8 +572,7 @@ def camonitor(
     all_updates: bool = ...,
     notify_disconnect: bool = ...,
     connect_timeout: Timeout = ...,
-) -> Subscription:
-    ...  # pragma: no cover
+) -> Subscription: ...  # pragma: no cover
 
 
 @overload
@@ -587,8 +586,7 @@ def camonitor(
     all_updates: bool = ...,
     notify_disconnect: bool = ...,
     connect_timeout: Timeout = ...,
-) -> List[Subscription]:
-    ...  # pragma: no cover
+) -> List[Subscription]: ...  # pragma: no cover
 
 
 def camonitor(
@@ -673,8 +671,7 @@ async def caget(
     count: Count = ...,
     timeout: Timeout = ...,
     throw: bool = ...,
-) -> AugmentedValue:
-    ...  # pragma: no cover
+) -> AugmentedValue: ...  # pragma: no cover
 
 
 @overload
@@ -685,8 +682,7 @@ async def caget(
     count: Count = ...,
     timeout: Timeout = ...,
     throw: bool = ...,
-) -> List[AugmentedValue]:
-    ...  # pragma: no cover
+) -> List[AugmentedValue]: ...  # pragma: no cover
 
 
 @maybe_throw
@@ -778,8 +774,7 @@ async def caput(
     wait: bool = ...,
     timeout: Timeout = ...,
     throw: bool = ...,
-) -> CANothing:
-    ...  # pragma: no cover
+) -> CANothing: ...  # pragma: no cover
 
 
 @overload
@@ -791,8 +786,7 @@ async def caput(
     wait: bool = ...,
     timeout: Timeout = ...,
     throw: bool = ...,
-) -> List[CANothing]:
-    ...  # pragma: no cover
+) -> List[CANothing]: ...  # pragma: no cover
 
 
 @maybe_throw
@@ -940,15 +934,13 @@ class CAInfo:
 @overload
 async def connect(
     pv: str, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
-) -> CANothing:
-    ...  # pragma: no cover
+) -> CANothing: ...  # pragma: no cover
 
 
 @overload
 async def connect(
     pv: PVs, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
-) -> List[CANothing]:
-    ...  # pragma: no cover
+) -> List[CANothing]: ...  # pragma: no cover
 
 
 @maybe_throw
@@ -988,15 +980,13 @@ async def connect_array(pvs: PVs, wait=True, **kwargs):
 @overload
 async def cainfo(
     pv: str, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
-) -> CAInfo:
-    ...  # pragma: no cover
+) -> CAInfo: ...  # pragma: no cover
 
 
 @overload
 async def cainfo(
     pv: PVs, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
-) -> List[CAInfo]:
-    ...  # pragma: no cover
+) -> List[CAInfo]: ...  # pragma: no cover
 
 
 @maybe_throw

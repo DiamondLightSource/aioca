@@ -35,7 +35,7 @@ from ._catools import (
     purge_channel_caches,
     run,
 )
-from ._version_git import __version__
+from ._version import __version__
 
 __all__ = [
     # The core functions
