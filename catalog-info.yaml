@@ -13,4 +13,4 @@ metadata:
 spec:
   type: library
   lifecycle: production
-  owner: group:Controls
+  owner: group:default/accelerator-controls

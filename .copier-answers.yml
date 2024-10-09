@@ -4,7 +4,7 @@ _src_path: gh:DiamondLightSource/python-copier-template
 author_email: tom.cobb@diamond.ac.uk
 author_name: Tom Cobb
 component_lifecycle: production
-component_owner: coretl:tmc43
+component_owner: group:default/accelerator-controls
 component_type: library
 description: Asynchronous Channel Access client for asyncio and Python using libca
     via ctypes
