@@ -218,7 +218,7 @@ class Channel:
 
         # Inform all the connected subscriptions
         for subscription in self.__subscriptions:
-            subscription._on_connect(connected)
+            subscription._on_connect(connected)  # noqa: SLF001
 
     def __init__(self, name: str, loop: asyncio.AbstractEventLoop):
         """Creates a channel access channel with the given name."""
@@ -296,7 +296,7 @@ class ChannelCache:
         """Purges all the channels in the cache: closes them right now.  Will
         cause other channel access to fail, so only to be done on shutdown."""
         for channel in self.__channels.values():
-            channel._purge()
+            channel._purge()  # noqa: SLF001
         self.__channels.clear()
 
     def __call_callbacks(self):
@@ -385,7 +385,7 @@ class Subscription:
 
         # Trigger channel connection if channel not already known.
         self.channel = get_channel(name)
-        self.__call_soon_threadsafe = _Context._channel_caches[
+        self.__call_soon_threadsafe = _Context._channel_caches[  # noqa: SLF001
             self.__event_loop
         ].call_soon_threadsafe
 
@@ -472,7 +472,7 @@ class Subscription:
             traceback.print_exception(*exc_info)
             print(f"Subscription {self.name} closed", file=sys.stderr)
         if self.state == self.OPEN:
-            self.channel._remove_subscription(self)
+            self.channel._remove_subscription(self)  # noqa: SLF001
             cadef.ca_clear_subscription(self)
 
         if not self.__event_loop.is_closed():
@@ -517,7 +517,7 @@ class Subscription:
                 count = cadef.ca_element_count(self.channel)
 
             # Connect to the channel to be kept informed of connection updates.
-            self.channel._add_subscription(self)
+            self.channel._add_subscription(self)  # noqa: SLF001
             # Convert the datatype request into the subscription datatype.
             dbrcode, self.dbr_to_value = dbr.type_to_dbr(self.channel, datatype, format)
 
@@ -629,8 +629,9 @@ def camonitor(
     if isinstance(kwargs.pop("pv"), str):
         return Subscription(pv, **kwargs)
     else:
+        cb = kwargs.pop("callback")
 
-        def make_cb(index, cb=kwargs.pop("callback")):
+        def make_cb(index, cb=cb):
             return lambda v: cb(v, index)
 
         subs = [Subscription(x, make_cb(i), **kwargs) for i, x in enumerate(pv)]
