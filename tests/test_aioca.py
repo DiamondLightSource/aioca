@@ -10,6 +10,7 @@ import time
 from asyncio.events import AbstractEventLoop
 from pathlib import Path
 from typing import Callable, List, Tuple, Union
+from unittest.mock import patch
 
 import pytest
 from _pytest.unraisableexception import catch_unraisable_exception
@@ -674,3 +675,16 @@ async def test_channel_connected(ioc: subprocess.Popen) -> None:
     # Once the monitor is closed the subscription disappears
     channel = get_channel_infos()[0]
     assert channel.subscriber_count == 0
+
+
+def test_given_aioca_already_has_context_and_called_with_new_one_then_aioca_warns():
+    _catools._Context._ensure_context()
+    with patch("aioca._catools.cadef.ca_current_context"):
+        with pytest.raises(UserWarning):
+            _catools._Context._ensure_context()
+
+
+@patch("aioca._catools.cadef.ca_current_context")
+def test_given_there_already_is_a_context_then_aioca_uses_it(existing_context):
+    _catools._Context._ensure_context()
+    assert _catools._Context._ca_context == existing_context.return_value
