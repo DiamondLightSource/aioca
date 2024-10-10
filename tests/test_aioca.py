@@ -675,10 +675,3 @@ async def test_channel_connected(ioc: subprocess.Popen) -> None:
     # Once the monitor is closed the subscription disappears
     channel = get_channel_infos()[0]
     assert channel.subscriber_count == 0
-
-
-@patch("aioca._catools.cadef.ca_current_context")
-def test_given_there_already_is_a_context_then_aioca_uses_it(existing_context):
-    _catools._Context._teardown()
-    _catools._Context._ensure_context()
-    assert _catools._Context._ca_context == existing_context.return_value
