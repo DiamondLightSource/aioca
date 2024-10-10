@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>aioca._catools &#8212; aioca 1.8.dev18+g8a28070 documentation</title>
+    <title>aioca._catools &#8212; aioca 1.8.dev27+g2bacc32 documentation</title>
   
   
   
@@ -28,7 +28,7 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -37,8 +37,8 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=cd691584"></script>
-    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/documentation_options.js?v=140226d3"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=30646c52"></script>
@@ -479,6 +479,7 @@ document.write(`
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">Any</span><span class="p">,</span>
     <span class="n">Awaitable</span><span class="p">,</span>
@@ -1513,8 +1514,8 @@ document.write(`
 
 
 <span class="k">class</span> <span class="nc">_Context</span><span class="p">:</span>
-    <span class="n">_ca_available</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">_ca_context</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_should_destroy</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">_channel_caches</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span><span class="p">,</span> <span class="n">ChannelCache</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="nd">@classmethod</span>
@@ -1526,8 +1527,13 @@ document.write(`
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_ensure_context</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_ca_available</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">cadef</span><span class="o">.</span><span class="n">ca_current_context</span><span class="p">():</span>
+        <span class="n">current_context</span> <span class="o">=</span> <span class="n">cadef</span><span class="o">.</span><span class="n">ca_current_context</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_ca_context</span><span class="p">:</span>
+            <span class="c1"># We have never seen a CA context, so work out which one to use</span>
+            <span class="k">if</span> <span class="n">current_context</span><span class="p">:</span>
+                <span class="c1"># There is one already for this thread, use it always</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">_ca_context</span> <span class="o">=</span> <span class="n">current_context</span>
+            <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># There is no CA context available for us to use, make one</span>
                 <span class="n">cadef</span><span class="o">.</span><span class="n">ca_context_create</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
                 <span class="c1"># EPICS Channel Access event dispatching needs to done with a little</span>
@@ -1538,11 +1544,25 @@ document.write(`
                 <span class="c1"># cope with all of our channel access events occuring</span>
                 <span class="c1"># asynchronously.</span>
                 <span class="bp">cls</span><span class="o">.</span><span class="n">_ca_context</span> <span class="o">=</span> <span class="n">cadef</span><span class="o">.</span><span class="n">ca_current_context</span><span class="p">()</span>
-            <span class="bp">cls</span><span class="o">.</span><span class="n">_ca_available</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_destroy_context</span><span class="p">)</span>
+                <span class="c1"># We made the context, so we should also destroy it</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">_should_destroy</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_teardown</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">current_context</span> <span class="o">!=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_ca_context</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">current_context</span><span class="p">:</span>
+                <span class="c1"># There is already a CA context for this thread, but it is not</span>
+                <span class="c1"># the one we first saw, so warn and detach</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="s2">&quot;There is already a CA context for this thread. &quot;</span>
+                    <span class="s2">&quot;Detaching and using the first CA context seen by aioca. &quot;</span>
+                    <span class="s2">&quot;Did you mean to use aioca in a thread that has already done CA?&quot;</span><span class="p">,</span>
+                    <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">cadef</span><span class="o">.</span><span class="n">ca_detach_context</span><span class="p">()</span>
+            <span class="c1"># Attach to our CA context</span>
+            <span class="n">cadef</span><span class="o">.</span><span class="n">ca_attach_context</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_ca_context</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_destroy_context</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+    <span class="k">def</span> <span class="nf">_teardown</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
         <span class="c1"># On exit we do our best to ensure that channel access shuts down cleanly.</span>
         <span class="c1"># We do this by shutting down all channels and clearing the channel access</span>
         <span class="c1"># context: this should reduce the risk of unexpected errors during</span>
@@ -1550,7 +1570,7 @@ document.write(`
         <span class="c1">#    One reason that it&#39;s rather important to do this properly is that we</span>
         <span class="c1"># can&#39;t safely do *any* ca_ calls once ca_context_destroy() is called!</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">purge_channel_caches</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_ca_context</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_should_destroy</span><span class="p">:</span>
             <span class="c1"># Make sure we are attached to that context</span>
             <span class="n">cadef</span><span class="o">.</span><span class="n">ca_detach_context</span><span class="p">()</span>
             <span class="n">cadef</span><span class="o">.</span><span class="n">ca_attach_context</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_ca_context</span><span class="p">)</span>
@@ -1558,18 +1578,16 @@ document.write(`
             <span class="n">cadef</span><span class="o">.</span><span class="n">ca_context_destroy</span><span class="p">()</span>
             <span class="n">cadef</span><span class="o">.</span><span class="n">ca_detach_context</span><span class="p">()</span>
             <span class="bp">cls</span><span class="o">.</span><span class="n">_ca_context</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">cls</span><span class="o">.</span><span class="n">_ca_available</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_should_destroy</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_channel_cache</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="bp">cls</span><span class="o">.</span><span class="n">_ensure_context</span><span class="p">()</span>
         <span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">channel_cache</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_channel_caches</span><span class="p">[</span><span class="n">loop</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="c1"># Channel from new event loop. Don&#39;t support multiple event loops, so</span>
-            <span class="c1"># clear out all the old channels</span>
-            <span class="bp">cls</span><span class="o">.</span><span class="n">purge_channel_caches</span><span class="p">()</span>
+            <span class="c1"># Channel from new event loop, so make a new ChannelCache for it</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_ensure_context</span><span class="p">()</span>
             <span class="n">channel_cache</span> <span class="o">=</span> <span class="n">ChannelCache</span><span class="p">(</span><span class="n">loop</span><span class="p">)</span>
             <span class="bp">cls</span><span class="o">.</span><span class="n">_channel_caches</span><span class="p">[</span><span class="n">loop</span><span class="p">]</span> <span class="o">=</span> <span class="n">channel_cache</span>
         <span class="k">return</span> <span class="n">channel_cache</span>
