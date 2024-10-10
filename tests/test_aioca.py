@@ -10,7 +10,6 @@ import time
 from asyncio.events import AbstractEventLoop
 from pathlib import Path
 from typing import Callable, List, Tuple, Union
-from unittest.mock import patch
 
 import pytest
 from _pytest.unraisableexception import catch_unraisable_exception
