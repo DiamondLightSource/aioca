@@ -8,6 +8,7 @@ import sys
 import threading
 import time
 import traceback
+import warnings
 from typing import (
     Any,
     Awaitable,
@@ -24,7 +25,6 @@ from typing import (
     Union,
     overload,
 )
-import warnings
 
 from epicscorelibs.ca import cadef, dbr
 
@@ -1055,9 +1055,10 @@ class _Context:
                 # the one we first saw, so warn and detach
                 warnings.warn(
                     "There is already a CA context for this thread. "
-                              "Detaching and using the first CA context seen by aioca. "
-                              "Did you mean to use aioca in a thread that has already done CA?"
-                              )
+                    "Detaching and using the first CA context seen by aioca. "
+                    "Did you mean to use aioca in a thread that has already done CA?",
+                    stacklevel=2,
+                )
                 cadef.ca_detach_context()
             # Attach to our CA context
             cadef.ca_attach_context(cls._ca_context)
@@ -1092,6 +1093,7 @@ class _Context:
             channel_cache = ChannelCache(loop)
             cls._channel_caches[loop] = channel_cache
         return channel_cache
+
 
 purge_channel_caches = _Context.purge_channel_caches
 

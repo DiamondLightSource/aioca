@@ -5,12 +5,12 @@ import random
 import string
 import subprocess
 import sys
+import threading
 import time
 from asyncio.events import AbstractEventLoop
 from pathlib import Path
 from typing import Callable, List, Tuple, Union
 
-import threading
 import pytest
 from _pytest.unraisableexception import catch_unraisable_exception
 from epicscorelibs.ca import cadef, dbr
