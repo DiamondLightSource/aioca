@@ -1,5 +1,8 @@
-.. include:: ../README.rst
-    :end-before: when included in index.rst
+Introduction
+================================================================================
+
+.. .. include:: ../../README.md
+..     :end-before: <!-- README only content
 
 `caget(pvs, ...) <caget>`
     Returns a single snapshot of the current value of each PV.

@@ -87,7 +87,7 @@ class CANothing(Exception):
         return "CANothing(%r, %d)" % (self.name, self.errorcode)
 
     def __str__(self):
-        return "%s: %s" % (self.name, cadef.ca_message(self.errorcode))
+        return f"{self.name}: {cadef.ca_message(self.errorcode)}"
 
     def __bool__(self):
         return self.ok
@@ -184,7 +184,7 @@ async def in_parallel(
 #   Channel object and cache
 
 
-class Channel(object):
+class Channel:
     """Wraps a single channel access channel object."""
 
     __slots__ = [
@@ -218,7 +218,7 @@ class Channel(object):
 
         # Inform all the connected subscriptions
         for subscription in self.__subscriptions:
-            subscription._on_connect(connected)
+            subscription._on_connect(connected)  # noqa: SLF001
 
     def __init__(self, name: str, loop: asyncio.AbstractEventLoop):
         """Creates a channel access channel with the given name."""
@@ -268,7 +268,7 @@ class Channel(object):
         await self.__connect_event.wait()
 
 
-class ChannelCache(object):
+class ChannelCache:
     """A cache of all open channels.  If a channel is not present in the
     cache it is automatically opened.  The cache needs to be purged to
     ensure a clean shutdown."""
@@ -296,7 +296,7 @@ class ChannelCache(object):
         """Purges all the channels in the cache: closes them right now.  Will
         cause other channel access to fail, so only to be done on shutdown."""
         for channel in self.__channels.values():
-            channel._purge()
+            channel._purge()  # noqa: SLF001
         self.__channels.clear()
 
     def __call_callbacks(self):
@@ -316,7 +316,7 @@ class ChannelCache(object):
 #   camonitor
 
 
-class Subscription(object):
+class Subscription:
     """A Subscription object wraps a single channel access subscription, and
     notifies all updates through an event queue."""
 
@@ -385,7 +385,7 @@ class Subscription(object):
 
         # Trigger channel connection if channel not already known.
         self.channel = get_channel(name)
-        self.__call_soon_threadsafe = _Context._channel_caches[
+        self.__call_soon_threadsafe = _Context._channel_caches[  # noqa: SLF001
             self.__event_loop
         ].call_soon_threadsafe
 
@@ -466,13 +466,13 @@ class Subscription(object):
         not even callbacks currently queued for execution."""
         if exc_info:
             print(
-                "Subscription %s callback raised exception" % self.name,
+                f"Subscription {self.name} callback raised exception",
                 file=sys.stderr,
             )
             traceback.print_exception(*exc_info)
-            print("Subscription %s closed" % self.name, file=sys.stderr)
+            print(f"Subscription {self.name} closed", file=sys.stderr)
         if self.state == self.OPEN:
-            self.channel._remove_subscription(self)
+            self.channel._remove_subscription(self)  # noqa: SLF001
             cadef.ca_clear_subscription(self)
 
         if not self.__event_loop.is_closed():
@@ -517,7 +517,7 @@ class Subscription(object):
                 count = cadef.ca_element_count(self.channel)
 
             # Connect to the channel to be kept informed of connection updates.
-            self.channel._add_subscription(self)
+            self.channel._add_subscription(self)  # noqa: SLF001
             # Convert the datatype request into the subscription datatype.
             dbrcode, self.dbr_to_value = dbr.type_to_dbr(self.channel, datatype, format)
 
@@ -572,8 +572,7 @@ def camonitor(
     all_updates: bool = ...,
     notify_disconnect: bool = ...,
     connect_timeout: Timeout = ...,
-) -> Subscription:
-    ...  # pragma: no cover
+) -> Subscription: ...  # pragma: no cover
 
 
 @overload
@@ -587,8 +586,7 @@ def camonitor(
     all_updates: bool = ...,
     notify_disconnect: bool = ...,
     connect_timeout: Timeout = ...,
-) -> List[Subscription]:
-    ...  # pragma: no cover
+) -> List[Subscription]: ...  # pragma: no cover
 
 
 def camonitor(
@@ -631,8 +629,9 @@ def camonitor(
     if isinstance(kwargs.pop("pv"), str):
         return Subscription(pv, **kwargs)
     else:
+        cb = kwargs.pop("callback")
 
-        def make_cb(index, cb=kwargs.pop("callback")):
+        def make_cb(index, cb=cb):
             return lambda v: cb(v, index)
 
         subs = [Subscription(x, make_cb(i), **kwargs) for i, x in enumerate(pv)]
@@ -673,8 +672,7 @@ async def caget(
     count: Count = ...,
     timeout: Timeout = ...,
     throw: bool = ...,
-) -> AugmentedValue:
-    ...  # pragma: no cover
+) -> AugmentedValue: ...  # pragma: no cover
 
 
 @overload
@@ -685,8 +683,7 @@ async def caget(
     count: Count = ...,
     timeout: Timeout = ...,
     throw: bool = ...,
-) -> List[AugmentedValue]:
-    ...  # pragma: no cover
+) -> List[AugmentedValue]: ...  # pragma: no cover
 
 
 @maybe_throw
@@ -778,8 +775,7 @@ async def caput(
     wait: bool = ...,
     timeout: Timeout = ...,
     throw: bool = ...,
-) -> CANothing:
-    ...  # pragma: no cover
+) -> CANothing: ...  # pragma: no cover
 
 
 @overload
@@ -791,8 +787,7 @@ async def caput(
     wait: bool = ...,
     timeout: Timeout = ...,
     throw: bool = ...,
-) -> List[CANothing]:
-    ...  # pragma: no cover
+) -> List[CANothing]: ...  # pragma: no cover
 
 
 @maybe_throw
@@ -940,15 +935,13 @@ class CAInfo:
 @overload
 async def connect(
     pv: str, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
-) -> CANothing:
-    ...  # pragma: no cover
+) -> CANothing: ...  # pragma: no cover
 
 
 @overload
 async def connect(
     pv: PVs, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
-) -> List[CANothing]:
-    ...  # pragma: no cover
+) -> List[CANothing]: ...  # pragma: no cover
 
 
 @maybe_throw
@@ -988,15 +981,13 @@ async def connect_array(pvs: PVs, wait=True, **kwargs):
 @overload
 async def cainfo(
     pv: str, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
-) -> CAInfo:
-    ...  # pragma: no cover
+) -> CAInfo: ...  # pragma: no cover
 
 
 @overload
 async def cainfo(
     pv: PVs, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
-) -> List[CAInfo]:
-    ...  # pragma: no cover
+) -> List[CAInfo]: ...  # pragma: no cover
 
 
 @maybe_throw

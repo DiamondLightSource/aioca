@@ -22,6 +22,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+**/_version.py
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -54,12 +55,17 @@ cov.xml
 
 # Sphinx documentation
 docs/_build/
+docs/_api
 
 # PyBuilder
 target/
 
-# DLS build dir and virtual environment
-/prefix/
-/venv/
-/lightweight-venv/
-/installed.files
+# likely venv names
+.venv*
+venv*
+
+# further build artifacts
+lockfiles/
+
+# ruff cache
+.ruff_cache/

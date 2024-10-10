@@ -1,7 +1,5 @@
 from datetime import datetime  # noqa
-from typing import List, Sized, Tuple, Type, Union
-
-from typing_extensions import Literal, Protocol
+from typing import List, Literal, Protocol, Sized, Tuple, Type, Union
 
 #: A timeout is represented by one of the following
 #:
@@ -125,7 +123,7 @@ class AugmentedValue(Protocol, Sized):
     - DBR_ENUM will have `enums`
     - DBR_STRING does not support FORMAT_CTRL, so FORMAT_TIME data is returned
       instead
-     """
+    """
 
     #: Name of the PV used to create this value
     name: str
