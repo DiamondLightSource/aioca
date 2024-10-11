@@ -9,6 +9,11 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 Unreleased_
 -----------
 
+Nothing yet
+
+1.8_ - 2024-10-11
+-----------------
+
 Removed:
 
 - `Remove support for Python 3.6 and 3.7 <../../pull/52>`_
@@ -89,7 +94,8 @@ Added:
 
 - Port of cothread.catools to asyncio
 
-.. _Unreleased: ../../compare/1.7...HEAD
+.. _Unreleased: ../../compare/1.8...HEAD
+.. _1.8: ../../compare/1.7...1.8
 .. _1.7: ../../compare/1.6...1.7
 .. _1.6: ../../compare/1.5.1...1.6
 .. _1.5.1: ../../compare/1.5...1.5.1
