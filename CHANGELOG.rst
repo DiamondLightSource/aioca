@@ -9,12 +9,17 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 Unreleased_
 -----------
 
-Nothing yet
+Removed:
+
+- `Remove support for Python 3.6 and 3.7 <../../pull/52>`_
+
+Fixed:
+- `Fix clashing contexts <../../pull/51>`_
 
 1.7_ - 2023-05-05
 -----------------
 
-Added: 
+Added:
 
 - `Add methods to allow inspecting Channels <../../pull/38>`_
 
