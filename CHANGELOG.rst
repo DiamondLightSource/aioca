@@ -11,6 +11,13 @@ Unreleased_
 
 Nothing yet
 
+1.8.1_ - 2024-11-01
+-----------
+
+Fixed:
+
+- `Bump supported Python version <../../pull/53>`_
+
 1.8_ - 2024-10-11
 -----------------
 
@@ -94,7 +101,8 @@ Added:
 
 - Port of cothread.catools to asyncio
 
-.. _Unreleased: ../../compare/1.8...HEAD
+.. _Unreleased: ../../compare/1.8.1...HEAD
+.. _1.8.1: ../../compare/1.8...1.8.1
 .. _1.8: ../../compare/1.7...1.8
 .. _1.7: ../../compare/1.6...1.7
 .. _1.6: ../../compare/1.5.1...1.6
