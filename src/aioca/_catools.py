@@ -1,6 +1,5 @@
 import asyncio
 import atexit
-import collections
 import ctypes
 import functools
 import inspect
@@ -9,6 +8,7 @@ import threading
 import time
 import traceback
 import warnings
+from collections import deque
 from collections.abc import Awaitable, Callable, Sequence
 from typing import (
     Any,
@@ -269,9 +269,7 @@ class ChannelCache:
         self.__channels: dict[str, Channel] = {}
         self.__loop = loop
         self.__waiting = True
-        self.__callbacks: collections.deque[tuple[Callable, tuple]] = (
-            collections.deque()
-        )
+        self.__callbacks: deque[tuple[Callable, tuple]] = deque()
 
     def get_channel(self, name: str) -> Channel:
         try:
@@ -348,7 +346,7 @@ class Subscription:
     def __init__(
         self,
         name: str,
-        callback: Callable[[Any], None | Awaitable],
+        callback: Callable[[Any], Awaitable | None],
         events: Dbe,
         datatype: Datatype,
         format: Format,
@@ -365,7 +363,7 @@ class Subscription:
         #: while another callback was in progress
         self.dropped_callbacks: int = 0
         self.__event_loop = asyncio.get_event_loop()
-        self.pending_values: collections.deque[AugmentedValue] = collections.deque(
+        self.pending_values: deque[AugmentedValue] = deque(
             maxlen=None if all_updates else 1
         )
         self.__future: asyncio.Future | None = None
@@ -558,7 +556,7 @@ class Subscription:
 @overload
 def camonitor(
     pv: str,
-    callback: Callable[[Any], None | Awaitable],
+    callback: Callable[[Any], Awaitable | None],
     events: Dbe = ...,
     datatype: Datatype = ...,
     format: Format = ...,
@@ -572,7 +570,7 @@ def camonitor(
 @overload
 def camonitor(
     pv: PVs,
-    callback: Callable[[Any, int], None | Awaitable],
+    callback: Callable[[Any, int], Awaitable | None],
     events: Dbe = ...,
     datatype: Datatype = ...,
     format: Format = ...,
