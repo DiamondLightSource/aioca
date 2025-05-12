@@ -68,7 +68,7 @@ Dbr = Literal[0, 1, 2, 3, 4, 5, 6, 35, 36, 37, 38, 996, 997, 998, 999]
 #:                      such as int, float or str
 #: A numpy dtype        Compatible with any of the above values
 #: ==================== ================================================
-Datatype = None | Dbr | type
+Datatype = Dbr | type | None
 
 #: How much auxilliary information will be returned with the retrieved data.
 #: From epicscorelibs.ca.dbr, one of the following
