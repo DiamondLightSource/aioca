@@ -9,7 +9,9 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 Unreleased_
 -----------
 
-Nothing yet
+Fixed:
+
+- `Bump supported Python versions and update copier template <../../pull/59>`
 
 1.8.1_ - 2024-11-01
 -----------
