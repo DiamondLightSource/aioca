@@ -12,7 +12,7 @@ repos:
         name: Run black
         stages: [pre-commit]
         language: system
-        entry: black --check --diff
+        entry: ruff check --force-exclude --fix
         types: [python]
 
       - id: ruff
