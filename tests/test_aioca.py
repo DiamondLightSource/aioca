@@ -603,7 +603,7 @@ def test_run_forever(event_loop: AbstractEventLoop):
     async def run_for_a_bit():
         while True:
             await asyncio.sleep(0.2)
-            asyncio.get_event_loop().stop()
+            asyncio.get_running_loop().stop()
 
     start = time.time()
     run(run_for_a_bit(), forever=True)
