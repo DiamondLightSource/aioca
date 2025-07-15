@@ -85,7 +85,7 @@ class CANothing(Exception):
         self.errorcode: int = errorcode
 
     def __repr__(self):
-        return "CANothing(%r, %d)" % (self.name, self.errorcode)
+        return f"CANothing({self.name!r}, {self.errorcode})"
 
     def __str__(self):
         return f"{self.name}: {cadef.ca_message(self.errorcode)}"
@@ -407,9 +407,9 @@ class Subscription:
         self: Subscription = args.usr
 
         try:
-            assert (
-                args.status == cadef.ECA_NORMAL
-            ), f"Subscription {self.name} got bad status {args.status}"
+            assert args.status == cadef.ECA_NORMAL, (
+                f"Subscription {self.name} got bad status {args.status}"
+            )
             # Good data: extract value from the dbr. Note that this can fail
             value = self.dbr_to_value(args.raw_dbr, args.type, args.count)
             self.__queue_value(value)
@@ -917,20 +917,12 @@ class CAInfo:
             self.datatype = 7  # DBF_NO_ACCESS
 
     def __str__(self):
-        return """%s:
-    State: %s
-    Host: %s
-    Access: %s, %s
-    Data type: %s
-    Count: %d""" % (
-            self.name,
-            self.state_strings[self.state],
-            self.host,
-            self.read,
-            self.write,
-            self.datatype_strings[self.datatype],
-            self.count,
-        )
+        return f"""{self.name}:
+    State: {self.state_strings[self.state]}
+    Host: {self.host}
+    Access: {self.read}, {self.write}
+    Data type: {self.datatype_strings[self.datatype]}
+    Count: {self.count}"""
 
 
 @overload
