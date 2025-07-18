@@ -407,9 +407,9 @@ class Subscription:
         self: Subscription = args.usr
 
         try:
-            assert args.status == cadef.ECA_NORMAL, (
-                f"Subscription {self.name} got bad status {args.status}"
-            )
+            assert (
+                args.status == cadef.ECA_NORMAL
+            ), f"Subscription {self.name} got bad status {args.status}"
             # Good data: extract value from the dbr. Note that this can fail
             value = self.dbr_to_value(args.raw_dbr, args.type, args.count)
             self.__queue_value(value)
