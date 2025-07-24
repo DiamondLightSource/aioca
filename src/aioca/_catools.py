@@ -85,7 +85,7 @@ class CANothing(Exception):
         self.errorcode: int = errorcode
 
     def __repr__(self):
-        return "CANothing(%r, %d)" % (self.name, self.errorcode)
+        return f"CANothing({self.name!r}, {self.errorcode})"
 
     def __str__(self):
         return f"{self.name}: {cadef.ca_message(self.errorcode)}"
@@ -371,7 +371,7 @@ class Subscription:
         #: The number of updates that have been dropped as they happened
         #: while another callback was in progress
         self.dropped_callbacks: int = 0
-        self.__event_loop = asyncio.get_event_loop()
+        self.__event_loop = asyncio.get_running_loop()
         self.pending_values: Deque[AugmentedValue] = collections.deque(
             maxlen=None if all_updates else 1
         )
@@ -723,7 +723,7 @@ async def caget(pv: str, datatype=None, format=dbr.FORMAT_RAW, count=0):
     # callback routine gets to see it.
     dbrcode, dbr_to_value = dbr.type_to_dbr(channel, datatype, format)
     done = ValueEvent[AugmentedValue]()
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     context = (pv, dbr_to_value, done, loop)
     ctypes.pythonapi.Py_IncRef(context)
 
@@ -823,7 +823,7 @@ async def caput(pv: str, value, datatype=None, wait=False):
         # Assemble the callback context and give it an extra reference count
         # to keep it alive until the callback handler sees it.
         done = ValueEvent[None]()
-        context = (pv, done, asyncio.get_event_loop())
+        context = (pv, done, asyncio.get_running_loop())
         ctypes.pythonapi.Py_IncRef(context)
 
         # caput with callback requested: need to wait for response from
@@ -917,20 +917,12 @@ class CAInfo:
             self.datatype = 7  # DBF_NO_ACCESS
 
     def __str__(self):
-        return """%s:
-    State: %s
-    Host: %s
-    Access: %s, %s
-    Data type: %s
-    Count: %d""" % (
-            self.name,
-            self.state_strings[self.state],
-            self.host,
-            self.read,
-            self.write,
-            self.datatype_strings[self.datatype],
-            self.count,
-        )
+        return f"""{self.name}:
+    State: {self.state_strings[self.state]}
+    Host: {self.host}
+    Access: {self.read}, {self.write}
+    Data type: {self.datatype_strings[self.datatype]}
+    Count: {self.count}"""
 
 
 @overload
@@ -1084,7 +1076,7 @@ class _Context:
 
     @classmethod
     def get_channel_cache(cls):
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         try:
             channel_cache = cls._channel_caches[loop]
         except KeyError:
@@ -1150,6 +1142,8 @@ def run(coro, forever=False):
         forever: If True then run the event loop forever, otherwise
             return on completion of the coro
     """
+    msg = "aioca.run is deprecated, please use asyncio.run instead"
+    warnings.warn(msg, DeprecationWarning, stacklevel=2)
     loop = asyncio.get_event_loop()
     t = None
     try:

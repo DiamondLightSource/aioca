@@ -532,6 +532,7 @@ async def monitor_for_a_bit(callback: Callable, ioc) -> Subscription:
     return m
 
 
+@pytest.mark.filterwarnings("ignore:aioca.run is deprecated")
 def test_closing_event_loop(
     ioc: subprocess.Popen,
 ) -> None:
@@ -597,13 +598,14 @@ def test_ca_nothing_dunder_methods():
             pass
 
 
+@pytest.mark.filterwarnings("ignore:aioca.run is deprecated")
 def test_run_forever(event_loop: AbstractEventLoop):
     asyncio.set_event_loop(event_loop)
 
     async def run_for_a_bit():
         while True:
             await asyncio.sleep(0.2)
-            asyncio.get_event_loop().stop()
+            asyncio.get_running_loop().stop()
 
     start = time.time()
     run(run_for_a_bit(), forever=True)

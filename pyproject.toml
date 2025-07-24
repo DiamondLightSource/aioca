@@ -31,7 +31,7 @@ dev = [
     "pipdeptree",
     "pre-commit",
     "pydata-sphinx-theme>=0.12",
-    "pytest",
+    "pytest<8",  # See issue #62 
     "pytest-asyncio",
     "pytest-cov",
     "ruff",
