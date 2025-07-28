@@ -1,17 +1,15 @@
 Changelog
 =========
 
-All notable changes to this project will be documented in this file.
+
+**ATTENTION:** This file is deprecated in favour of `Github Releases <https://github.com/DiamondLightSource/aioca/releases>`_
+
+The file is retained for historical reference only but will no longer be updated.
+
 
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_,
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
-Unreleased_
------------
-
-Fixed:
-
-- `Bump supported Python versions and update copier template <../../pull/59>`
 
 1.8.1_ - 2024-11-01
 -----------
