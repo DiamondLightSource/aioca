@@ -1,0 +1,680 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>aioca.types &#8212; aioca 2.0a2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=e877a769"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=30646c52"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/aioca/types';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://DiamondLightSource.github.io/aioca/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2.0a2';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="../../_static/dls-logo.svg"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2.0a2" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/dls-logo.svg" class="logo__image only-light" alt=""/>
+    <img src="../../_static/dls-logo.svg" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">aioca</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../reference.html">
+    Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/DiamondLightSource/aioca" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/aioca" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../reference.html">
+    Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/DiamondLightSource/aioca" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/aioca" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">aioca.types</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for aioca.types</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Protocol</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sized</span>
+
+<span class="c1">#: A timeout is represented by one of the following</span>
+<span class="c1">#:</span>
+<span class="c1">#: ======== ============================================================</span>
+<span class="c1">#: None     A timeout that never expires</span>
+<span class="c1">#: 0        Timeout immediately if any waiting is required</span>
+<span class="c1">#: float    A relative timeout interval in seconds</span>
+<span class="c1">#: (float,) An absolute deadline in seconds past epoch</span>
+<span class="c1">#: ======== ============================================================</span>
+<span class="n">Timeout</span> <span class="o">=</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+
+<span class="c1">#: A bitwise or of DBE event codes from epicscorelibs.ca.dbr</span>
+<span class="c1">#:</span>
+<span class="c1">#: ============ ===========================================================</span>
+<span class="c1">#: DBE_VALUE    Trigger an event when a significant change in the channel&#39;s</span>
+<span class="c1">#:              value occurs. Relies on the monitor deadband field on the</span>
+<span class="c1">#:              server</span>
+<span class="c1">#: DBE_LOG      Trigger an event when an archive significant change in the</span>
+<span class="c1">#:              channel&#39;s value occurs. Relies on the archiver monitor</span>
+<span class="c1">#:              deadband field on the server</span>
+<span class="c1">#: DBE_ALARM    Trigger an event when the alarm state changes</span>
+<span class="c1">#: DBE_PROPERTY Trigger an event when a property change (control limit,</span>
+<span class="c1">#:              graphical limit, status string, enum string ...) occurs.</span>
+<span class="c1">#: ============ ===========================================================</span>
+<span class="c1">#:</span>
+<span class="c1">#: If not specified then the default value depends on the requested `Format`</span>
+<span class="c1">#:</span>
+<span class="c1">#: ============ =============================================</span>
+<span class="c1">#: Format       Default value for events</span>
+<span class="c1">#: ============ =============================================</span>
+<span class="c1">#: FORMAT_RAW   DBE_VALUE</span>
+<span class="c1">#: FORMAT_TIME  DBE_VALUE | DBE_ALARM</span>
+<span class="c1">#: FORMAT_CTRL  DBE_VALUE | DBE_ALARM | DBE_PROPERTY</span>
+<span class="c1">#: ============ =============================================</span>
+<span class="n">Dbe</span> <span class="o">=</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
+
+<span class="c1">#: A DBR request code from epicscorelibs.ca.dbr. One of</span>
+<span class="c1">#:</span>
+<span class="c1">#: ==================== ================================================</span>
+<span class="c1">#: DBR_STRING           40 character strings</span>
+<span class="c1">#: DBR_SHORT            16 bit signed</span>
+<span class="c1">#: DBR_FLOAT            32 bit float</span>
+<span class="c1">#: DBR_ENUM             16 bit unsigned</span>
+<span class="c1">#: DBR_CHAR             8 bit unsigned</span>
+<span class="c1">#: DBR_LONG             32 bit signed</span>
+<span class="c1">#: DBR_DOUBLE           64 bit float</span>
+<span class="c1">#: DBR_PUT_ACKT         Configure global alarm acknowledgement</span>
+<span class="c1">#: DBR_PUT_ACKS         Acknowledge global alarm</span>
+<span class="c1">#: DBR_STSACK_STRING    Returns status ack structure</span>
+<span class="c1">#: DBR_CLASS_NAME       Returns record type (same as .RTYP)</span>
+<span class="c1">#: DBR_ENUM_STR         Enums as strings, default otherwise</span>
+<span class="c1">#: DBR_CHAR_BYTES       Long byte strings as char arrays</span>
+<span class="c1">#: DBR_CHAR_UNICODE     Long unicode strings as char arrays</span>
+<span class="c1">#: DBR_CHAR_STR         Long strings as char arrays</span>
+<span class="c1">#: ==================== ================================================</span>
+<span class="n">Dbr</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">36</span><span class="p">,</span> <span class="mi">37</span><span class="p">,</span> <span class="mi">38</span><span class="p">,</span> <span class="mi">996</span><span class="p">,</span> <span class="mi">997</span><span class="p">,</span> <span class="mi">998</span><span class="p">,</span> <span class="mi">999</span><span class="p">]</span>
+
+<span class="c1">#: The format of the requested data can be one of the following</span>
+<span class="c1">#:</span>
+<span class="c1">#: ==================== ================================================</span>
+<span class="c1">#: None (the default)   In this case the &quot;native&quot; datatype provided</span>
+<span class="c1">#:                      by the channel will be returned</span>
+<span class="c1">#: A `Dbr` value        To request this type from the IOC</span>
+<span class="c1">#: A python type        Compatible with any of the above values,</span>
+<span class="c1">#:                      such as int, float or str</span>
+<span class="c1">#: A numpy dtype        Compatible with any of the above values</span>
+<span class="c1">#: ==================== ================================================</span>
+<span class="n">Datatype</span> <span class="o">=</span> <span class="n">Dbr</span> <span class="o">|</span> <span class="nb">type</span> <span class="o">|</span> <span class="kc">None</span>
+
+<span class="c1">#: How much auxilliary information will be returned with the retrieved data.</span>
+<span class="c1">#: From epicscorelibs.ca.dbr, one of the following</span>
+<span class="c1">#:</span>
+<span class="c1">#: ============ ===========================================================</span>
+<span class="c1">#: FORMAT_RAW   The data is returned unaugmented except for the .name field</span>
+<span class="c1">#: FORMAT_TIME  The data is augmented by the data timestamp together with</span>
+<span class="c1">#:              .alarm .status and .severity fields.</span>
+<span class="c1">#: FORMAT_CTRL  The data is augmented by channel access &quot;control&quot; fields.</span>
+<span class="c1">#:              This set of fields depends on the underlying datatype</span>
+<span class="c1">#: ============ ===========================================================</span>
+<span class="n">Format</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+<span class="c1">#: How many array elements to retrieve from the server. One of the following</span>
+<span class="c1">#:</span>
+<span class="c1">#: ======== ============================================================</span>
+<span class="c1">#: 0        Server and data dependent waveform length</span>
+<span class="c1">#: -1       The full data length</span>
+<span class="c1">#: +ve int  A maximum of this number of elements</span>
+<span class="c1">#: ======== ============================================================</span>
+<span class="n">Count</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span>
+
+
+<div class="viewcode-block" id="AugmentedValue">
+<a class="viewcode-back" href="../../api/api.html#aioca.types.AugmentedValue">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AugmentedValue</span><span class="p">(</span><span class="n">Protocol</span><span class="p">,</span> <span class="n">Sized</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Protocol representing a value returned from `caget` or `camonitor`</span>
+
+<span class="sd">    The value itself depends on the number of values requested for the PV. If</span>
+<span class="sd">    only one value is requested then the value is returned as a scalar,</span>
+<span class="sd">    otherwise as a numpy array.</span>
+
+<span class="sd">    The value will also be &quot;augmented&quot; with extra fields depending on the</span>
+<span class="sd">    `Format` and `Datatype` of the pv, and if the operation was successful.</span>
+
+<span class="sd">    Every value has the `ok` and `name` fields.</span>
+
+<span class="sd">    If `ok` is False then `errorcode` is set to the appropriate ECA error code</span>
+<span class="sd">    and str(value) will return an appropriate error message.</span>
+
+<span class="sd">    If `ok` is True then `datatype` and `element_count` will be present.</span>
+
+<span class="sd">    If FORMAT_TIME is requested then `status`, `severity`, `timestamp` and</span>
+<span class="sd">    `raw_stamp` will be present</span>
+
+<span class="sd">    If FORMAT_CTRL is requested then `status` and `severity` will be present,</span>
+<span class="sd">    along with other `Dbr` specific fields:</span>
+
+<span class="sd">    - DBR_SHORT, DBR_CHAR, DBR_LONG will also have `units`, `upper_disp_limit`,</span>
+<span class="sd">      `lower_disp_limit`, `upper_alarm_limit`, `lower_alarm_limit`,</span>
+<span class="sd">      `upper_warning_limit`, `lower_warning_limit`, `upper_ctrl_limit`,</span>
+<span class="sd">      `lower_ctrl_limit`</span>
+<span class="sd">    - DBR_FLOAT, DBR_DOUBLE will have the DBR_LONG fiels together with a</span>
+<span class="sd">      `precision` field</span>
+<span class="sd">    - DBR_ENUM will have `enums`</span>
+<span class="sd">    - DBR_STRING does not support FORMAT_CTRL, so FORMAT_TIME data is returned</span>
+<span class="sd">      instead</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#: Name of the PV used to create this value</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="c1">#: True for normal data, False for error code</span>
+    <span class="n">ok</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="c1">#: ECA error code</span>
+    <span class="n">errorcode</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="c1">#: Underlying `Dbr` code</span>
+    <span class="n">datatype</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="c1">#: Number of elements in the underlying EPICS value. If this is not 1 then the</span>
+    <span class="c1">#: value is treated as an array, otherwise up to this many elements may be</span>
+    <span class="c1">#: present in the value.</span>
+    <span class="n">element_count</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="c1">#: EPICS alarm severity, normally one of the values listed below.</span>
+    <span class="c1">#:</span>
+    <span class="c1">#: =  ==================================</span>
+    <span class="c1">#: 0  No alarm</span>
+    <span class="c1">#: 1  Alarm condition, minor severity</span>
+    <span class="c1">#: 2  Alarm condition, major severity.</span>
+    <span class="c1">#: 3  Invalid value.</span>
+    <span class="c1">#: =  ==================================</span>
+    <span class="n">severity</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="c1">#: CA status code, the reason for severity</span>
+    <span class="n">status</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="c1">#: Record timestamp in raw format as provided by EPICS (but in the local Unix</span>
+    <span class="c1">#: epoch, not the EPICS epoch).  Is a tuple of the form ``(secs, nsec)`` with</span>
+    <span class="c1">#: integer seconds and nanosecond values, provided in case full ns timestamp</span>
+    <span class="c1">#: precision is required.</span>
+    <span class="n">raw_stamp</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+    <span class="c1">#: Timestamp in seconds in format compatible with ``time.time()`` rounded to</span>
+    <span class="c1">#: the nearest microsecond: for nanosecond precision use `raw_stamp`</span>
+    <span class="c1">#: instead.</span>
+    <span class="n">timestamp</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="c1">#: This is a dynamic property which returns `timestamp` as a</span>
+    <span class="c1">#: `datetime` value, taking local time into account</span>
+    <span class="n">datetime</span><span class="p">:</span> <span class="n">datetime</span>
+    <span class="n">units</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1">#: Units for display</span>
+    <span class="n">upper_disp_limit</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1">#: Upper limit for displaying value</span>
+    <span class="n">lower_disp_limit</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1">#: Lower limit for displaying value</span>
+    <span class="n">upper_alarm_limit</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1">#: Above this limit value in alarm</span>
+    <span class="n">lower_alarm_limit</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1">#: Below this limit value in alarm</span>
+    <span class="n">upper_warning_limit</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1">#: Above this limit is a warning</span>
+    <span class="n">lower_warning_limit</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1">#: Below this limit is a warning</span>
+    <span class="n">upper_ctrl_limit</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1">#: Upper limit for puts to this value</span>
+    <span class="n">lower_ctrl_limit</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1">#: Lower limit for puts to this value</span>
+    <span class="n">precision</span><span class="p">:</span> <span class="nb">int</span>  <span class="c1">#: Display precision for floating point values</span>
+    <span class="n">enums</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1">#: Enumeration strings for ENUM type</span>
+    <span class="c1">#: Used for global alarm acknowledgement. Do transient alarms have</span>
+    <span class="c1">#: to be acknowledged? (0,1) means (no, yes).</span>
+    <span class="n">ackt</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="c1">#: Used for global alarm acknowledgement. The highest alarm severity to</span>
+    <span class="c1">#: acknowledge. If the current alarm severity is less then or equal to</span>
+    <span class="c1">#: this value the alarm is acknowledged.</span>
+    <span class="n">acks</span><span class="p">:</span> <span class="nb">int</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
