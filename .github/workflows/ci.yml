@@ -21,11 +21,15 @@ jobs:
     strategy:
       matrix:
         runs-on: ["ubuntu-latest", "windows-latest", "macos-latest"]
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.11", "3.12", "3.13"]
         include:
           # Include one that runs in the dev environment
           - runs-on: "ubuntu-latest"
             python-version: "dev"
+        exclude:
+          # See issue #63
+          - runs-on: "macos-latest"
+            python-version: "3.13"
       fail-fast: false
     uses: ./.github/workflows/_test.yml
     with:
