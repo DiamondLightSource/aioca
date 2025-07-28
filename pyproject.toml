@@ -14,7 +14,7 @@ classifiers = [
 description = "Asynchronous Channel Access client for asyncio and Python using libca via ctypes"
 dependencies = [
     "numpy",
-    "epicscorelibs >= 7.0.3.99.4.0",
+    "epicscorelibs >= 7.0.7.99.1.2a3",
 ] # Add project dependencies here, e.g. ["click", "numpy"]
 dynamic = ["version"]
 license.file = "LICENSE"
@@ -30,7 +30,7 @@ dev = [
     "pipdeptree",
     "pre-commit",
     "pydata-sphinx-theme>=0.12",
-    "pytest<8",  # See issue #62 
+    "pytest<8",                  # See issue #62
     "pytest-asyncio",
     "pytest-cov",
     "ruff",
