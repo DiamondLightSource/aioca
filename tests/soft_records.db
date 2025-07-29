@@ -36,3 +36,27 @@ record(longout, "$(P)bad_egus") {
   field(VAL, "32")
   field(EGU, "�")
 }
+
+record(seq, "$(P)seq") {
+    field(SELM, "All")
+    field(LNK1, "$(P)seqout PP")
+    field(LNK2, "$(P)seqout PP")
+    field(LNK3, "$(P)seqout PP")
+    field(LNK4, "$(P)seqout PP")
+    field(LNK5, "$(P)seqout PP")
+    field(LNK6, "$(P)seqout PP")
+    field(LNK7, "$(P)seqout PP")    
+    field(LNK8, "$(P)seqout PP")        
+    field(DO1, "1")
+    field(DO2, "2")
+    field(DO3, "3")
+    field(DO4, "4")
+    field(DO5, "5")
+    field(DO6, "6")
+    field(DO7, "7")
+    field(DO8, "8")
+}
+
+record(longout, "$(P)seqout") {
+  field(PINI, "YES")
+}

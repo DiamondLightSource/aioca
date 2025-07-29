@@ -335,9 +335,9 @@ class Subscription:
         "__lock",  # Lock around pending_values and dropped_callbacks
         "__event_loop",  # The event loop the caller created this from
         "__call_soon_threadsafe",  # Reference to channel_cache.call_soon_threadsafe
-        "__is_async",  # If the callback is awaitable
+        "__is_sync",  # If the callback is not awaitable
         "__task",  # Task for subscription updates
-        "__future",  # Future which will be updated if __is_async and pending_values
+        "__future",  # Future which will be updated if not __is_sync and pending_values
     ]
 
     # Subscription state values:
@@ -377,7 +377,7 @@ class Subscription:
         )
         self.__future: Optional[asyncio.Future] = None
         self.__lock = threading.Lock()  # Used for update merging.
-        self.__is_async: Optional[bool] = None
+        self.__is_sync: Optional[bool] = None
 
         # If events not specified then compute appropriate default corresponding
         # to the requested format.
@@ -435,7 +435,7 @@ class Subscription:
         might arise."""
         if self.state != self.CLOSED:
             try:
-                if self.__is_async is False:
+                if self.__is_sync:
                     # The first update was not async, assume it will always not
                     # be async and handle it here
                     while self.pending_values:
@@ -482,10 +482,9 @@ class Subscription:
 
         self.state = self.CLOSED
 
-    async def __do_initial_callback(self, value):
-        ret = self.callback(value)
-        self.__is_async = inspect.isawaitable(ret)
-        if self.__is_async:
+    async def __detect_async(self, ret):
+        self.__is_sync = not inspect.isawaitable(ret)
+        if not self.__is_sync:
             await ret
 
     async def __wait_for_channel(self, timeout):
@@ -496,7 +495,7 @@ class Subscription:
             # Connection timeout.  Let the caller know and now just block
             # until we connect (if ever).  Note that in this case the caller
             # is notified even if notify_disconnect=False is set.
-            await self.__do_initial_callback(e)
+            await self.__detect_async(self.callback(e))
             await self.channel.wait()
 
     async def __create_subscription(
@@ -539,20 +538,22 @@ class Subscription:
             self._as_parameter_ = event_id.value
 
             # If we are async then we should be servicing the callbacks here
-            while self.__is_async is not False:
-                try:
-                    with self.__lock:
-                        value = self.pending_values.popleft()
-                except IndexError:
+            while not self.__is_sync:
+                with self.__lock:
+                    # Consume all the values from the queue
+                    values = list(self.pending_values)
+                    self.pending_values.clear()
+                if not values:
+                    # No values at the moment, so wait for __signal to let us know
                     self.__future = self.__event_loop.create_future()
                     await self.__future
                 else:
-                    if self.__is_async is None:
-                        # This is the first callback so need to calculate is_async
-                        await self.__do_initial_callback(value)
-                    else:
-                        await self.callback(value)
-
+                    for value in values:
+                        ret = self.callback(value)
+                        if self.__is_sync is None:
+                            await self.__detect_async(ret)
+                        elif not self.__is_sync:
+                            await ret
         except asyncio.CancelledError:
             # This is allowed
             raise

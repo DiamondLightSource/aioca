@@ -1,5 +1,6 @@
 import asyncio
 import gc
+import os
 import queue
 import random
 import string
@@ -10,11 +11,10 @@ import time
 from asyncio.events import AbstractEventLoop
 from pathlib import Path
 from typing import Callable, List, Tuple, Union
+from unittest.mock import Mock, call
 
 import pytest
 from _pytest.unraisableexception import catch_unraisable_exception
-from epicscorelibs.ca import cadef, dbr
-
 from aioca import (
     FORMAT_CTRL,
     CAInfo,
@@ -31,6 +31,7 @@ from aioca import (
     run,
 )
 from aioca.types import AugmentedValue
+from epicscorelibs.ca import cadef, dbr
 
 SOFT_RECORDS = str(Path(__file__).parent / "soft_records.db")
 
@@ -49,6 +50,9 @@ BAD_EGUS = PV_PREFIX + "bad_egus"
 WAVEFORM = PV_PREFIX + "waveform"
 # A read only PV
 RO = PV_PREFIX + "waveform.NELM"
+# A sequence that makes 8 updates to seqout
+SEQ = PV_PREFIX + "seq"
+SEQOUT = PV_PREFIX + "seqout"
 # Longer test timeouts as GHA has slow runners on Mac
 TIMEOUT = 10
 
@@ -402,6 +406,42 @@ async def test_long_monitor_all_updates(ioc: subprocess.Popen) -> None:
     assert m.dropped_callbacks == 0
 
 
+@pytest.mark.skipif(
+    os.getenv("GITHUB_ACTIONS") == "true",
+    reason="GitHub actions runners aren't fast enough to trigger this race condition",
+)
+@pytest.mark.asyncio
+async def test_sync_monitor_fast_updates(ioc: subprocess.Popen) -> None:
+    # Check that a fast update with a sync callback gives us everything
+    wait_for_ioc(ioc)
+
+    successes = 0
+    for _ in range(10):
+        values: list[int] = []
+        await caput(SEQOUT, 0, wait=True)
+        await connect(SEQ)
+        m = camonitor(
+            SEQOUT,
+            values.append,
+            connect_timeout=(time.time() + 0.5,),
+            all_updates=True,
+        )
+        # Now poke the seq record to update seqout
+        await caput(SEQ, 1, wait=True)
+        assert await caget(SEQOUT) == 8
+        await asyncio.sleep(0.1)
+        # Check we got at least the last update
+        assert values[-1] == 8
+        assert m.dropped_callbacks == 0
+        # If we got all the updates then mark it as a success
+        # as we've proved we don't have the bug where we only get the first update
+        # https://github.com/DiamondLightSource/aioca/issues/68
+        if values == [0, 1, 2, 3, 4, 5, 6, 7, 8]:
+            successes += 1
+        m.close()
+    assert successes > 3
+
+
 @pytest.mark.asyncio
 async def test_exception_raising_monitor_callback(
     ioc: subprocess.Popen, capsys
@@ -676,3 +716,39 @@ async def test_channel_connected(ioc: subprocess.Popen) -> None:
     # Once the monitor is closed the subscription disappears
     channel = get_channel_infos()[0]
     assert channel.subscriber_count == 0
+
+
+@pytest.mark.asyncio
+async def test_subscription(monkeypatch) -> None:
+    monkeypatch.setattr("aioca._catools.dbr.type_to_dbr", lambda *_: (0, lambda v: v))
+    for name in (
+        "ca_create_subscription",
+        "ca_create_channel",
+        "ca_clear_subscription",
+        "ca_clear_channel",
+    ):
+        monkeypatch.setattr(f"aioca._catools.cadef.{name}", Mock())
+    cb = Mock()
+    sub = camonitor("test_pv", cb, all_updates=True)
+    assert sub.name == "test_pv"
+    assert sub.state == Subscription.OPENING
+    assert len(sub.pending_values) == 0
+    assert sub.dropped_callbacks == 0
+    assert sub._Subscription__future is None
+    # Let it "connect"
+    sub.channel.on_ca_connect_(cadef.CA_OP_CONN_UP)
+    await asyncio.sleep(0.1)
+    assert sub.state == Subscription.OPEN
+    assert sub._Subscription__future is not None
+    # Simulate 2 updates
+    sub.pending_values.append(1)
+    sub.pending_values.append(2)
+    # Trigger the callback
+    sub._Subscription__signal()
+    # Check that the callback is called with the values
+    await asyncio.sleep(0.1)
+    assert cb.call_args_list == [call(1), call(2)]
+    sub.close()
+    await asyncio.sleep(1)
+    purge_channel_caches()
+    await asyncio.sleep(1)
