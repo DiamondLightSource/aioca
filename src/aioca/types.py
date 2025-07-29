@@ -1,6 +1,5 @@
 from datetime import datetime  # noqa
-from typing import Literal, Protocol
-from collections.abc import Sized
+from typing import List, Literal, Protocol, Sized, Tuple, Type, Union
 
 #: A timeout is represented by one of the following
 #:
@@ -10,7 +9,7 @@ from collections.abc import Sized
 #: float    A relative timeout interval in seconds
 #: (float,) An absolute deadline in seconds past epoch
 #: ======== ============================================================
-Timeout = float | tuple[float] | None
+Timeout = Union[None, Tuple[float], float]
 
 #: A bitwise or of DBE event codes from epicscorelibs.ca.dbr
 #:
@@ -35,7 +34,7 @@ Timeout = float | tuple[float] | None
 #: FORMAT_TIME  DBE_VALUE | DBE_ALARM
 #: FORMAT_CTRL  DBE_VALUE | DBE_ALARM | DBE_PROPERTY
 #: ============ =============================================
-Dbe = int | None
+Dbe = Union[None, int]
 
 #: A DBR request code from epicscorelibs.ca.dbr. One of
 #:
@@ -68,7 +67,7 @@ Dbr = Literal[0, 1, 2, 3, 4, 5, 6, 35, 36, 37, 38, 996, 997, 998, 999]
 #:                      such as int, float or str
 #: A numpy dtype        Compatible with any of the above values
 #: ==================== ================================================
-Datatype = Dbr | type | None
+Datatype = Union[None, Dbr, Type]
 
 #: How much auxilliary information will be returned with the retrieved data.
 #: From epicscorelibs.ca.dbr, one of the following
@@ -89,7 +88,7 @@ Format = Literal[0, 1, 2]
 #: -1       The full data length
 #: +ve int  A maximum of this number of elements
 #: ======== ============================================================
-Count = Literal[0, -1] | int
+Count = Union[Literal[0, -1], int]
 
 
 class AugmentedValue(Protocol, Sized):
@@ -153,7 +152,7 @@ class AugmentedValue(Protocol, Sized):
     #: epoch, not the EPICS epoch).  Is a tuple of the form ``(secs, nsec)`` with
     #: integer seconds and nanosecond values, provided in case full ns timestamp
     #: precision is required.
-    raw_stamp: tuple[int, int]
+    raw_stamp: Tuple[int, int]
     #: Timestamp in seconds in format compatible with ``time.time()`` rounded to
     #: the nearest microsecond: for nanosecond precision use `raw_stamp`
     #: instead.
@@ -171,7 +170,7 @@ class AugmentedValue(Protocol, Sized):
     upper_ctrl_limit: float  #: Upper limit for puts to this value
     lower_ctrl_limit: float  #: Lower limit for puts to this value
     precision: int  #: Display precision for floating point values
-    enums: list[str]  #: Enumeration strings for ENUM type
+    enums: List[str]  #: Enumeration strings for ENUM type
     #: Used for global alarm acknowledgement. Do transient alarms have
     #: to be acknowledged? (0,1) means (no, yes).
     ackt: int

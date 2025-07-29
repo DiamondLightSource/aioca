@@ -9,15 +9,29 @@ import time
 import traceback
 import warnings
 from collections import deque
-from collections.abc import Awaitable, Callable, Sequence
-from typing import Any, Generic, TypeVar, overload
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Deque,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+    overload,
+)
 
 from epicscorelibs.ca import cadef, dbr
 
 from .types import AugmentedValue, Count, Datatype, Dbe, Format, Timeout
 
 T = TypeVar("T")
-PVs = list[str] | tuple[str, ...]
+PVs = Union[List[str], Tuple[str, ...]]
 
 DEFAULT_TIMEOUT = 5.0
 
@@ -34,10 +48,10 @@ cadef.ca_detach_context = cadef.libca.ca_detach_context
 
 class ValueEvent(Generic[T]):
     def __init__(self) -> None:
-        self.value: T | Exception = RuntimeError("No value set")
+        self.value: Union[T, Exception] = RuntimeError("No value set")
         self._event = asyncio.Event()
 
-    def set(self, value: T | Exception):
+    def set(self, value: Union[T, Exception]):
         self._event.set()
         self.value = value
 
@@ -139,14 +153,14 @@ async def ca_timeout(awaitable: Awaitable[T], name: str, timeout: Timeout = None
             timeout = timeout[0] - time.time()
         try:
             result = await asyncio.wait_for(awaitable, timeout)
-        except TimeoutError as e:
+        except asyncio.TimeoutError as e:
             raise CANothing(name, cadef.ECA_TIMEOUT) from e
     else:
         result = await awaitable
     return result
 
 
-def parallel_timeout(kwargs: dict[str, Any]) -> dict[str, Any]:
+def parallel_timeout(kwargs: Dict[str, Any]) -> Dict[str, Any]:
     """Return kwargs with a suitable timeout for running in parallel"""
     if kwargs.get("throw", True):
         # told to throw, so remove the timeout as it will be done at the top level
@@ -155,8 +169,8 @@ def parallel_timeout(kwargs: dict[str, Any]) -> dict[str, Any]:
 
 
 async def in_parallel(
-    awaitables: Sequence[Awaitable[T]], kwargs: dict[str, Any]
-) -> list[T]:
+    awaitables: Sequence[Awaitable[T]], kwargs: Dict[str, Any]
+) -> List[T]:
     if kwargs.get("throw", True):
         # timeout at this level, awaitables will not timeout themselves
         timeout = kwargs.get("timeout", DEFAULT_TIMEOUT)
@@ -210,7 +224,7 @@ class Channel:
     def __init__(self, name: str, loop: asyncio.AbstractEventLoop):
         """Creates a channel access channel with the given name."""
         self.name = name
-        self.__subscriptions: set[Subscription] = set()
+        self.__subscriptions: Set[Subscription] = set()
         self.__connect_event = ValueEvent[None]()
         self.__event_loop = loop
 
@@ -261,10 +275,10 @@ class ChannelCache:
     ensure a clean shutdown."""
 
     def __init__(self, loop: asyncio.AbstractEventLoop):
-        self.__channels: dict[str, Channel] = {}
+        self.__channels: Dict[str, Channel] = {}
         self.__loop = loop
         self.__waiting = True
-        self.__callbacks: deque[tuple[Callable, tuple]] = deque()
+        self.__callbacks: Deque[Tuple[Callable, Tuple]] = deque()
 
     def get_channel(self, name: str) -> Channel:
         try:
@@ -276,7 +290,7 @@ class ChannelCache:
             self.__channels[name] = channel
             return channel
 
-    def get_channels(self) -> list[Channel]:
+    def get_channels(self) -> List[Channel]:
         return list(self.__channels.values())
 
     def purge(self):
@@ -341,7 +355,7 @@ class Subscription:
     def __init__(
         self,
         name: str,
-        callback: Callable[[Any], Awaitable | None],
+        callback: Callable[[Any], Union[None, Awaitable]],
         events: Dbe,
         datatype: Datatype,
         format: Format,
@@ -358,12 +372,12 @@ class Subscription:
         #: while another callback was in progress
         self.dropped_callbacks: int = 0
         self.__event_loop = asyncio.get_running_loop()
-        self.pending_values: deque[AugmentedValue] = deque(
+        self.pending_values: Deque[AugmentedValue] = deque(
             maxlen=None if all_updates else 1
         )
-        self.__future: asyncio.Future | None = None
+        self.__future: Optional[asyncio.Future] = None
         self.__lock = threading.Lock()  # Used for update merging.
-        self.__is_async: bool | None = None
+        self.__is_async: Optional[bool] = None
 
         # If events not specified then compute appropriate default corresponding
         # to the requested format.
@@ -551,7 +565,7 @@ class Subscription:
 @overload
 def camonitor(
     pv: str,
-    callback: Callable[[Any], Awaitable | None],
+    callback: Callable[[Any], Union[None, Awaitable]],
     events: Dbe = ...,
     datatype: Datatype = ...,
     format: Format = ...,
@@ -565,7 +579,7 @@ def camonitor(
 @overload
 def camonitor(
     pv: PVs,
-    callback: Callable[[Any, int], Awaitable | None],
+    callback: Callable[[Any, int], Union[None, Awaitable]],
     events: Dbe = ...,
     datatype: Datatype = ...,
     format: Format = ...,
@@ -573,7 +587,7 @@ def camonitor(
     all_updates: bool = ...,
     notify_disconnect: bool = ...,
     connect_timeout: Timeout = ...,
-) -> list[Subscription]: ...  # pragma: no cover
+) -> List[Subscription]: ...  # pragma: no cover
 
 
 def camonitor(
@@ -670,7 +684,7 @@ async def caget(
     count: Count = ...,
     timeout: Timeout = ...,
     throw: bool = ...,
-) -> list[AugmentedValue]: ...  # pragma: no cover
+) -> List[AugmentedValue]: ...  # pragma: no cover
 
 
 @maybe_throw
@@ -774,7 +788,7 @@ async def caput(
     wait: bool = ...,
     timeout: Timeout = ...,
     throw: bool = ...,
-) -> list[CANothing]: ...  # pragma: no cover
+) -> List[CANothing]: ...  # pragma: no cover
 
 
 @maybe_throw
@@ -850,8 +864,7 @@ async def caput_array(pvs: PVs, values, repeat_value=False, **kwargs):
             values = [values] * len(pvs)
     assert len(pvs) == len(values), "PV and value lists must match in length"
     coros = [
-        caput(pv, value, **parallel_timeout(kwargs))
-        for pv, value in zip(pvs, values, strict=False)
+        caput(pv, value, **parallel_timeout(kwargs)) for pv, value in zip(pvs, values)
     ]
     results = await in_parallel(coros, kwargs)
     return results
@@ -921,7 +934,7 @@ async def connect(
 @overload
 async def connect(
     pv: PVs, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
-) -> list[CANothing]: ...  # pragma: no cover
+) -> List[CANothing]: ...  # pragma: no cover
 
 
 @maybe_throw
@@ -967,7 +980,7 @@ async def cainfo(
 @overload
 async def cainfo(
     pv: PVs, wait: bool = ..., timeout: Timeout = ..., throw: bool = ...
-) -> list[CAInfo]: ...  # pragma: no cover
+) -> List[CAInfo]: ...  # pragma: no cover
 
 
 @maybe_throw
@@ -997,7 +1010,7 @@ async def cainfo_array(pvs: PVs, wait=True, **kwargs):
 class _Context:
     _ca_context = None
     _should_destroy = False
-    _channel_caches: dict[asyncio.AbstractEventLoop, ChannelCache] = {}
+    _channel_caches: Dict[asyncio.AbstractEventLoop, ChannelCache] = {}
 
     @classmethod
     def purge_channel_caches(cls):
@@ -1101,7 +1114,7 @@ class ChannelInfo:
         self.subscriber_count = subscriber_count
 
 
-def get_channel_infos() -> list[ChannelInfo]:
+def get_channel_infos() -> List[ChannelInfo]:
     """Return information about all Channels"""
     return [
         ChannelInfo(channel.name, channel.connected(), channel.count_subscriptions())
