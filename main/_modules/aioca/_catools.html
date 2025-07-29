@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>aioca._catools &#8212; aioca 1.8.2.dev16+g1455088 documentation</title>
+    <title>aioca._catools &#8212; aioca 2.0a3.dev2+gd5532fc documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=987eb165"></script>
+    <script src="../../_static/documentation_options.js?v=cb7fe954"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -453,15 +453,29 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">deque</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">overload</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Awaitable</span><span class="p">,</span>
+    <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">Deque</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">Generic</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Sequence</span><span class="p">,</span>
+    <span class="n">Set</span><span class="p">,</span>
+    <span class="n">Tuple</span><span class="p">,</span>
+    <span class="n">TypeVar</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+    <span class="n">overload</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">epicscorelibs.ca</span><span class="w"> </span><span class="kn">import</span> <span class="n">cadef</span><span class="p">,</span> <span class="n">dbr</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">AugmentedValue</span><span class="p">,</span> <span class="n">Count</span><span class="p">,</span> <span class="n">Datatype</span><span class="p">,</span> <span class="n">Dbe</span><span class="p">,</span> <span class="n">Format</span><span class="p">,</span> <span class="n">Timeout</span>
 
 <span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
-<span class="n">PVs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+<span class="n">PVs</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
 
 <span class="n">DEFAULT_TIMEOUT</span> <span class="o">=</span> <span class="mf">5.0</span>
 
@@ -478,10 +492,10 @@
 
 <span class="k">class</span><span class="w"> </span><span class="nc">ValueEvent</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">:</span> <span class="n">T</span> <span class="o">|</span> <span class="ne">Exception</span> <span class="o">=</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No value set&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">]</span> <span class="o">=</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No value set&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_event</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span> <span class="o">|</span> <span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">]):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
 
@@ -586,14 +600,14 @@
             <span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">awaitable</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">TimeoutError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">CANothing</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">cadef</span><span class="o">.</span><span class="n">ECA_TIMEOUT</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">awaitable</span>
     <span class="k">return</span> <span class="n">result</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">parallel_timeout</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">parallel_timeout</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return kwargs with a suitable timeout for running in parallel&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;throw&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
         <span class="c1"># told to throw, so remove the timeout as it will be done at the top level</span>
@@ -602,8 +616,8 @@
 
 
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">in_parallel</span><span class="p">(</span>
-    <span class="n">awaitables</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span> <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+    <span class="n">awaitables</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span> <span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
     <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;throw&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
         <span class="c1"># timeout at this level, awaitables will not timeout themselves</span>
         <span class="n">timeout</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;timeout&quot;</span><span class="p">,</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">)</span>
@@ -657,7 +671,7 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">loop</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a channel access channel with the given name.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__subscriptions</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">Subscription</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__subscriptions</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Subscription</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__connect_event</span> <span class="o">=</span> <span class="n">ValueEvent</span><span class="p">[</span><span class="kc">None</span><span class="p">]()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__event_loop</span> <span class="o">=</span> <span class="n">loop</span>
 
@@ -708,10 +722,10 @@
 <span class="sd">    ensure a clean shutdown.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loop</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__channels</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Channel</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__channels</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Channel</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__loop</span> <span class="o">=</span> <span class="n">loop</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__waiting</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__callbacks</span><span class="p">:</span> <span class="n">deque</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">]]</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__callbacks</span><span class="p">:</span> <span class="n">Deque</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">]]</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">get_channel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Channel</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
@@ -723,7 +737,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">__channels</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">channel</span>
             <span class="k">return</span> <span class="n">channel</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Channel</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Channel</span><span class="p">]:</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__channels</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">purge</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -790,7 +804,7 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Awaitable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">]],</span>
         <span class="n">events</span><span class="p">:</span> <span class="n">Dbe</span><span class="p">,</span>
         <span class="n">datatype</span><span class="p">:</span> <span class="n">Datatype</span><span class="p">,</span>
         <span class="nb">format</span><span class="p">:</span> <span class="n">Format</span><span class="p">,</span>
@@ -807,12 +821,12 @@
         <span class="c1">#: while another callback was in progress</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dropped_callbacks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__event_loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_running_loop</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pending_values</span><span class="p">:</span> <span class="n">deque</span><span class="p">[</span><span class="n">AugmentedValue</span><span class="p">]</span> <span class="o">=</span> <span class="n">deque</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pending_values</span><span class="p">:</span> <span class="n">Deque</span><span class="p">[</span><span class="n">AugmentedValue</span><span class="p">]</span> <span class="o">=</span> <span class="n">deque</span><span class="p">(</span>
             <span class="n">maxlen</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="n">all_updates</span> <span class="k">else</span> <span class="mi">1</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__future</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Future</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__future</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">Future</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>  <span class="c1"># Used for update merging.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__is_async</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__is_async</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># If events not specified then compute appropriate default corresponding</span>
         <span class="c1"># to the requested format.</span>
@@ -1004,7 +1018,7 @@
 <span class="nd">@overload</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">camonitor</span><span class="p">(</span>
     <span class="n">pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Awaitable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
+    <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">]],</span>
     <span class="n">events</span><span class="p">:</span> <span class="n">Dbe</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
     <span class="n">datatype</span><span class="p">:</span> <span class="n">Datatype</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
     <span class="nb">format</span><span class="p">:</span> <span class="n">Format</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
@@ -1018,7 +1032,7 @@
 <span class="nd">@overload</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">camonitor</span><span class="p">(</span>
     <span class="n">pv</span><span class="p">:</span> <span class="n">PVs</span><span class="p">,</span>
-    <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">Awaitable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
+    <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">]],</span>
     <span class="n">events</span><span class="p">:</span> <span class="n">Dbe</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
     <span class="n">datatype</span><span class="p">:</span> <span class="n">Datatype</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
     <span class="nb">format</span><span class="p">:</span> <span class="n">Format</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
@@ -1026,7 +1040,7 @@
     <span class="n">all_updates</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
     <span class="n">notify_disconnect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
     <span class="n">connect_timeout</span><span class="p">:</span> <span class="n">Timeout</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Subscription</span><span class="p">]:</span> <span class="o">...</span>  <span class="c1"># pragma: no cover</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Subscription</span><span class="p">]:</span> <span class="o">...</span>  <span class="c1"># pragma: no cover</span>
 
 
 <div class="viewcode-block" id="camonitor">
@@ -1126,7 +1140,7 @@
     <span class="n">count</span><span class="p">:</span> <span class="n">Count</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="n">Timeout</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
     <span class="n">throw</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">AugmentedValue</span><span class="p">]:</span> <span class="o">...</span>  <span class="c1"># pragma: no cover</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">AugmentedValue</span><span class="p">]:</span> <span class="o">...</span>  <span class="c1"># pragma: no cover</span>
 
 
 <div class="viewcode-block" id="caget">
@@ -1233,7 +1247,7 @@
     <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="n">Timeout</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
     <span class="n">throw</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">CANothing</span><span class="p">]:</span> <span class="o">...</span>  <span class="c1"># pragma: no cover</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">CANothing</span><span class="p">]:</span> <span class="o">...</span>  <span class="c1"># pragma: no cover</span>
 
 
 <div class="viewcode-block" id="caput">
@@ -1312,8 +1326,7 @@
             <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">values</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">pvs</span><span class="p">)</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">pvs</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">),</span> <span class="s2">&quot;PV and value lists must match in length&quot;</span>
     <span class="n">coros</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">caput</span><span class="p">(</span><span class="n">pv</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">parallel_timeout</span><span class="p">(</span><span class="n">kwargs</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">pv</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">pvs</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">caput</span><span class="p">(</span><span class="n">pv</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">parallel_timeout</span><span class="p">(</span><span class="n">kwargs</span><span class="p">))</span> <span class="k">for</span> <span class="n">pv</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">pvs</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
     <span class="p">]</span>
     <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">in_parallel</span><span class="p">(</span><span class="n">coros</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">results</span>
@@ -1386,7 +1399,7 @@
 <span class="nd">@overload</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span>
     <span class="n">pv</span><span class="p">:</span> <span class="n">PVs</span><span class="p">,</span> <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">Timeout</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span> <span class="n">throw</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="o">...</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">CANothing</span><span class="p">]:</span> <span class="o">...</span>  <span class="c1"># pragma: no cover</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">CANothing</span><span class="p">]:</span> <span class="o">...</span>  <span class="c1"># pragma: no cover</span>
 
 
 <div class="viewcode-block" id="connect">
@@ -1435,7 +1448,7 @@
 <span class="nd">@overload</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">cainfo</span><span class="p">(</span>
     <span class="n">pv</span><span class="p">:</span> <span class="n">PVs</span><span class="p">,</span> <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">Timeout</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span> <span class="n">throw</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="o">...</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">CAInfo</span><span class="p">]:</span> <span class="o">...</span>  <span class="c1"># pragma: no cover</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">CAInfo</span><span class="p">]:</span> <span class="o">...</span>  <span class="c1"># pragma: no cover</span>
 
 
 <div class="viewcode-block" id="cainfo">
@@ -1468,7 +1481,7 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">_Context</span><span class="p">:</span>
     <span class="n">_ca_context</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">_should_destroy</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">_channel_caches</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span><span class="p">,</span> <span class="n">ChannelCache</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">_channel_caches</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span><span class="p">,</span> <span class="n">ChannelCache</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">purge_channel_caches</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
@@ -1577,7 +1590,7 @@
 
 <div class="viewcode-block" id="get_channel_infos">
 <a class="viewcode-back" href="../../api/api.html#aioca.get_channel_infos">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_channel_infos</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">ChannelInfo</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_channel_infos</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ChannelInfo</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return information about all Channels&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">[</span>
         <span class="n">ChannelInfo</span><span class="p">(</span><span class="n">channel</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">channel</span><span class="o">.</span><span class="n">connected</span><span class="p">(),</span> <span class="n">channel</span><span class="o">.</span><span class="n">count_subscriptions</span><span class="p">())</span>
