@@ -8,8 +8,8 @@ import sys
 import threading
 import time
 from asyncio.events import AbstractEventLoop
-from collections.abc import Callable
 from pathlib import Path
+from typing import Callable, List, Tuple, Union
 
 import pytest
 from _pytest.unraisableexception import catch_unraisable_exception
@@ -155,7 +155,7 @@ async def test_get_non_existent_pvs_no_throw(ioc: subprocess.Popen) -> None:
 @pytest.mark.asyncio
 @pytest.mark.parametrize("pvs", ([LONGOUT, SI], (LONGOUT, SI)))
 async def test_get_two_pvs(
-    ioc: subprocess.Popen, pvs: list[str] | tuple[str]
+    ioc: subprocess.Popen, pvs: Union[List[str], Tuple[str]]
 ) -> None:
     value = await caget(pvs, timeout=TIMEOUT)
     assert [42, "me"] == value
@@ -200,7 +200,7 @@ async def test_caput_on_ro_pv_fails(ioc: subprocess.Popen) -> None:
 @pytest.mark.asyncio
 @pytest.mark.parametrize("pvs", ([LONGOUT, SI], (LONGOUT, SI)))
 async def test_caput_two_pvs_same_value(
-    ioc: subprocess.Popen, pvs: list[str] | tuple[str]
+    ioc: subprocess.Popen, pvs: Union[List[str], Tuple[str]]
 ) -> None:
     await caput(pvs, 43, timeout=TIMEOUT)
     value = await caget(pvs)
@@ -255,7 +255,7 @@ async def poll_length(array, gt=0, timeout=TIMEOUT):
 
 @pytest.mark.asyncio
 async def test_monitor(ioc: subprocess.Popen) -> None:
-    values: list[AugmentedValue] = []
+    values: List[AugmentedValue] = []
     m = camonitor(LONGOUT, values.append, notify_disconnect=True)
 
     # Wait for connection
@@ -276,7 +276,7 @@ async def test_monitor(ioc: subprocess.Popen) -> None:
 
 @pytest.mark.asyncio
 async def test_monitor_with_failing_dbr(ioc: subprocess.Popen, capsys) -> None:
-    values: list[AugmentedValue] = []
+    values: List[AugmentedValue] = []
     m = camonitor(LONGOUT, values.append, notify_disconnect=True)
 
     # Wait for connection
@@ -310,7 +310,7 @@ async def test_monitor_with_failing_dbr(ioc: subprocess.Popen, capsys) -> None:
 
 @pytest.mark.asyncio
 async def test_monitor_two_pvs(ioc: subprocess.Popen) -> None:
-    values: list[tuple[AugmentedValue, int]] = []
+    values: List[Tuple[AugmentedValue, int]] = []
     await caput(WAVEFORM, [1, 2], wait=True, timeout=TIMEOUT)
     ms = camonitor([WAVEFORM, LONGOUT], lambda v, n: values.append((v, n)), count=-1)
 
@@ -428,7 +428,7 @@ async def test_exception_raising_monitor_callback(
     assert "ValueError: list.remove(x): x not in list" in captured.err
 
     # Check no more updates
-    values: list[str] = []
+    values: List[str] = []
     m.callback = values.append
     await caput(LONGOUT, 32)
     assert m.state == m.CLOSED
@@ -462,7 +462,7 @@ async def test_async_exception_raising_monitor_callback(
     assert "ValueError: Boom" in captured.err
 
     # Check no more updates
-    values: list[str] = []
+    values: List[str] = []
     m.callback = values.append
     await caput(LONGOUT, 32)
     assert m.state == m.CLOSED
@@ -474,7 +474,7 @@ async def test_async_exception_raising_monitor_callback(
 
 @pytest.mark.asyncio
 async def test_camonitor_non_existent() -> None:
-    values: list[AugmentedValue] = []
+    values: List[AugmentedValue] = []
     m = camonitor(NE, values.append, connect_timeout=0.2)
     try:
         assert len(values) == 0
@@ -504,7 +504,7 @@ async def test_camonitor_non_existent_async() -> None:
 
 @pytest.mark.asyncio
 async def test_monitor_gc(ioc: subprocess.Popen) -> None:
-    values: list[AugmentedValue] = []
+    values: List[AugmentedValue] = []
     camonitor(LONGOUT, values.append, notify_disconnect=True)
 
     # Wait for connection
@@ -648,7 +648,7 @@ async def test_read_pvs_from_different_threads(ioc: subprocess.Popen) -> None:
 
 @pytest.mark.asyncio
 async def test_channel_connected(ioc: subprocess.Popen) -> None:
-    values: list[AugmentedValue] = []
+    values: List[AugmentedValue] = []
     m = camonitor(LONGOUT, values.append, notify_disconnect=True)
 
     # Wait for connection

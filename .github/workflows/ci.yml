@@ -5,11 +5,10 @@ on:
     branches:
       - main
     tags:
-      - '*'
+      - "*"
   pull_request:
 
 jobs:
-
   lint:
     uses: ./.github/workflows/_tox.yml
     with:
@@ -19,7 +18,7 @@ jobs:
     strategy:
       matrix:
         runs-on: ["ubuntu-latest", "windows-latest", "macos-latest"]
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
         include:
           # Include one that runs in the dev environment
           - runs-on: "ubuntu-latest"
@@ -38,7 +37,6 @@ jobs:
 
   docs:
     uses: ./.github/workflows/_docs.yml
-
 
   dist:
     uses: ./.github/workflows/_dist.yml
