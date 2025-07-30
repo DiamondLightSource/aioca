@@ -8,13 +8,14 @@ import subprocess
 import sys
 import threading
 import time
-from asyncio.events import AbstractEventLoop
 from pathlib import Path
-from typing import Callable, List, Tuple, Union
+from types import TracebackType
+from typing import Any, Callable, List, Optional, Tuple, Type, Union
 from unittest.mock import Mock, call
 
 import pytest
-from _pytest.unraisableexception import catch_unraisable_exception
+from epicscorelibs.ca import cadef, dbr
+
 from aioca import (
     FORMAT_CTRL,
     CAInfo,
@@ -31,7 +32,6 @@ from aioca import (
     run,
 )
 from aioca.types import AugmentedValue
-from epicscorelibs.ca import cadef, dbr
 
 SOFT_RECORDS = str(Path(__file__).parent / "soft_records.db")
 
@@ -572,6 +572,54 @@ async def monitor_for_a_bit(callback: Callable, ioc) -> Subscription:
     return m
 
 
+# Copied from cpython/Lib/test/support/__init__.py, with modifications.
+class catch_unraisable_exception:
+    """Context manager catching unraisable exception using sys.unraisablehook.
+
+    Storing the exception value (cm.unraisable.exc_value) creates a reference
+    cycle. The reference cycle is broken explicitly when the context manager
+    exits.
+
+    Storing the object (cm.unraisable.object) can resurrect it if it is set to
+    an object which is being finalized. Exiting the context manager clears the
+    stored object.
+
+    Usage:
+        with catch_unraisable_exception() as cm:
+            # code creating an "unraisable exception"
+            ...
+            # check the unraisable exception: use cm.unraisable
+            ...
+        # cm.unraisable attribute no longer exists at this point
+        # (to break a reference cycle)
+    """
+
+    def __init__(self) -> None:
+        self.unraisable: Optional[sys.UnraisableHookArgs] = None
+        self._old_hook: Optional[Callable[[sys.UnraisableHookArgs], Any]] = None
+
+    def _hook(self, unraisable: "sys.UnraisableHookArgs") -> None:
+        # Storing unraisable.object can resurrect an object which is being
+        # finalized. Storing unraisable.exc_value creates a reference cycle.
+        self.unraisable = unraisable
+
+    def __enter__(self) -> "catch_unraisable_exception":
+        self._old_hook = sys.unraisablehook
+        sys.unraisablehook = self._hook
+        return self
+
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
+        assert self._old_hook is not None
+        sys.unraisablehook = self._old_hook
+        self._old_hook = None
+        del self.unraisable
+
+
 @pytest.mark.filterwarnings("ignore:aioca.run is deprecated")
 def test_closing_event_loop(
     ioc: subprocess.Popen,
@@ -639,13 +687,14 @@ def test_ca_nothing_dunder_methods():
 
 
 @pytest.mark.filterwarnings("ignore:aioca.run is deprecated")
-def test_run_forever(event_loop: AbstractEventLoop):
+def test_run_forever():
+    event_loop = asyncio.new_event_loop()
     asyncio.set_event_loop(event_loop)
 
     async def run_for_a_bit():
         while True:
             await asyncio.sleep(0.2)
-            asyncio.get_running_loop().stop()
+            event_loop.stop()
 
     start = time.time()
     run(run_for_a_bit(), forever=True)
@@ -670,15 +719,17 @@ async def test_read_pvs_from_different_threads(ioc: subprocess.Popen) -> None:
     returned_values = []
     threads = []
 
-    returned_values.append(await caget(LONGOUT, timeout=0.5))
-
     async def get_value():
         returned_values.append(await caget(LONGOUT, timeout=0.5))
-        await asyncio.sleep(1)
 
-    t = threading.Thread(
-        target=asyncio.new_event_loop().run_until_complete, args=[get_value()]
-    )
+    await get_value()
+
+    def thread_function():
+        loop = asyncio.new_event_loop()
+        loop.run_until_complete(get_value())
+        loop.close()
+
+    t = threading.Thread(target=thread_function)
     threads.append(t)
     t.start()
     t.join()
@@ -727,19 +778,19 @@ async def test_subscription(monkeypatch) -> None:
         "ca_clear_subscription",
         "ca_clear_channel",
     ):
-        monkeypatch.setattr(f"aioca._catools.cadef.{name}", Mock())
+        monkeypatch.setattr(f"aioca._catools.cadef.{name}", lambda *_: None)
     cb = Mock()
     sub = camonitor("test_pv", cb, all_updates=True)
     assert sub.name == "test_pv"
     assert sub.state == Subscription.OPENING
     assert len(sub.pending_values) == 0
     assert sub.dropped_callbacks == 0
-    assert sub._Subscription__future is None
+    assert sub._Subscription__future is None  # type: ignore
     # Let it "connect"
     sub.channel.on_ca_connect_(cadef.CA_OP_CONN_UP)
     await asyncio.sleep(0.1)
     assert sub.state == Subscription.OPEN
-    assert sub._Subscription__future is not None
+    assert sub._Subscription__future is not None  # type: ignore
     # Simulate 2 updates
     sub.pending_values.append(1)
     sub.pending_values.append(2)
@@ -749,6 +800,4 @@ async def test_subscription(monkeypatch) -> None:
     await asyncio.sleep(0.1)
     assert cb.call_args_list == [call(1), call(2)]
     sub.close()
-    await asyncio.sleep(1)
     purge_channel_caches()
-    await asyncio.sleep(1)
