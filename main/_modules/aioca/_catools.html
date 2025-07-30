@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>aioca._catools &#8212; aioca 2.0a3.dev2+gd5532fc documentation</title>
+    <title>aioca._catools &#8212; aioca 2.0a4.dev3+g2fc78a1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=cb7fe954"></script>
+    <script src="../../_static/documentation_options.js?v=fbd59b9a"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -784,9 +784,9 @@
         <span class="s2">&quot;__lock&quot;</span><span class="p">,</span>  <span class="c1"># Lock around pending_values and dropped_callbacks</span>
         <span class="s2">&quot;__event_loop&quot;</span><span class="p">,</span>  <span class="c1"># The event loop the caller created this from</span>
         <span class="s2">&quot;__call_soon_threadsafe&quot;</span><span class="p">,</span>  <span class="c1"># Reference to channel_cache.call_soon_threadsafe</span>
-        <span class="s2">&quot;__is_async&quot;</span><span class="p">,</span>  <span class="c1"># If the callback is awaitable</span>
+        <span class="s2">&quot;__is_sync&quot;</span><span class="p">,</span>  <span class="c1"># If the callback is not awaitable</span>
         <span class="s2">&quot;__task&quot;</span><span class="p">,</span>  <span class="c1"># Task for subscription updates</span>
-        <span class="s2">&quot;__future&quot;</span><span class="p">,</span>  <span class="c1"># Future which will be updated if __is_async and pending_values</span>
+        <span class="s2">&quot;__future&quot;</span><span class="p">,</span>  <span class="c1"># Future which will be updated if not __is_sync and pending_values</span>
     <span class="p">]</span>
 
     <span class="c1"># Subscription state values:</span>
@@ -826,7 +826,7 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__future</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">Future</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>  <span class="c1"># Used for update merging.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__is_async</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__is_sync</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># If events not specified then compute appropriate default corresponding</span>
         <span class="c1"># to the requested format.</span>
@@ -856,9 +856,9 @@
         <span class="bp">self</span><span class="p">:</span> <span class="n">Subscription</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">usr</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="n">args</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">cadef</span><span class="o">.</span><span class="n">ECA_NORMAL</span><span class="p">,</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Subscription </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> got bad status </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="n">args</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">cadef</span><span class="o">.</span><span class="n">ECA_NORMAL</span>
+            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Subscription </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> got bad status </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="c1"># Good data: extract value from the dbr. Note that this can fail</span>
             <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbr_to_value</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">raw_dbr</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">count</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__queue_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
@@ -884,7 +884,7 @@
 <span class="sd">        might arise.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">CLOSED</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_async</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_sync</span><span class="p">:</span>
                     <span class="c1"># The first update was not async, assume it will always not</span>
                     <span class="c1"># be async and handle it here</span>
                     <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">pending_values</span><span class="p">:</span>
@@ -934,10 +934,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">CLOSED</span></div>
 
 
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">__do_initial_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__is_async</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isawaitable</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_async</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">__detect_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ret</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__is_sync</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isawaitable</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_sync</span><span class="p">:</span>
             <span class="k">await</span> <span class="n">ret</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">__wait_for_channel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
@@ -948,7 +947,7 @@
             <span class="c1"># Connection timeout.  Let the caller know and now just block</span>
             <span class="c1"># until we connect (if ever).  Note that in this case the caller</span>
             <span class="c1"># is notified even if notify_disconnect=False is set.</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__do_initial_callback</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__detect_async</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">__create_subscription</span><span class="p">(</span>
@@ -991,20 +990,22 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_as_parameter_</span> <span class="o">=</span> <span class="n">event_id</span><span class="o">.</span><span class="n">value</span>
 
             <span class="c1"># If we are async then we should be servicing the callbacks here</span>
-            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_async</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">False</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">__lock</span><span class="p">:</span>
-                        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pending_values</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
-                <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_sync</span><span class="p">:</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">__lock</span><span class="p">:</span>
+                    <span class="c1"># Consume all the values from the queue</span>
+                    <span class="n">values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pending_values</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">pending_values</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">values</span><span class="p">:</span>
+                    <span class="c1"># No values at the moment, so wait for __signal to let us know</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">__future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__event_loop</span><span class="o">.</span><span class="n">create_future</span><span class="p">()</span>
                     <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__future</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_async</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="c1"># This is the first callback so need to calculate is_async</span>
-                        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__do_initial_callback</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-
+                    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+                        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_sync</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__detect_async</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_sync</span><span class="p">:</span>
+                            <span class="k">await</span> <span class="n">ret</span>
         <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">CancelledError</span><span class="p">:</span>
             <span class="c1"># This is allowed</span>
             <span class="k">raise</span>
