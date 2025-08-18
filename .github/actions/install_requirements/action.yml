@@ -26,6 +26,10 @@ runs:
       with:
         python-version: ${{ env.PYTHON_VERSION }}
 
+    - name: Update pip
+      run: python -m pip install --upgrade pip
+      shell: bash
+
     - name: Install packages
       run: pip install ${{ inputs.pip-install }}
       shell: bash
