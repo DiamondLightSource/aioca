@@ -573,7 +573,7 @@ async def monitor_for_a_bit(callback: Callable, ioc) -> Subscription:
 
 
 # Copied from cpython/Lib/test/support/__init__.py, with modifications.
-class catch_unraisable_exception:
+class catch_unraisable_exception:  # noqa: N801
     """Context manager catching unraisable exception using sys.unraisablehook.
 
     Storing the exception value (cm.unraisable.exc_value) creates a reference
