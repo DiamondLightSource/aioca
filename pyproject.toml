@@ -26,8 +26,6 @@ requires-python = ">=3.8"
 
 [dependency-groups]
 dev = [
-    "black",
-    "click",
     "mypy",
     "myst-parser",
     "pre-commit",
@@ -115,7 +113,7 @@ commands = [
 description = "Run tests with coverage"
 commands = [
     [
-        "pytest", 
+        "pytest",
         "--cov=aioca",
         "--cov-report",
         "term",
