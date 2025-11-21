@@ -68,7 +68,6 @@ filterwarnings = "error"
 testpaths = "docs src tests"
 
 [tool.coverage.run]
-patch = ["subprocess"]
 data_file = "/tmp/aioca.coverage"
 
 [tool.coverage.paths]
