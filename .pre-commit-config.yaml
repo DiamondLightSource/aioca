@@ -3,21 +3,35 @@ repos:
     rev: v5.0.0
     hooks:
       - id: check-added-large-files
+        args: ["--maxkb=1000"] # uv.lock is more than 500kB
       - id: check-yaml
       - id: check-merge-conflict
+      - id: end-of-file-fixer
 
   - repo: local
     hooks:
-      - id: black
-        name: Run black
-        stages: [pre-commit]
+      - id: ruff
+        name: lint with ruff
         language: system
         entry: ruff check --force-exclude --fix
         types: [python]
+        require_serial: true
 
-      - id: ruff
-        name: Run ruff
-        stages: [pre-commit]
+      - id: ruff-format
+        name: format with ruff
         language: system
-        entry: ruff check
+        entry: ruff format --force-exclude
         types: [python]
+        require_serial: true
+
+      - id: uv-sync
+        name: update uv.lock and venv
+        pass_filenames: false
+        language: system
+        entry: uv sync
+        files: ^(uv\.lock|pyproject\.toml)$
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.28.0
+    hooks:
+      - id: gitleaks
