@@ -65,7 +65,7 @@ addopts = """
 # https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
 filterwarnings = [
     "error",
-    'ignore:OpenSSL:', # https://github.com/urllib3/urllib3/issues/3020
+    'ignore:.*OpenSSL.*:', # https://github.com/urllib3/urllib3/issues/3020
 ]
 # Doctest python code in docs, python code in src docstrings, test functions in tests
 testpaths = "docs src tests"
