@@ -71,7 +71,7 @@ class ValueEvent(Generic[T]):
             return self.value
 
 
-class CANothing(Exception):
+class CANothing(Exception):  # noqa: N818
     """This value is returned as a success or failure indicator from `caput`,
     as a failure indicator from `caget`, and may be raised as an exception to
     report a data error on caget or caput with wait."""
@@ -407,9 +407,9 @@ class Subscription:
         self: Subscription = args.usr
 
         try:
-            assert (
-                args.status == cadef.ECA_NORMAL
-            ), f"Subscription {self.name} got bad status {args.status}"
+            assert args.status == cadef.ECA_NORMAL, (
+                f"Subscription {self.name} got bad status {args.status}"
+            )
             # Good data: extract value from the dbr. Note that this can fail
             value = self.dbr_to_value(args.raw_dbr, args.type, args.count)
             self.__queue_value(value)
