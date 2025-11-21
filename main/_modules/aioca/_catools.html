@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>aioca._catools &#8212; aioca 2.0a5.dev3+ge55068b31 documentation</title>
+    <title>aioca._catools &#8212; aioca 2.0a5.dev15+g0a901725a documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=3ca0b229"></script>
+    <script src="../../_static/documentation_options.js?v=ac3fce48"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -517,7 +517,7 @@
 
 <div class="viewcode-block" id="CANothing">
 <a class="viewcode-back" href="../../api/api.html#aioca.CANothing">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">CANothing</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CANothing</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>  <span class="c1"># noqa: N818</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;This value is returned as a success or failure indicator from `caput`,</span>
 <span class="sd">    as a failure indicator from `caget`, and may be raised as an exception to</span>
 <span class="sd">    report a data error on caget or caput with wait.&quot;&quot;&quot;</span>
@@ -856,9 +856,9 @@
         <span class="bp">self</span><span class="p">:</span> <span class="n">Subscription</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">usr</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="p">(</span>
-                <span class="n">args</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">cadef</span><span class="o">.</span><span class="n">ECA_NORMAL</span>
-            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Subscription </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> got bad status </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">assert</span> <span class="n">args</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">cadef</span><span class="o">.</span><span class="n">ECA_NORMAL</span><span class="p">,</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Subscription </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> got bad status </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
             <span class="c1"># Good data: extract value from the dbr. Note that this can fail</span>
             <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbr_to_value</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">raw_dbr</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">count</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__queue_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
