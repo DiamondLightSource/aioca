@@ -151,7 +151,8 @@ intersphinx_mapping = {
 inheritance_graph_attrs = {"rankdir": "TB"}
 
 # Ignore localhost links for periodic check that links in docs are valid
-linkcheck_ignore = [r"http://localhost:\d+/"]
+# Also ignore EPICS links as ANL blocks machine user agents
+linkcheck_ignore = [r"http://localhost:\d+/", "https://epics.anl.gov/"]
 
 # Set copy-button to ignore python and bash prompts
 # https://sphinx-copybutton.readthedocs.io/en/latest/use.html#using-regexp-prompt-identifiers
