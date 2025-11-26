@@ -65,8 +65,8 @@ Environment Variables
 A number of environment variables affect the operation of channel access.  These
 can be set using the `os.environ` dictionary -- but note that these need to be
 set *before* loading the `aioca` module.  The following are documented in the
-`EPICS channel access developers manual
-<http://www.aps.anl.gov/epics/EpicsDocumentation/AppDevManuals/ChannelAccess/cadoc_4.htm>`_.
+`EPICS Channel Access Reference Manual
+<https://epics.anl.gov/base/R3-14/12-docs/CAref.html>`_.
 
 
 ``EPICS_CA_MAX_ARRAY_BYTES``
