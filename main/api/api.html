@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>aioca API &#8212; aioca 2.1.dev1+g59bfe15f0 documentation</title>
+    <title>aioca API &#8212; aioca 2.1.dev2+gb887bac1c documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=379120c9"></script>
+    <script src="../_static/documentation_options.js?v=e6cd4058"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -889,7 +889,7 @@ the result returned will be an array.</p>
 <td><p>Floating point value</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#aioca.ca_array" title="aioca.ca_array"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ca_array</span></code></a></p></td>
-<td><p><a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-ndarray" title="(in NumPy v2.3)"><code class="xref any docutils literal notranslate"><span class="pre">ndarray</span></code></a></p></td>
+<td><p><a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-ndarray" title="(in NumPy v2.4)"><code class="xref any docutils literal notranslate"><span class="pre">ndarray</span></code></a></p></td>
 <td><p>Any array value</p></td>
 </tr>
 </tbody>
@@ -915,8 +915,8 @@ the result returned will be an array.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="aioca.ca_array">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">aioca.</span></span><span class="sig-name descname"><span class="pre">ca_array</span></span><a class="headerlink" href="#aioca.ca_array" title="Link to this definition">#</a></dt>
-<dd><p>Array type derived from <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref any docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>. The associated
-<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.dtype.html#numpy.ndarray.dtype" title="(in NumPy v2.3)"><code class="xref py py-attr docutils literal notranslate"><span class="pre">dtype</span></code></a> will be as close a fit to the underlying data
+<dd><p>Array type derived from <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref any docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>. The associated
+<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.dtype.html#numpy.ndarray.dtype" title="(in NumPy v2.4)"><code class="xref py py-attr docutils literal notranslate"><span class="pre">dtype</span></code></a> will be as close a fit to the underlying data
 as possible.</p>
 </dd></dl>
 
@@ -964,7 +964,7 @@ before completion and if <code class="docutils literal notranslate"><span class=
 </section>
 <section id="augmented-values">
 <span id="augmented"></span><h3>Augmented Values<a class="headerlink" href="#augmented-values" title="Link to this heading">#</a></h3>
-<p>Augmented values are normally Python or <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v2.3)"><code class="xref any docutils literal notranslate"><span class="pre">numpy</span></code></a> values with extra fields:
+<p>Augmented values are normally Python or <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v2.4)"><code class="xref any docutils literal notranslate"><span class="pre">numpy</span></code></a> values with extra fields:
 the <code class="xref any docutils literal notranslate"><span class="pre">.ok</span></code> and <code class="xref any docutils literal notranslate"><span class="pre">.name</span></code> fields are already mentioned above, and
 further extra fields will be present depending on format requested for the data.
 As pointed out above, <code class="xref any docutils literal notranslate"><span class="pre">.ok</span></code> is always <a class="reference external" href="https://docs.python.org/3/library/constants.html#True" title="(in Python v3.14)"><code class="xref any docutils literal notranslate"><span class="pre">True</span></code></a> for valid data.</p>
@@ -993,7 +993,7 @@ provided by the channel will be returned.</p></li>
 <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref any docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref any docutils literal notranslate"><span class="pre">float</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref any docutils literal notranslate"><span class="pre">str</span></code></a>.  These correspond to
 <code class="docutils literal notranslate"><span class="pre">DBR_LONG</span></code>, <code class="docutils literal notranslate"><span class="pre">DBR_DOUBLE</span></code> and <code class="docutils literal notranslate"><span class="pre">DBR_STRING</span></code>
 respectively.</p></li>
-<li><p>Any <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.3)"><code class="xref any docutils literal notranslate"><span class="pre">numpy.dtype</span></code></a> compatible with any of the above values.</p></li>
+<li><p>Any <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><code class="xref any docutils literal notranslate"><span class="pre">numpy.dtype</span></code></a> compatible with any of the above values.</p></li>
 <li><p>One of the special values <code class="docutils literal notranslate"><span class="pre">DBR_CHAR_STR</span></code>,
 <code class="docutils literal notranslate"><span class="pre">DBR_CHAR_UNICODE</span></code>, or <code class="docutils literal notranslate"><span class="pre">DBR_CHAR_BYTES</span></code>.  This is used to
 request a char array which is then converted to a Python <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref any docutils literal notranslate"><span class="pre">str</span></code></a>
