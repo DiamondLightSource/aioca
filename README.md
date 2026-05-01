@@ -8,11 +8,12 @@
 aioca is an asynchronous EPICS Channel Access client for asyncio and Python
 using libca via ctypes.
 
-|    Source     |     <https://github.com/DiamondLightSource/aioca>      |
-| :-----------: | :----------------------------------------------------: |
-|     PyPI      |                  `pip install aioca`                   |
-| Documentation |      <https://DiamondLightSource.github.io/aioca>      |
-|   Releases    | <https://github.com/DiamondLightSource/aioca/releases> |
+What            | Where
+:---:           | :---:
+Source          | <https://github.com/DiamondLightSource/aioca>
+PyPI            | `pip install aioca`
+Documentation   | <https://diamondlightsource.github.io/aioca>
+Releases        | <https://github.com/DiamondLightSource/aioca/releases>
 
 <!-- README only content. Anything below this line won't be included in index.md -->
 
