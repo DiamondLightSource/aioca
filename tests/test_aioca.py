@@ -621,6 +621,10 @@ class catch_unraisable_exception:  # noqa: N801
 
 
 @pytest.mark.filterwarnings("ignore:aioca.run is deprecated")
+@pytest.mark.skipif(
+    sys.version_info >= (3, 14),
+    reason="Deprecated aioca.run doesn't work with asyncio changes in Python 3.14+",
+)
 def test_closing_event_loop(
     ioc: subprocess.Popen,
 ) -> None:
