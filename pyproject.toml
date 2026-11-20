@@ -1,15 +1,22 @@
 [build-system]
+<<<<<<< before updating
 requires = ["setuptools>=64", "setuptools_scm[toml]>=6.2", "wheel"]
+=======
+requires = ["setuptools>=77.0.3", "setuptools_scm[toml]>=8"]
+>>>>>>> after updating
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "aioca"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
+<<<<<<< before updating
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+=======
+>>>>>>> after updating
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -21,7 +28,8 @@ dependencies = [
     "epicscorelibs >= 7.0.3.99.4.0",
 ] # Add project dependencies here, e.g. ["click", "numpy"]
 dynamic = ["version"]
-license.file = "LICENSE"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">=3.8"
 
@@ -38,7 +46,7 @@ dev = [
     "sphinx-autobuild",
     "sphinx-copybutton",
     "sphinx-design",
-    "tox-uv",
+    "tox-uv-bare",
     "types-mock",
 ]
 
@@ -51,6 +59,10 @@ GitHub = "https://github.com/DiamondLightSource/aioca"
 [[project.authors]] # Further authors may be added by duplicating this section
 email = "tom.cobb@diamond.ac.uk"
 name = "Tom Cobb"
+
+[tool.uv]
+# Minimum uv to fix eMudhra CA cert incident (see discuss.python.org/t/109576)
+required-version = ">=0.13.5"
 
 [tool.setuptools_scm]
 write_to = "src/aioca/_version.py"
@@ -86,6 +98,13 @@ env_list = ["pre-commit", "type-checking", "tests", "docs"]
 [tool.tox.env_run_base]
 # Pass all environment variables to the test environments
 passenv = ["*"]
+allowlist_externals = [
+    "mypy",
+    "pytest",
+    "pre-commit",
+    "sphinx-build",
+    "sphinx-autobuild",
+]
 
 [tool.tox.env.pre-commit]
 description = "Run pre-commit on all files"
